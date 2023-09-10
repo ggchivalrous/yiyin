@@ -1,0 +1,119 @@
+:root {
+  --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
+  --blackShadow: -4px -4px 8px rgba(255, 255, 255, .8);
+}
+
+.header {
+  -webkit-app-region: drag;
+  padding: 10px;
+  text-align: right;
+
+  .close {
+    -webkit-app-region: no-drag;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .show {
+    -webkit-app-region: no-drag;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+}
+
+.grass {
+  box-shadow: var(--blackShadow), var(--whiteShadow);
+}
+
+.button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+
+  &:hover {
+    box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
+  }
+
+  &:active {
+    box-shadow: var(--blackShadow), var(--whiteShadow);
+  }
+
+  &:nth-child(n) {
+    margin-left: 10px;
+  }
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  background-position: center center;
+  background-size: 100% 100%;
+  padding: 0 20px 20px;
+  color: #081E3D;
+  font-size: 14px;
+  box-sizing: border-box;
+
+  .hide {
+    display: none;
+  }
+
+  .action-item {
+    margin-bottom: 20px;
+  }
+
+  .wrap {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-bottom: 20px;
+  }
+
+  .left-wrap {
+    flex: 1 0 100px;
+
+    .config-title {
+      font-weight: bold;
+    }
+
+    .config-value {
+      padding-left: 2px;
+      font-size: 13px;
+    }
+
+    .open-file-line {
+      cursor: pointer;
+
+      &:hover {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    }
+
+    .size-input {
+      border: none;
+      padding: 0;
+      display: inline-block;
+      width: 50px;
+      outline: none;
+      border: none;
+      background: none;
+      box-sizing: border-box;
+      touch-action: manipulation;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        appearance: none;
+        margin: 0;
+      }
+    }
+  }
+
+  .button-wrap {
+    margin-top: 40px;
+    text-align: center;
+    user-select: none;
+  }
+}

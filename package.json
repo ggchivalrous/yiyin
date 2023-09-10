@@ -1,0 +1,113 @@
+{
+  "name": "yiyin",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist-electron/main/index.js",
+  "description": "一款照片水印添加工具",
+  "scripts": {
+    "start": "vite",
+    "build:web": "vite build",
+    "test": "node test.js",
+    "package:dir": "yarn build:web && electron-builder -c electron-make.ts --dir",
+    "package": "yarn build:web && electron-builder -c electron-make.ts",
+    "make": "yarn build:web && electron-builder -p never && node release.js"
+  },
+  "author": {
+    "name": "ggchivalrous",
+    "email": "cml986235024@gmail.com",
+    "url": "https://github.com/ggchivalrous/yiyin"
+  },
+  "repository": "https://github.com/ggchivalrous/yiyin",
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.2.0",
+    "@types/fluent-ffmpeg": "^2.1.21",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "electron": "^24.2.0",
+    "electron-builder": "^24.6.3",
+    "eslint": "8.11.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-svelte3": "^4.0.0",
+    "exif-parser": "^0.1.12",
+    "exifreader": "^4.13.0",
+    "mime": "^3.0.0",
+    "sass": "^1.64.2",
+    "svelte": "^3.59.1",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.5",
+    "vite-plugin-electron": "^0.11.2",
+    "vite-plugin-electron-renderer": "^0.14.2"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "octokit": "^3.1.0",
+    "sharp": "^0.32.4"
+  },
+  "build": {
+    "asar": true,
+    "appId": "com.ggchivalrous.yiyin",
+    "productName": "壹印",
+    "copyright": "Copyright © 2023 ${author}",
+    "directories": {},
+    "extends": [],
+    "extraMetadata": {
+      "main": "./main/index.js",
+      "type": "commonjs"
+    },
+    "artifactName": "yiyin-${version}-${platform}-${arch}.${ext}",
+    "files": [
+      {
+        "from": "dist-electron",
+        "to": ".",
+        "filter": [
+          "**/*",
+          "!package.json"
+        ]
+      },
+      "package.json"
+    ],
+    "mac": {
+      "icon": "./icon/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "dmg": {
+      "icon": "./icon/icon.icns",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 380,
+          "y": 280,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 110,
+          "y": 280,
+          "type": "file"
+        }
+      ]
+    },
+    "win": {
+      "icon": "./icon/icon.ico",
+      "target": [
+        "msi",
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": false
+    },
+    "linux": {
+      "icon": "./icon/icon.ico",
+      "target": [
+        "deb",
+        "rpm"
+      ]
+    }
+  }
+}

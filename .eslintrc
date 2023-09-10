@@ -1,0 +1,44 @@
+{
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest": true,
+    "browser": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb-base",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": [
+    "svelte3",
+    "@typescript-eslint"
+  ],
+  "overrides": [{
+    "files": ["*.svelte"],
+    "processor": "svelte3/svelte3"
+  }],
+  "rules": {
+    "max-len": "off",
+    "import/prefer-default-export": "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "object-curly-newline": ["error", {
+      "ImportDeclaration": { "multiline": true },
+      "ExportDeclaration": { "multiline": true }
+    }],
+    "no-underscore-dangle": "off",
+    "no-param-reassign": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "no-restricted-syntax": "off",
+    "no-await-in-loop": "off",
+    "class-methods-use-this": "off",
+    "no-continue": "off",
+    "no-use-before-define": "off",
+    "prefer-destructuring": "off",
+    "no-plusplus": "off",
+    "no-bitwise": "off"
+  }
+}
