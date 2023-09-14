@@ -5,7 +5,6 @@ import { createWindow } from '../../main/create-window';
 import routerConfig from '../../router-config';
 import { Router } from '../modules/router';
 import { createBlurImg, createScaleImg, getExifInfo, sharpComposite } from '../modules/tools/blur';
-import { formatDate } from '../utils/date';
 import md5 from '../utils/md5';
 
 const r = new Router();
@@ -57,7 +56,8 @@ function readConfig() {
 r.listen<any, boolean>(routerConfig.startTask, async (data) => {
   await createMaskWin();
 
-  for (const url of data.fileUrlList) {
+  for (const fileInfo of data.fileUrlList) {
+    const { path: url, name } = fileInfo;
     const _md5 = md5(url);
     const imgPath = path.resolve(cacheDir, _md5);
     const buffer = Buffer.alloc(200 * 1024);
@@ -74,6 +74,7 @@ r.listen<any, boolean>(routerConfig.startTask, async (data) => {
 
     // 发送到前端
     maskGenWin.webContents.send(routerConfig.on.createMask, {
+      name,
       md5: _md5,
       exifInfo,
       blur: blurInfo,
@@ -100,7 +101,7 @@ r.listen<any, any>(routerConfig.composite, async (data) => {
       data.text.info.data = Buffer.from(data.text.info.data.split(',')[1], 'base64');
     }
 
-    await sharpComposite(buffer, scalePath, path.resolve(config.output, `${formatDate('yyyy-MM-dd hh.mm.ss.S')}.jpg`), data.text);
+    await sharpComposite(buffer, scalePath, path.resolve(config.output, data.name), data.text);
     fs.rmSync(scalePath);
     fs.rmSync(blurPath);
   } catch (e) {

@@ -36,6 +36,7 @@
         });
 
         await window.api.composite({
+          name: task.name,
           md5: task.md5,
           mask: maskUrl,
           text: textImgInfo,
@@ -171,7 +172,11 @@
     }
 
     if (exifInfo.ExposureTime) {
-      infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
+      if (exifInfo.ExposureTime < 1) {
+        infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
+      } else {
+        infoTextArr.push(`${exifInfo.ExposureTime}s`);
+      }
     }
 
     if (exifInfo.ISO) {

@@ -18,27 +18,32 @@ export async function createBlurImg(filePath: string, toFilePath: string, option
 
   const mainImgSharp = await sharp(filePath);
   const mainImgInfoMetaData = await mainImgSharp.metadata();
-  const originWidth = mainImgInfoMetaData.width;
-  const originHeight = mainImgInfoMetaData.height;
-  const blur = Math.round(Math.sqrt(originWidth ** 2 + originHeight ** 2) / 10) - 65;
+  const rotate = (((mainImgInfoMetaData.orientation || 1) - 1) * 90) % 360;
+  const rotateFileSharp = await mainImgSharp.rotate(rotate);
+  const rotateFileInfo = await rotateFileSharp.toBuffer({ resolveWithObject: true });
 
-  // 生成模糊背景
+  const rotateWidth = rotateFileInfo.info.width;
+  const rotateHeight = rotateFileInfo.info.height;
+  const outWidth = option.landscape && rotateWidth < rotateHeight ? rotateHeight : rotateWidth;
+  const outHeight = option.landscape && rotateWidth < rotateHeight ? rotateWidth : rotateHeight;
+
+  const bgInfo = await sharp(filePath)
+    .rotate(rotate)
+    .resize({ width: outWidth, height: outHeight, fit: 'fill' })
+    .toFormat('jpeg', { quality: 50 })
+    .toBuffer({ resolveWithObject: true });
+  fs.writeFileSync(toFilePath, bgInfo.data);
+
+  const blur = Math.round(Math.sqrt(outWidth ** 2 + outHeight ** 2) / 10) - 65;
+
+  // 生成模糊背景;
   await new Promise((r) => {
     ffmpeg
-      .input(filePath)
+      .input(toFilePath)
       .outputOptions('-vf', `boxblur=${blur}:2`)
       .saveToFile(toFilePath || filePath)
       .on('end', r);
   });
-
-  const outWidth = option.landscape && originWidth < originHeight ? originHeight : originWidth;
-  const outHeight = option.landscape && originWidth < originHeight ? originWidth : originHeight;
-  const bgInfo = await sharp(toFilePath || filePath)
-    .rotate((((mainImgInfoMetaData.orientation || 1) - 1) * 90) % 360)
-    .resize({ width: outWidth, height: outHeight, fit: 'fill' })
-    .toFormat('jpeg', { quality: 100 })
-    .toBuffer({ resolveWithObject: true });
-  fs.writeFileSync(toFilePath, bgInfo.data);
 
   return {
     path: toFilePath,
@@ -50,19 +55,22 @@ export async function createBlurImg(filePath: string, toFilePath: string, option
 export async function createScaleImg(filePath: string, toFilePath: string, option?: Option) {
   const mainImgSharp = await sharp(filePath);
   const mainImgInfoMetaData = await mainImgSharp.metadata();
-  const originWidth = mainImgInfoMetaData.width;
-  const originHeight = mainImgInfoMetaData.height;
+  const rotate = (((mainImgInfoMetaData.orientation || 1) - 1) * 90) % 360;
+
+  const rotateFileSharp = await mainImgSharp.rotate(rotate);
+  const rotateFileInfo = await rotateFileSharp.toBuffer({ resolveWithObject: true });
+  const originWidth = rotateFileInfo.info.width;
+  const originHeight = rotateFileInfo.info.height;
+
   const blurImgHeight = option.landscape && originWidth < originHeight ? originWidth : originHeight;
   const contentHeight = Math.round(blurImgHeight * 0.8);
   const resize = { width: 0, height: 0 };
-  const rotate = (((mainImgInfoMetaData.orientation || 1) - 1) * 90) % 360;
 
   resize.width = Math.round((originWidth / originHeight) * contentHeight);
   resize.height = contentHeight;
 
-  const mainImgInfo = await mainImgSharp
+  const mainImgInfo = await rotateFileSharp
     .withMetadata({ orientation: 1 })
-    .rotate(rotate)
     .resize({ ...resize, fit: 'inside' })
     .toFormat('jpeg', { quality: 100 })
     .toBuffer({ resolveWithObject: true });
@@ -92,7 +100,7 @@ interface TextInfo {
 
 export async function sharpComposite(bgPath: string | Buffer, mainPath: string, toFilePath: string, textInfo: TextInfo) {
   const bgInfo = await sharp(bgPath)
-    .toFormat('png', { quality: 100, alphaQuality: 100 })
+    .toFormat('png')
     .toBuffer({ resolveWithObject: true });
 
   if (!bgInfo) return undefined;

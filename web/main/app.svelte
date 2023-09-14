@@ -33,7 +33,10 @@
       fileUrlList = [];
 
       for (let i = 0; i < files.length; i++) {
-        fileUrlList.push(files[i].path);
+        fileUrlList.push({
+          path: files[i].path,
+          name: files[i].name,
+        });
       }
     }
   }
