@@ -79,10 +79,14 @@ export async function createScaleImg(filePath: string, toFilePath: string, optio
 
   let heightRate = 0.83;
   if (!option.ext_show) {
-    heightRate += 0.05;
+    heightRate += 0.02;
+  }
+  
+  if (!option.brand_show) {
+    heightRate += 0.02;
   }
 
-  if (!option.brand_show) {
+  if (!option.ext_show && !option.brand_show) {
     heightRate += 0.05;
   }
 
