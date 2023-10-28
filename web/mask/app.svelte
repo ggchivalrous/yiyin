@@ -24,7 +24,7 @@
       try {
         const blurImg = await loadImage(task.blur);
         const scaleImg = await loadImage(task.scale);
-        const textImgInfo = createExifImg(task.exifInfo, task.blur.height);
+        const textImgInfo = createExifImg(task.exifInfo, task.blur.height, task.option);
 
         const maskUrl = await createBoxShadowMark(canvas, {
           img: blurImg,
@@ -33,6 +33,7 @@
             blur: Math.min(375 * (task.blur.width / ORIGIN_W), 250),
             radius: Math.min(250 * ((task.blur.width / task.blur.height) / ORIGIN_RATIO), 100),
           },
+          option: task.option,
         });
 
         await window.api.composite({
@@ -40,6 +41,7 @@
           md5: task.md5,
           mask: maskUrl,
           text: textImgInfo,
+          option: task.option,
         });
       } catch (e) {
         console.log(e);
@@ -74,8 +76,13 @@
     ctx.fillRect(0, 0, _canvas.width, _canvas.height);
     ctx.fillStyle = 'black';
 
+    let heightPosition = 3;
+    if (!option.option.ext_show && !option.option.brand_show) {
+      heightPosition = 2;
+    }
+
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
-    const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / 3);
+    const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
 
     ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
     ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
@@ -144,51 +151,60 @@
     };
   }
 
-  function createExifImg(exifInfo, maxHeight) {
+  function createExifImg(exifInfo, maxHeight, option) {
     const exif = {
       title: null,
       info: null,
     };
 
-    if (exifInfo.Model) {
-      exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
+    if (option.brand_show && exifInfo.Model) {
+      if (!option.model_show) {
+        const i = exifInfo.Model.indexOf(' ');
+        exifInfo.Model = exifInfo.Model.substring(0, i === -1 ? exifInfo.Model.length : i);
+      }
+      else {
+        exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
+      }
+
       const titleText = exifInfo.Model && charToNumberChar(exifInfo.Model[0]) + charToNumberChar(exifInfo.Model.slice(1).toLowerCase());
   
       exif.title = createTextImg({
         text: titleText,
         color: '#ffffff',
-        fontSize: 100 * (maxHeight / ORIGIN_H),
+        fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
       });
     }
 
-    const infoTextArr = [];
-
-    if (exifInfo.FocalLength) {
-      infoTextArr.push(`${exifInfo.FocalLength}mm`);
-    }
-
-    if (exifInfo.FNumber) {
-      infoTextArr.push(`f/${exifInfo.FNumber}`);
-    }
-
-    if (exifInfo.ExposureTime) {
-      if (exifInfo.ExposureTime < 1) {
-        infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
-      } else {
-        infoTextArr.push(`${exifInfo.ExposureTime}s`);
+    if (option.ext_show) {
+      const infoTextArr = [];
+  
+      if (exifInfo.FocalLength) {
+        infoTextArr.push(`${exifInfo.FocalLength}mm`);
       }
-    }
-
-    if (exifInfo.ISO) {
-      infoTextArr.push(`ISO${exifInfo.ISO}`);
-    }
-
-    if (infoTextArr.length) {
-      exif.info = createTextImg({
-        text: infoTextArr.join(' '),
-        color: '#ffffff',
-        fontSize: 80 * (maxHeight / ORIGIN_H),
-      });
+  
+      if (exifInfo.FNumber) {
+        infoTextArr.push(`f/${exifInfo.FNumber}`);
+      }
+  
+      if (exifInfo.ExposureTime) {
+        if (exifInfo.ExposureTime < 1) {
+          infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
+        } else {
+          infoTextArr.push(`${exifInfo.ExposureTime}s`);
+        }
+      }
+  
+      if (exifInfo.ISO) {
+        infoTextArr.push(`ISO${exifInfo.ISO}`);
+      }
+  
+      if (infoTextArr.length) {
+        exif.info = createTextImg({
+          text: infoTextArr.join(' '),
+          color: '#ffffff',
+          fontSize: 80 * (maxHeight / ORIGIN_H),
+        });
+      }
     }
 
     return exif;

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createWindow } from '../../main/create-window';
 import routerConfig from '../../router-config';
 import { Router } from '../modules/router';
-import { createBlurImg, createScaleImg, getExifInfo, sharpComposite } from '../modules/tools/blur';
+import { createBlurImg, createScaleImg, getExifInfo, sharpComposite, Option } from '../modules/tools/blur';
 import md5 from '../utils/md5';
 
 const r = new Router();
@@ -79,6 +79,7 @@ r.listen<any, boolean>(routerConfig.startTask, async (data) => {
       exifInfo,
       blur: blurInfo,
       scale: scaleInfo,
+      option: data.option,
     });
   }
 
@@ -102,6 +103,7 @@ r.listen<any, any>(routerConfig.composite, async (data) => {
     }
 
     await sharpComposite(buffer, scalePath, path.resolve(config.output, data.name), data.text);
+    // fs.writeFileSync(path.resolve(cacheDir, `${data.md5}_mask.jpg`), buffer)
     fs.rmSync(scalePath);
     fs.rmSync(blurPath);
   } catch (e) {

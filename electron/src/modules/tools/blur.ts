@@ -4,11 +4,26 @@ import fluentFfmpeg from 'fluent-ffmpeg';
 import fs from 'fs';
 import sharp from 'sharp';
 
-interface Option {
+export interface Option {
   /**
    * 是否横屏显示
    */
   landscape: boolean
+
+  /**
+   * 是否显示参数
+   */
+  ext_show: boolean
+
+  /**
+   * 是否显示机型
+   */
+  model_show: boolean
+
+  /**
+   * 是否显示品牌
+   */
+  brand_show: boolean
 }
 
 export async function createBlurImg(filePath: string, toFilePath: string, option?: Option) {
@@ -62,8 +77,17 @@ export async function createScaleImg(filePath: string, toFilePath: string, optio
   const originWidth = rotateFileInfo.info.width;
   const originHeight = rotateFileInfo.info.height;
 
+  let heightRate = 0.83;
+  if (!option.ext_show) {
+    heightRate += 0.05;
+  }
+
+  if (!option.brand_show) {
+    heightRate += 0.05;
+  }
+
   const blurImgHeight = option.landscape && originWidth < originHeight ? originWidth : originHeight;
-  const contentHeight = Math.round(blurImgHeight * 0.8);
+  const contentHeight = Math.round(blurImgHeight * heightRate);
   const resize = { width: 0, height: 0 };
 
   resize.width = Math.round((originWidth / originHeight) * contentHeight);
@@ -112,7 +136,7 @@ export async function sharpComposite(bgPath: string | Buffer, mainPath: string, 
 
   const rem = originHeight / 3712;
   const contentOffsetX = Math.round((originWidth - mainImgInfo.width) / 2);
-  const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / 3);
+  const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / (!textInfo.title?.data && !textInfo.info?.data ? 2 : 3));
 
   return new Promise((resolve, reject) => {
     const composite: any[] = [

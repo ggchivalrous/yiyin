@@ -20,11 +20,11 @@ let win: BrowserWindow | null = null;
 async function createDefWin() {
   win = await createWindow('main', {
     minWidth: 550,
-    minHeight: 250,
+    minHeight: 300,
     maxWidth: 550,
-    maxHeight: 250,
+    maxHeight: 300,
     width: 550,
-    height: 250,
+    height: 300,
     title: '壹印',
     frame: false,
   });

@@ -8,6 +8,9 @@
   let outputDirName = '';
   const option = {
     landscape: false,
+    ext_show: true,
+    model_show: true,
+    brand_show: true,
   };
   const output = {
     path: '',
@@ -110,6 +113,27 @@
         <span class="config-title">横屏输出:</span>
         <span class="config-value">
           <Switch bind:value={option.landscape} size="mini" />
+        </span>
+      </p>
+
+      <p>
+        <span class="config-title">参数显示:</span>
+        <span class="config-value">
+          <Switch bind:value={option.ext_show} size="mini" />
+        </span>
+      </p>
+
+      <p>
+        <span class="config-title">机型显示:</span>
+        <span class="config-value">
+          <Switch bind:value={option.brand_show} size="mini" />
+        </span>
+      </p>
+
+      <p>
+        <span class="config-title">显示机型加型号:</span>
+        <span class="config-value">
+          <Switch bind:value={option.model_show} size="mini" />
         </span>
       </p>
     </div>
