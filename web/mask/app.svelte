@@ -29,6 +29,7 @@
         const maskUrl = await createBoxShadowMark(canvas, {
           img: blurImg,
           contentImg: scaleImg,
+          textImgInfo,
           shadow: {
             blur: Math.min(375 * (task.blur.width / ORIGIN_W), 250),
             radius: Math.min(250 * ((task.blur.width / task.blur.height) / ORIGIN_RATIO), 100),
@@ -77,7 +78,7 @@
     ctx.fillStyle = 'black';
 
     let heightPosition = 3;
-    if (!option.option.ext_show && !option.option.brand_show) {
+    if ((!option.option.ext_show && !option.option.brand_show) || (!option.textImgInfo.title && !option.textImgInfo.info)) {
       heightPosition = 2;
     }
 
@@ -161,8 +162,7 @@
       if (!option.model_show) {
         const i = exifInfo.Model.indexOf(' ');
         exifInfo.Model = exifInfo.Model.substring(0, i === -1 ? exifInfo.Model.length : i);
-      }
-      else {
+      } else {
         exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
       }
 

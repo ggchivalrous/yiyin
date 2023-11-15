@@ -24,6 +24,14 @@ export interface Option {
    * 是否显示品牌
    */
   brand_show: boolean
+
+  /**
+   * 背景比例
+   */
+  bg_rate: {
+    w: number
+    h: number
+  }
 }
 
 export async function createBlurImg(filePath: string, toFilePath: string, option?: Option) {
@@ -37,8 +45,19 @@ export async function createBlurImg(filePath: string, toFilePath: string, option
   const rotateFileSharp = await mainImgSharp.rotate(rotate);
   const rotateFileInfo = await rotateFileSharp.toBuffer({ resolveWithObject: true });
 
-  const rotateWidth = rotateFileInfo.info.width;
-  const rotateHeight = rotateFileInfo.info.height;
+  let rotateWidth = rotateFileInfo.info.width;
+  let rotateHeight = rotateFileInfo.info.height;
+  // 重置宽高比
+  if (option?.bg_rate.w && option?.bg_rate.h) {
+    const rate = +option.bg_rate.w / +option.bg_rate.h;
+
+    if (rotateWidth >= rotateHeight) {
+      rotateHeight = Math.round(rotateWidth / rate);
+    } else {
+      rotateWidth = Math.round(rotateHeight * rate);
+    }
+  }
+
   const outWidth = option.landscape && rotateWidth < rotateHeight ? rotateHeight : rotateWidth;
   const outHeight = option.landscape && rotateWidth < rotateHeight ? rotateWidth : rotateHeight;
 
@@ -74,14 +93,25 @@ export async function createScaleImg(filePath: string, toFilePath: string, optio
 
   const rotateFileSharp = await mainImgSharp.rotate(rotate);
   const rotateFileInfo = await rotateFileSharp.toBuffer({ resolveWithObject: true });
-  const originWidth = rotateFileInfo.info.width;
-  const originHeight = rotateFileInfo.info.height;
+  let originWidth = rotateFileInfo.info.width;
+  let originHeight = rotateFileInfo.info.height;
+
+  // 重置宽高比
+  if (option?.bg_rate.w && option?.bg_rate.h) {
+    const rate = +option.bg_rate.w / +option.bg_rate.h;
+
+    if (originWidth >= originHeight) {
+      originHeight = Math.round(originWidth / rate);
+    } else {
+      originWidth = Math.round(originHeight * rate);
+    }
+  }
 
   let heightRate = 0.83;
   if (!option.ext_show) {
     heightRate += 0.02;
   }
-  
+
   if (!option.brand_show) {
     heightRate += 0.02;
   }
@@ -195,14 +225,28 @@ export async function sharpComposite(bgPath: string | Buffer, mainPath: string, 
 }
 
 export function getExifInfo(imgBuffer: Buffer) {
-  const exifInfo = ExifParser.create(imgBuffer).parse();
+  try {
+    const exifInfo = ExifParser.create(imgBuffer).parse();
+    return {
+      ExposureTime: exifInfo.tags.ExposureTime || 0,
+      FNumber: exifInfo.tags.FNumber || 0,
+      ISO: exifInfo.tags.ISO || 0,
+      FocalLength: exifInfo.tags.FocalLength || 0,
+      Model: exifInfo.tags.Model || '',
+      ExposureProgram: exifInfo.tags.ExposureProgram || '',
+      LensModel: exifInfo.tags.LensModel || '',
+    };
+  } catch (error) {
+    console.log(error);
+  }
+
   return {
-    ExposureTime: exifInfo.tags.ExposureTime || 0,
-    FNumber: exifInfo.tags.FNumber || 0,
-    ISO: exifInfo.tags.ISO || 0,
-    FocalLength: exifInfo.tags.FocalLength || 0,
-    Model: exifInfo.tags.Model || '',
-    ExposureProgram: exifInfo.tags.ExposureProgram || '',
-    LensModel: exifInfo.tags.LensModel || '',
+    ExposureTime: 0,
+    FNumber: 0,
+    ISO: 0,
+    FocalLength: 0,
+    Model: '',
+    ExposureProgram: '',
+    LensModel: '',
   };
 }

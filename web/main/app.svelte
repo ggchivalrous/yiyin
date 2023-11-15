@@ -11,6 +11,10 @@
     ext_show: true,
     model_show: true,
     brand_show: true,
+    bg_rate: {
+      w: '',
+      h: '',
+    },
   };
   const output = {
     path: '',
@@ -134,6 +138,13 @@
         <span class="config-title">显示机型加型号:</span>
         <span class="config-value">
           <Switch bind:value={option.model_show} size="mini" />
+        </span>
+      </p>
+
+      <p>
+        <span class="config-title">背景输出比例:</span>
+        <span class="config-value">
+          <input class="bg-rate-input" type="text" bind:value={option.bg_rate.w}> : <input class="bg-rate-input" type="text" bind:value={option.bg_rate.h}>
         </span>
       </p>
     </div>

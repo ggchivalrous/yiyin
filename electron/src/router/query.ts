@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createWindow } from '../../main/create-window';
 import routerConfig from '../../router-config';
 import { Router } from '../modules/router';
-import { createBlurImg, createScaleImg, getExifInfo, sharpComposite, Option } from '../modules/tools/blur';
+import { createBlurImg, createScaleImg, getExifInfo, sharpComposite } from '../modules/tools/blur';
 import md5 from '../utils/md5';
 
 const r = new Router();
@@ -66,9 +66,13 @@ r.listen<any, boolean>(routerConfig.startTask, async (data) => {
     fs.closeSync(openImg);
 
     // 生成高斯模糊图片
-    const blurInfo = await createBlurImg(url, path.resolve(`${imgPath}_blur.jpg`), data.option).catch(console.log);
+    const blurInfo = await createBlurImg(url, path.resolve(`${imgPath}_blur.jpg`), data.option).catch((e) => {
+      console.log('模糊图片生成失败', e);
+    });
     // 缩小原图
-    const scaleInfo = await createScaleImg(url, path.resolve(`${imgPath}_scale.jpg`), data.option).catch(console.log);
+    const scaleInfo = await createScaleImg(url, path.resolve(`${imgPath}_scale.jpg`), data.option).catch((e) => {
+      console.log('缩放图片生成失败', e);
+    });
     // 获取图片Exif信息
     const exifInfo = getExifInfo(buffer);
 
@@ -102,7 +106,9 @@ r.listen<any, any>(routerConfig.composite, async (data) => {
       data.text.info.data = Buffer.from(data.text.info.data.split(',')[1], 'base64');
     }
 
-    await sharpComposite(buffer, scalePath, path.resolve(config.output, data.name), data.text);
+    await sharpComposite(buffer, scalePath, path.resolve(config.output, data.name), data.text).catch((e) => {
+      console.log('图片合成失败', e);
+    });
     // fs.writeFileSync(path.resolve(cacheDir, `${data.md5}_mask.jpg`), buffer)
     fs.rmSync(scalePath);
     fs.rmSync(blurPath);
