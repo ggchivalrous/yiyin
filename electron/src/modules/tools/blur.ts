@@ -68,7 +68,7 @@ export async function createBlurImg(filePath: string, toFilePath: string, option
     .toBuffer({ resolveWithObject: true });
   fs.writeFileSync(toFilePath, bgInfo.data);
 
-  const blur = Math.round(Math.sqrt(outWidth ** 2 + outHeight ** 2) / 10) - 65;
+  const blur = Math.round(Math.sqrt(rotateFileInfo.info.width ** 2 + rotateFileInfo.info.height ** 2) / 10) - 65;
 
   // 生成模糊背景;
   await new Promise((r) => {
