@@ -6,32 +6,38 @@
   let processing = false;
   let fileSelectDom = null;
   let outputDirName = '';
-  const option = {
-    landscape: false,
-    ext_show: true,
-    model_show: true,
-    brand_show: true,
+  let option = {
+    landscape: false, // 横屏输出
+    ext_show: true, // 参数显示
+    model_show: true, // 机型显示
+    brand_show: true, // 型号显示
+    white_bg: false, // 白色背景
     bg_rate: {
       w: '',
       h: '',
     },
-  };
-  const output = {
-    path: '',
+    output: '',
   };
 
   getConfig();
 
   $: {
-    const arr = output.path.split('/');
+    const arr = option.output.split('/');
     outputDirName = arr[arr.length - 1] || '/';
   }
+
+  $: setConfig(option);
 
   async function getConfig() {
     const defConf = await window.api.getConfig();
     if (defConf.code === 0) {
-      output.path = defConf.data.output;
+      option.output = defConf.data.output;
+      option = Object.assign(option, defConf.data.options);
     }
+  }
+
+  async function setConfig() {
+    await window.api.setConfig(option);
   }
 
   async function onFileChange(ev) {
@@ -55,7 +61,7 @@
       processing = true;
       await window.api.startTask({
         fileUrlList,
-        output: output.path,
+        output: option.output,
         option,
       });
       fileUrlList = [];
@@ -65,9 +71,9 @@
   }
 
   async function changeOutputPath() {
-    const data = await window.api['open:selectPath']();
+    const data = await window.api['open:selectPath'](option);
     if (data.code === 0) {
-      output.path = data.data.output;
+      option.output = data.data.output;
     }
   }
 
@@ -103,46 +109,55 @@
 
   <div class="wrap">
     <div class="left-wrap">
-      <p>
-        <span class="config-title">选中数量:</span>
-        <span class="config-value">{fileUrlList.length}</span>
-      </p>
-
-      <p>
-        <span class="config-title">输出目录:</span>
-        <span class="config-value open-file-line" on:click={() => openDir(output.path)}>{outputDirName}</span>
-      </p>
-
-      <p>
+      <p class="action-item">
         <span class="config-title">横屏输出:</span>
         <span class="config-value">
           <Switch bind:value={option.landscape} size="mini" />
         </span>
       </p>
 
-      <p>
+      <p class="action-item">
         <span class="config-title">参数显示:</span>
         <span class="config-value">
           <Switch bind:value={option.ext_show} size="mini" />
         </span>
       </p>
 
-      <p>
+      <p class="action-item">
         <span class="config-title">机型显示:</span>
         <span class="config-value">
           <Switch bind:value={option.brand_show} size="mini" />
         </span>
       </p>
 
-      <p>
-        <span class="config-title">显示机型加型号:</span>
+      <p class="action-item">
+        <span class="config-title">型号显示:</span>
         <span class="config-value">
           <Switch bind:value={option.model_show} size="mini" />
         </span>
       </p>
 
-      <p>
-        <span class="config-title">背景输出比例:</span>
+      <p class="action-item">
+        <span class="config-title">纯色背景:</span>
+        <span class="config-value">
+          <Switch bind:value={option.white_bg} size="mini" />
+        </span>
+      </p>
+    </div>
+
+    <div class="right-wrap">
+      <p class="action-item">
+        <span class="config-title">选中数量:</span>
+        <span class="config-value">{fileUrlList.length}</span>
+      </p>
+
+      <p class="action-item">
+        <span class="config-title">输出目录:</span>
+        <span class="config-value open-file-line" on:click={() => openDir(option.output)}>{outputDirName}</span>
+      </p>
+
+      <p class="action-item">
+        <span class="config-title">背景比例:</span>
         <span class="config-value">
           <input class="bg-rate-input" type="text" bind:value={option.bg_rate.w}> : <input class="bg-rate-input" type="text" bind:value={option.bg_rate.h}>
         </span>

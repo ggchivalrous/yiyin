@@ -71,11 +71,12 @@
 
     if (option.img) {
       ctx.drawImage(option.img, 0, 0, _canvas.width, _canvas.height);
-    }
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.fillRect(0, 0, _canvas.width, _canvas.height);
-    ctx.fillStyle = 'black';
+      // 添加黑色蒙层，突出主体图片
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, _canvas.width, _canvas.height);
+      ctx.fillStyle = 'black';
+    }
 
     let heightPosition = 3;
     if ((!option.option.ext_show && !option.option.brand_show) || (!option.textImgInfo.title && !option.textImgInfo.info)) {

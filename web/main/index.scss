@@ -1,8 +1,3 @@
-:root {
-  --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
-  --blackShadow: -4px -4px 8px rgba(255, 255, 255, .8);
-}
-
 .header {
   -webkit-app-region: drag;
   padding: 10px;
@@ -56,16 +51,11 @@
   background-position: center center;
   background-size: 100% 100%;
   padding: 0 20px 20px;
-  color: #081E3D;
   font-size: 14px;
   box-sizing: border-box;
 
   .hide {
     display: none;
-  }
-
-  .action-item {
-    margin-bottom: 20px;
   }
 
   .wrap {
@@ -74,8 +64,13 @@
     margin-bottom: 20px;
   }
 
+  .right-wrap,
   .left-wrap {
     flex: 1 0 100px;
+
+    .action-item {
+      padding: 2px 0;
+    }
 
     .config-title {
       font-weight: bold;
@@ -134,5 +129,10 @@
     margin-top: 40px;
     text-align: center;
     user-select: none;
+  }
+
+  .db-switch.is-checked .db-switch__core {
+    background-color: var(--active-color);
+    border-color: transparent;
   }
 }

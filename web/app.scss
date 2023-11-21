@@ -1,6 +1,15 @@
+:root {
+  --text-color: #081E3D;
+  --active-border-color: #13325eca;
+  --active-color: #13325eba;
+  --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
+  --blackShadow: -4px -4px 8px rgba(255, 255, 255, .8);
+}
+
 * {
   padding: 0;
   margin: 0;
+  user-select: none;
 }
 
 html, body {
@@ -8,4 +17,5 @@ html, body {
   height: 100vh;
   overflow: hidden;
   background-color: #E7EAF3;
+  color: var(--text-color);
 }

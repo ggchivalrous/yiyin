@@ -28,7 +28,7 @@
     ]
   },
   "include": [
-    "**/*.ts",
+    "electron/**/*.ts",
   ],
   "exclude": [
     "node_modules",
