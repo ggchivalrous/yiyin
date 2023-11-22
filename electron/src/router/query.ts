@@ -9,7 +9,7 @@ const r = new Router();
 r.listen(routerConfig.getConfig, async () => config);
 
 r.listen(routerConfig.setConfig, async (data) => {
-  Object.assign(config, data);
+  Object.assign(config.options, data);
   fs.writeFileSync(config.dir, JSON.stringify(config, null, 0));
 });
 

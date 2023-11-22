@@ -106,23 +106,26 @@ export class Image {
   }
 
   async createBgImg(toFilePath: string) {
-    let outHeight = this.rotateImgInfo.reset_info.h;
-    let outWidth = this.rotateImgInfo.reset_info.w;
+    let resetHeight = this.rotateImgInfo.reset_info.h;
+    let resetWidth = this.rotateImgInfo.reset_info.w;
 
     // 不按图片原始宽高输出，则对背景宽高做调整
     if (!this.opts.origin_wh_output) {
-      const whRate = outWidth / outHeight;
+      const whRate = resetWidth / resetHeight;
       const heightRate = this.getMainImgHeightRate();
-      outHeight = Math.ceil(outHeight / heightRate);
-      outWidth = Math.round(outHeight * whRate);
+
+      // 主图高度比重置后的高度高，需要使用主图高度作为最终高度
+      const validHeight = this.rotateImgInfo.info.h > resetHeight ? this.rotateImgInfo.info.h : resetHeight;
+      resetHeight = Math.ceil(validHeight / heightRate);
+      resetWidth = Math.round(resetHeight * whRate);
     }
 
     let bgInfo;
     // 生成纯色背景
     if (this.opts.white_bg) {
-      bgInfo = await this.createSolidImg(outWidth, outHeight, toFilePath);
+      bgInfo = await this.createSolidImg(resetWidth, resetHeight, toFilePath);
     } else {
-      bgInfo = await this.createBlurImg(outWidth, outHeight, toFilePath);
+      bgInfo = await this.createBlurImg(resetWidth, resetHeight, toFilePath);
     }
 
     return {
@@ -134,19 +137,19 @@ export class Image {
 
   async createMainImg(toFilePath: string) {
     const imgSharp = await this.getRotateSharp();
-    let outHeight = this.rotateImgInfo.reset_info.h;
-    let outWidth = this.rotateImgInfo.reset_info.w;
 
     // 输出不按照原始大小，则直接复制一份
     if (!this.opts.origin_wh_output) {
       fs.copyFileSync(this.imgPath, toFilePath);
       return {
         path: toFilePath,
-        width: outWidth,
-        height: outHeight,
+        width: this.rotateImgInfo.info.w,
+        height: this.rotateImgInfo.info.h,
       };
     }
 
+    let outHeight = this.rotateImgInfo.reset_info.h;
+    let outWidth = this.rotateImgInfo.reset_info.w;
     const heightRate = this.getMainImgHeightRate();
     const blurImgHeight = this.opts.landscape && outWidth < outHeight ? outWidth : outHeight;
     const contentHeight = Math.round(blurImgHeight * heightRate);
@@ -303,6 +306,12 @@ export class Image {
       }
     }
 
+    // 横屏输出
+    const width = this.opts.landscape && imgInfo.reset_info.w < imgInfo.reset_info.h ? imgInfo.reset_info.h : imgInfo.reset_info.w;
+    const height = this.opts.landscape && imgInfo.reset_info.w < imgInfo.reset_info.h ? imgInfo.reset_info.w : imgInfo.reset_info.h;
+
+    imgInfo.reset_info.h = height;
+    imgInfo.reset_info.w = width;
     this.rotateImgInfo = imgInfo;
   }
 

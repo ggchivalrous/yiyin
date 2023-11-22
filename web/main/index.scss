@@ -73,7 +73,10 @@
     }
 
     .config-title {
+      display: inline-block;
+      width: 76px;
       font-weight: bold;
+      text-align: right;
     }
 
     .config-value {
