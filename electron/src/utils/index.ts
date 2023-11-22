@@ -35,8 +35,9 @@ export const usePromise = <T = any>(): [Promise<T>, (value: T | PromiseLike<T>) 
 
 export const getFileName = (dir: string, fileName: string) => {
   const fileNameList = fs.readdirSync(dir);
-  const isExist = fileNameList.find((i) => i === fileName);
   const fileNameParse = path.parse(fileName);
+  fileName = `${fileNameParse.name}.jpg`;
+  const isExist = fileNameList.find((i) => i === fileName);
 
   if (!isExist) {
     return `${fileNameParse.name}.jpg`;

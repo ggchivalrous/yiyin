@@ -34,8 +34,10 @@ function getConfig() {
       ext_show: true,
       model_show: true,
       brand_show: true,
-      white_bg: false,
+      solid_bg: false,
       origin_wh_output: true,
+      radius: 2.1,
+      shadow: 6,
       bg_rate: {
         w: 0,
         h: 0,
@@ -43,17 +45,17 @@ function getConfig() {
     },
   };
 
+  if (fs.existsSync(config.dir)) {
+    const content = fs.readFileSync(config.dir);
+    Object.assign(config, tryCatch(() => JSON.parse(content.toString()), {}));
+  }
+
   if (process.env.URL) {
     config.cacheDir = path.join(config.output, '.catch');
 
     if (!fs.existsSync(config.cacheDir)) {
       fs.mkdirSync(config.cacheDir, { recursive: true });
     }
-  }
-
-  if (fs.existsSync(config.dir)) {
-    const content = fs.readFileSync(config.dir);
-    Object.assign(config, tryCatch(() => JSON.parse(content.toString()), {}));
   }
 
   return config;

@@ -12,8 +12,10 @@
     ext_show: true, // 参数显示
     model_show: true, // 机型显示
     brand_show: true, // 型号显示
-    white_bg: false, // 白色背景
+    solid_bg: false, // 纯色背景
     origin_wh_output: true, // 按照图片原始宽高输出
+    radius: 2.1, // 圆角
+    shadow: 6, // 阴影
     bg_rate: {
       w: '',
       h: '',
@@ -92,6 +94,22 @@
   function openDir(dir) {
     window.api['open:dir'](dir);
   }
+
+  function onRadiusInput(v) {
+    const _v = +v.target.value;
+    if (Number.isNaN(_v) || _v < 0 || _v > 30) {
+      return;
+    }
+    option.radius = _v;
+  }
+
+  function onShadowInput(v) {
+    const _v = +v.target.value;
+    if (Number.isNaN(_v) || _v < 0 || _v > 50) {
+      return;
+    }
+    option.shadow = _v;
+  }
 </script>
 
 <div class="header">
@@ -144,7 +162,7 @@
       <p class="action-item">
         <span class="config-title">纯色背景:</span>
         <span class="config-value">
-          <Switch bind:value={option.white_bg} size="mini" />
+          <Switch bind:value={option.solid_bg} size="mini" />
         </span>
       </p>
 
@@ -171,6 +189,20 @@
         <span class="config-title">背景比例:</span>
         <span class="config-value">
           <input class="bg-rate-input" type="text" bind:value={option.bg_rate.w}> : <input class="bg-rate-input" type="text" bind:value={option.bg_rate.h}>
+        </span>
+      </p>
+
+      <p class="action-item">
+        <span class="config-title">主图圆角:</span>
+        <span class="config-value">
+          <input class="bg-rate-input" type="text" value={option.radius} on:input={onRadiusInput}>
+        </span>
+      </p>
+
+      <p class="action-item">
+        <span class="config-title">主图阴影:</span>
+        <span class="config-value">
+          <input class="bg-rate-input" type="text" value={option.shadow} on:input={onShadowInput}>
         </span>
       </p>
     </div>

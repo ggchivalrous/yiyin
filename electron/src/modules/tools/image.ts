@@ -30,7 +30,7 @@ export interface OutputSetting {
   /**
    * 纯色背景
    */
-  white_bg: false,
+  solid_bg: false,
 
   /**
    * 背景比例
@@ -46,6 +46,16 @@ export interface OutputSetting {
    * @default false
    */
   origin_wh_output: boolean
+
+  /**
+   * 圆角
+   */
+  radius: number
+
+  /**
+   * 阴影
+   */
+  shadow: number
 }
 
 interface ImgInfo {
@@ -89,7 +99,7 @@ export class Image {
       ext_show: true,
       model_show: true,
       brand_show: true,
-      white_bg: false,
+      solid_bg: false,
       origin_wh_output: true,
       ...options,
 
@@ -122,7 +132,7 @@ export class Image {
 
     let bgInfo;
     // 生成纯色背景
-    if (this.opts.white_bg) {
+    if (this.opts.solid_bg) {
       bgInfo = await this.createSolidImg(resetWidth, resetHeight, toFilePath);
     } else {
       bgInfo = await this.createBlurImg(resetWidth, resetHeight, toFilePath);

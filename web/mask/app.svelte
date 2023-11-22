@@ -31,8 +31,8 @@
           contentImg: scaleImg,
           textImgInfo,
           shadow: {
-            blur: Math.min(375 * (task.blur.width / ORIGIN_W), 250),
-            radius: Math.min(250 * ((task.blur.width / task.blur.height) / ORIGIN_RATIO), 100),
+            blur: task.blur.height * ((task.option.shadow || 6) / 100),
+            radius: task.blur.height * ((task.option.radius || 2.1) / 100),
           },
           option: task.option,
         });
@@ -73,9 +73,11 @@
       ctx.drawImage(option.img, 0, 0, _canvas.width, _canvas.height);
 
       // 添加黑色蒙层，突出主体图片
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(0, 0, _canvas.width, _canvas.height);
-      ctx.fillStyle = 'black';
+      if (!option.option.solid_bg) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(0, 0, _canvas.width, _canvas.height);
+        ctx.fillStyle = 'black';
+      }
     }
 
     let heightPosition = 3;
@@ -86,16 +88,18 @@
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
     const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
 
-    ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
-    ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
-    ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
-    ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+    if (option.option.shadow) {
+      ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
+      ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
+      ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
+      ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+    }
 
     const rectX = contentOffsetX || ctx.shadowBlur;
     const rectY = contentOffsetY || ctx.shadowBlur;
     const rectWidth = option.contentImg.width;
     const rectHeight = option.contentImg.height;
-    const cornerRadius = option.shadow.radius;
+    const cornerRadius = option.option.radius ? option.shadow.radius : 0;
 
     ctx.beginPath();
     ctx.moveTo(rectX + cornerRadius, rectY);
@@ -171,7 +175,7 @@
   
       exif.title = createTextImg({
         text: titleText,
-        color: '#ffffff',
+        color: option.solid_bg ? '#000' : '#fff',
         fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
       });
     }
@@ -189,7 +193,7 @@
   
       if (exifInfo.ExposureTime) {
         if (exifInfo.ExposureTime < 1) {
-          infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
+          infoTextArr.push(`1/${Math.round(1 / exifInfo.ExposureTime)}s`);
         } else {
           infoTextArr.push(`${exifInfo.ExposureTime}s`);
         }
@@ -202,7 +206,7 @@
       if (infoTextArr.length) {
         exif.info = createTextImg({
           text: infoTextArr.join(' '),
-          color: '#ffffff',
+          color: option.solid_bg ? '#000' : '#fff',
           fontSize: 80 * (maxHeight / ORIGIN_H),
         });
       }
