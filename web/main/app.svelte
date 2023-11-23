@@ -134,42 +134,42 @@
       <p class="action-item">
         <span class="config-title">横屏输出:</span>
         <span class="config-value">
-          <Switch bind:value={option.landscape} size="mini" />
+          <Switch bind:value={option.landscape} />
         </span>
       </p>
 
       <p class="action-item">
         <span class="config-title">参数显示:</span>
         <span class="config-value">
-          <Switch bind:value={option.ext_show} size="mini" />
+          <Switch bind:value={option.ext_show} />
         </span>
       </p>
 
       <p class="action-item">
         <span class="config-title">机型显示:</span>
         <span class="config-value">
-          <Switch bind:value={option.brand_show} size="mini" />
+          <Switch bind:value={option.brand_show} />
         </span>
       </p>
 
       <p class="action-item">
         <span class="config-title">型号显示:</span>
         <span class="config-value">
-          <Switch bind:value={option.model_show} size="mini" />
+          <Switch bind:value={option.model_show} />
         </span>
       </p>
 
       <p class="action-item">
         <span class="config-title">纯色背景:</span>
         <span class="config-value">
-          <Switch bind:value={option.solid_bg} size="mini" />
+          <Switch bind:value={option.solid_bg} />
         </span>
       </p>
 
       <p class="action-item">
         <span class="config-title">原宽高输出:</span>
         <span class="config-value">
-          <Switch bind:value={option.origin_wh_output} size="mini" />
+          <Switch bind:value={option.origin_wh_output} />
         </span>
       </p>
     </div>
@@ -193,14 +193,14 @@
       </p>
 
       <p class="action-item">
-        <span class="config-title">主图圆角:</span>
+        <span class="config-title">圆角大小:</span>
         <span class="config-value">
           <input class="bg-rate-input" type="text" value={option.radius} on:input={onRadiusInput}>
         </span>
       </p>
 
       <p class="action-item">
-        <span class="config-title">主图阴影:</span>
+        <span class="config-title">阴影大小:</span>
         <span class="config-value">
           <input class="bg-rate-input" type="text" value={option.shadow} on:input={onShadowInput}>
         </span>

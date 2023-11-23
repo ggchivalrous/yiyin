@@ -127,7 +127,13 @@ export class Image {
       // 主图高度比重置后的高度高，需要使用主图高度作为最终高度
       const validHeight = this.rotateImgInfo.info.h > resetHeight ? this.rotateImgInfo.info.h : resetHeight;
       resetHeight = Math.ceil(validHeight / heightRate);
-      resetWidth = Math.round(resetHeight * whRate);
+      resetWidth = Math.ceil(resetHeight * whRate);
+
+      // 如果重置后，宽度太窄，则等比扩大宽高
+      if (this.rotateImgInfo.info.w / resetWidth > 0.9) {
+        resetWidth = Math.ceil(resetWidth / 0.9);
+        resetHeight = Math.ceil(resetWidth / whRate);
+      }
     }
 
     let bgInfo;
