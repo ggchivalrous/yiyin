@@ -3,6 +3,7 @@
   import { clipboard, getToastStore, initializeStores, Toast } from '@skeletonlabs/skeleton';
   import { tick } from 'svelte';
   import Switch from '../components/switch/index.svelte';
+  import Popup from '../components/popup/index.svelte';
   import ActionItem from '../components/action-item/index.svelte';
   
   initializeStores();
@@ -153,9 +154,26 @@
       }
     }
   }
+
+  async function resetOption() {
+    const res = await window.api.getDefConfig();
+    if (res.code !== 0) {
+      toastStore.trigger({ message: `重置失败！！${res.message}` });
+      return;
+    }
+
+    option = { ...res.data.options, init: false, output: res.data.output };
+    toastStore.trigger({ message: '重置成功' });
+  }
 </script>
 
 <div class="header">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <Popup class="show grass button reset" on:click={resetOption}>
+    <svg t="1700902065043" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4044" width="20" height="20"><path d="M491.52 819.2a304.3328 304.3328 0 0 1-217.088-90.112l28.672-28.672a266.24 266.24 0 1 0-40.96-327.68l-35.2256-21.2992A307.2 307.2 0 1 1 491.52 819.2z" p-id="4045"></path><path d="M430.08 409.6H245.76a20.48 20.48 0 0 1-20.48-20.48V204.8h40.96v163.84h163.84z" p-id="4046"></path><path d="M512 512m-61.44 0a61.44 61.44 0 1 0 122.88 0 61.44 61.44 0 1 0-122.88 0Z" p-id="4047"></path></svg>
+    <p slot="message">重置回默认选项</p>
+  </Popup>
+
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="show grass button" on:click={miniSizeWindow}>-</div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->

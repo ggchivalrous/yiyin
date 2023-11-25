@@ -23,27 +23,29 @@ interface IConfig {
   options: OutputSetting
 }
 
-function getConfig() {
-  const config:IConfig = {
-    dir: path.join(app.getPath('userData'), 'config.json'),
-    output: path.join(app.getPath('pictures'), 'watermark'),
-    cacheDir: path.join(app.getPath('temp'), 'yiyin'),
+export const DefaultConfig: IConfig = {
+  dir: path.join(app.getPath('userData'), 'config.json'),
+  output: path.join(app.getPath('pictures'), 'watermark'),
+  cacheDir: path.join(app.getPath('temp'), 'yiyin'),
 
-    options: {
-      landscape: false,
-      ext_show: true,
-      model_show: true,
-      brand_show: true,
-      solid_bg: false,
-      origin_wh_output: true,
-      radius: 2.1,
-      shadow: 6,
-      bg_rate: {
-        w: 0,
-        h: 0,
-      },
+  options: {
+    landscape: false,
+    ext_show: true,
+    model_show: true,
+    brand_show: true,
+    solid_bg: false,
+    origin_wh_output: true,
+    radius: 2.1,
+    shadow: 6,
+    bg_rate: {
+      w: 0,
+      h: 0,
     },
-  };
+  },
+};
+
+function getConfig() {
+  const config:IConfig = JSON.parse(JSON.stringify(DefaultConfig));
 
   if (fs.existsSync(config.dir)) {
     const content = fs.readFileSync(config.dir);

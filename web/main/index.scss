@@ -1,4 +1,6 @@
 .header {
+  display: flex;
+  justify-content: right;
   -webkit-app-region: drag;
   padding: 10px;
   text-align: right;
@@ -13,6 +15,21 @@
     -webkit-app-region: no-drag;
     padding: 4px 12px;
     cursor: pointer;
+  }
+
+  .reset {
+    padding: 4px 6px;
+
+    .icon {
+      display: inline-block;
+    }
+  }
+
+  .button {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
   }
 }
 
