@@ -92,7 +92,7 @@
 
   async function changeOutputPath() {
     const data = await window.api['open:selectPath'](option);
-    if (data.code === 0) {
+    if (data.code === 0 && data.data.output) {
       option.output = data.data.output;
     }
   }
@@ -152,8 +152,14 @@
           timeout: 1500,
         });
       }
+    } else {
+      toastStore.trigger({
+        message: '请选择一张图片',
+        classes: 'grass toast',
+        timeout: 1500,
+      });
     }
-  }
+}
 
   async function resetOption() {
     const res = await window.api.resetConfig();
@@ -266,14 +272,14 @@
 
   <div class="button-wrap">
     {#if !processing}
-      <div class="button grass"><label for="path" style="display: inline;">选择图片</label></div>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="button grass" on:click={changeOutputPath}>输出目录</div>
+      <label for="path" class="button grass">选择图片</label>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="button grass" on:click={generatePictureFrames}>生成印框</div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="button grass" on:click={getExitInfo}>相机信息</div>
       <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="button grass" on:click={changeOutputPath}>输出目录</div>
     {:else}
       印框生成中...
     {/if}

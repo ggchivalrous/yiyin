@@ -58,7 +58,7 @@
     box-shadow: var(--blackShadow), var(--whiteShadow);
   }
 
-  &:first-of-type {
+  &:first-child {
     margin-left: 0px;
   }
 }

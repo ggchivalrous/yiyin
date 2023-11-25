@@ -1,4 +1,6 @@
 <script>
+  import modelMap from '../util/model-map';
+
   let canvas;
   let taskList = [];
   let processing = false;
@@ -87,7 +89,6 @@
       // 添加黑色蒙层，突出主体图片
       if (!option.option.solid_bg) {
         const averageBrightness = getAverageBrightness(ctx, _canvas.width, _canvas.height);
-        console.log(averageBrightness);
         if (averageBrightness < 15) {
           ctx.fillStyle = 'rgba(180, 180, 180, 0.2)'; // 灰色半透明覆盖层
         } else if (averageBrightness < 20) {
@@ -187,20 +188,22 @@
     };
 
     // 移除厂商和型号有重复内容
-    exifInfo.Make = exifInfo.Make.replace('CORPORATION', '').trim();
-    exifInfo.Model = exifInfo.Model.replace(exifInfo.Make, '').trim();
+    let title = '';
+    if (option.brand_show && exifInfo.Make) {
+      exifInfo.Make = modelMap.DEF.make_filter(exifInfo.Make.trim());
+      exifInfo.Make = modelMap[exifInfo.Make].make_filter ? modelMap[exifInfo.Make].make_filter(exifInfo.Make.trim()) : exifInfo.Make.trim();
+      title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+    }
 
-    if (option.brand_show && exifInfo.Model) {
-      if (!option.model_show) {
-        exifInfo.Model = '';
-      } else {
-        exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
-      }
+    const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
+    if (option.model_show && exifInfo.Model) {
+      exifInfo.Model = _modelMap.model_filter(exifInfo.Model.replace(exifInfo.Make, '').trim());
+      title += ` ${exifInfo.Model.toLowerCase()}`;
+    }
 
-      const make = exifInfo.Make && charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
-  
+    if (title) {
       exif.title = createTextImg({
-        text: `${make} ${exifInfo.Model}`,
+        text: title,
         color: option.solid_bg ? '#000' : '#fff',
         fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
       });
