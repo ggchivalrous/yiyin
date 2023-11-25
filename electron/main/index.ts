@@ -20,13 +20,13 @@ let win: BrowserWindow | null = null;
 async function createDefWin() {
   win = await createWindow('main', {
     ...(process.env.URL ? {} : {
-      minWidth: 550,
-      minHeight: 300,
-      maxWidth: 550,
-      maxHeight: 300,
+      minWidth: 600,
+      minHeight: 400,
+      maxWidth: 600,
+      maxHeight: 400,
     }),
     width: 600,
-    height: 350,
+    height: 400,
     title: '壹印',
     frame: false,
   });

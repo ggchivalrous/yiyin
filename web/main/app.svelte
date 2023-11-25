@@ -285,5 +285,13 @@
     {/if}
   </div>
 
+  <div class="foot">
+    <p class="foot-item">
+      <a href="https://space.bilibili.com/94829489" target="_blank">B站 - 不长肉的小伙吒</a>
+    </p>
+    <p class="foot-item">
+      <a href="https://github.com/ggchivalrous/yiyin" target="_blank">© 2023 Github - GGChivalrous.</a>
+    </p>
+  </div>
   <Toast />
 </div>
