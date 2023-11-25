@@ -156,7 +156,7 @@
   }
 
   async function resetOption() {
-    const res = await window.api.getDefConfig();
+    const res = await window.api.resetConfig();
     if (res.code !== 0) {
       toastStore.trigger({ message: `重置失败！！${res.message}` });
       return;

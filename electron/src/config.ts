@@ -44,12 +44,18 @@ export const DefaultConfig: IConfig = {
   },
 };
 
-function getConfig() {
+export function getConfig(def = false) {
   const config:IConfig = JSON.parse(JSON.stringify(DefaultConfig));
 
-  if (fs.existsSync(config.dir)) {
+  if (!def && fs.existsSync(config.dir)) {
     const content = fs.readFileSync(config.dir);
-    Object.assign(config, tryCatch(() => JSON.parse(content.toString()), {}));
+    const fileConfig = tryCatch(() => JSON.parse(content.toString()), {});
+    Object.assign(config, {
+      dir: fileConfig.dir || config.dir,
+      output: fileConfig.output || config.output,
+      cacheDir: fileConfig.cacheDir || config.cacheDir,
+      options: Object.assign(config.options, fileConfig.options),
+    });
   }
 
   if (process.env.URL) {

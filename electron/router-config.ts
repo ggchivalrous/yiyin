@@ -3,7 +3,7 @@ export default {
   composite: 'composite',
   getConfig: 'getConfig',
   setConfig: 'setConfig',
-  getDefConfig: 'getDefConfig',
+  resetConfig: 'resetConfig',
   miniSize: 'miniSize',
   closeApp: 'closeApp',
   getExitInfo: 'getExitInfo',

@@ -1,5 +1,6 @@
 import { dialog, shell } from 'electron';
 import fs from 'node:fs';
+import path from 'node:path';
 import routerConfig from '../../router-config';
 import { Router } from '../modules/router';
 import { config } from '../config';
@@ -14,8 +15,16 @@ r.listen(routerConfig.open.selectPath, async (data, event, win) => {
   });
 
   if (!res.canceled && res.filePaths.length > 0) {
-    Object.assign(config, data || {});
     config.output = res.filePaths[0];
+
+    if (process.env.URL) {
+      config.cacheDir = path.join(config.output, '.catch');
+
+      if (!fs.existsSync(config.cacheDir)) {
+        fs.mkdirSync(config.cacheDir, { recursive: true });
+      }
+    }
+
     fs.writeFileSync(config.dir, JSON.stringify(config, null, 0));
     return config;
   }
