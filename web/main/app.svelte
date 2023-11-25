@@ -1,6 +1,11 @@
 <script>
   import './index.scss';
+  import { clipboard, getToastStore, initializeStores, Toast } from '@skeletonlabs/skeleton';
+  import { tick } from 'svelte';
   import Switch from '../components/switch/index.svelte';
+  import ActionItem from '../components/action-item/index.svelte';
+  
+  initializeStores();
 
   let fileUrlList = [];
   let processing = false;
@@ -22,7 +27,10 @@
     },
     output: '',
   };
+  let imgExif = '';
+  let clipboardDom = null;
 
+  const toastStore = getToastStore();
   getConfig();
 
   $: {
@@ -65,11 +73,16 @@
 
     if (fileUrlList.length) {
       processing = true;
-      await window.api.startTask({
+      const res = await window.api.startTask({
         fileUrlList,
         output: option.output,
         option,
       });
+
+      if (res.code !== 0) {
+        console.log(res);
+      }
+
       fileUrlList = [];
       fileSelectDom.value = '';
       processing = false;
@@ -95,20 +108,50 @@
     window.api['open:dir'](dir);
   }
 
-  function onRadiusInput(v) {
-    const _v = +v.target.value;
-    if (Number.isNaN(_v) || _v < 0 || _v > 30) {
-      return;
+  const numReg = /-{0,1}\d+\.{0,1}\d{0,3}/;
+  function onNumInput(v, key, max, min) {
+    let _v = v.target.value;
+
+    const match = _v.match(numReg);
+    if (match && match.length) {
+      _v = match[0];
     }
-    option.radius = _v;
+
+    if (Number.isNaN(_v)) _v = min;
+    else if (_v < min) _v = min;
+    else if (_v > max) _v = max;
+
+    option[key] = _v;
+    v.target.value = _v;
   }
 
-  function onShadowInput(v) {
-    const _v = +v.target.value;
-    if (Number.isNaN(_v) || _v < 0 || _v > 50) {
-      return;
+  function onNumInputChange(v, key) {
+    const match = `${option[key]}`.match(numReg);
+
+    if (match && match.length) {
+      option[key] = +match[0];
+    } else {
+      option[key] = 0;
     }
-    option.shadow = _v;
+
+    v.target.value = option[key];
+  }
+
+  async function getExitInfo() {
+    if (fileUrlList.length) {
+      const info = await window.api.getExitInfo(fileUrlList[0].path);
+
+      if (info.code === 0) {
+        imgExif = JSON.stringify(info.data, null, 2);
+        await tick();
+        clipboardDom.click();
+        toastStore.trigger({
+          message: '复制成功',
+          classes: 'grass toast',
+          timeout: 1500,
+        });
+      }
+    }
   }
 </script>
 
@@ -129,94 +172,94 @@
     class="hide"
   />
 
-  <div class="wrap">
-    <div class="left-wrap">
-      <p class="action-item">
-        <span class="config-title">横屏输出:</span>
-        <span class="config-value">
+  <div class="content">
+    <div class="action-wrap">
+      <div class="left-wrap">
+        <ActionItem title="横屏输出">
+          <svelte:fragment slot="popup">软件自己判断宽高比，将图片进行背景横向输出，适合竖图生成横屏图片</svelte:fragment>
           <Switch bind:value={option.landscape} />
-        </span>
-      </p>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">参数显示:</span>
-        <span class="config-value">
+        <ActionItem title="参数显示">
+          <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
           <Switch bind:value={option.ext_show} />
-        </span>
-      </p>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">机型显示:</span>
-        <span class="config-value">
+        <ActionItem title="机型显示">
+          <svelte:fragment slot="popup">是否显示机型</svelte:fragment>
           <Switch bind:value={option.brand_show} />
-        </span>
-      </p>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">型号显示:</span>
-        <span class="config-value">
+        <ActionItem title="型号显示">
+          <svelte:fragment slot="popup">是否显示机子型号</svelte:fragment>
           <Switch bind:value={option.model_show} />
-        </span>
-      </p>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">纯色背景:</span>
-        <span class="config-value">
+        <ActionItem title="纯色背景">
+          <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
           <Switch bind:value={option.solid_bg} />
-        </span>
-      </p>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">原宽高输出:</span>
-        <span class="config-value">
+        <ActionItem title="原宽高输出">
+          <svelte:fragment slot="popup">输出图片是否按照原始宽高，开启将缩放原图</svelte:fragment>
           <Switch bind:value={option.origin_wh_output} />
-        </span>
-      </p>
-    </div>
+        </ActionItem>
+      </div>
 
-    <div class="right-wrap">
-      <p class="action-item">
-        <span class="config-title">选中数量:</span>
-        <span class="config-value">{fileUrlList.length}</span>
-      </p>
+      <div class="right-wrap">
+        <ActionItem title="选中数量">{fileUrlList.length}</ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">输出目录:</span>
-        <span class="config-value open-file-line" on:click={() => openDir(option.output)}>{outputDirName}</span>
-      </p>
+        <ActionItem title="输出目录">
+          <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
+          <span class="open-file-line" on:click={() => openDir(option.output)}>{outputDirName}</span>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">背景比例:</span>
-        <span class="config-value">
-          <input class="bg-rate-input" type="text" bind:value={option.bg_rate.w}> : <input class="bg-rate-input" type="text" bind:value={option.bg_rate.h}>
-        </span>
-      </p>
+        <ActionItem title="背景比例">
+          <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
+          <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.w}/>
+            :
+          <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.h}/>
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">圆角大小:</span>
-        <span class="config-value">
-          <input class="bg-rate-input" type="text" value={option.radius} on:input={onRadiusInput}>
-        </span>
-      </p>
+        <ActionItem title="圆角大小">
+          <svelte:fragment slot="popup">指定圆角的大小，不指定则为直角</svelte:fragment>
+          <input
+            class="bg-rate-input"
+            type="text"
+            value={option.radius}
+            on:input={(v) => onNumInput(v, 'radius', 30, 0)}
+            on:change={(v) => onNumInputChange(v, 'radius')}
+          />
+        </ActionItem>
 
-      <p class="action-item">
-        <span class="config-title">阴影大小:</span>
-        <span class="config-value">
-          <input class="bg-rate-input" type="text" value={option.shadow} on:input={onShadowInput}>
-        </span>
-      </p>
+        <ActionItem title="阴影大小">
+          <svelte:fragment slot="popup">指定阴影的大小，不指定则无阴影</svelte:fragment>
+          <input
+            class="bg-rate-input"
+            type="text"
+            value={option.shadow}
+            on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
+            on:change={(v) => onNumInputChange(v, 'shadow')}
+          />
+        </ActionItem>
+      </div>
     </div>
   </div>
 
   <div class="button-wrap">
     {#if !processing}
-      <label for="path"><div class="button grass">选择图片</div></label>
+      <div class="button grass"><label for="path" style="display: inline;">选择图片</label></div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="button grass" on:click={changeOutputPath}>输出目录</div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="button grass" on:click={generatePictureFrames}>生成印框</div>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="button grass" on:click={getExitInfo}>相机信息</div>
+      <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
     {:else}
       印框生成中...
     {/if}
   </div>
+
+  <Toast />
 </div>

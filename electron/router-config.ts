@@ -5,6 +5,7 @@ export default {
   setConfig: 'setConfig',
   miniSize: 'miniSize',
   closeApp: 'closeApp',
+  getExitInfo: 'getExitInfo',
   open: {
     selectPath: 'open:selectPath',
     dir: 'open:dir',

@@ -85,12 +85,67 @@ interface TextInfo {
   }
 }
 
+interface ExifInfo {
+  /**
+   * 相机厂商
+   */
+  Make: string
+
+  /**
+   * 机型 Nikon Z 30
+   */
+  Model: string
+
+  /**
+   * 照片拍摄时间
+   */
+  DateTimeOriginal: number
+
+  /**
+   * 快门速度
+   */
+  ExposureTime: number
+
+  /**
+   * 光圈大小
+   */
+  FNumber: number
+
+  /**
+   * 焦段
+   */
+  FocalLength: number
+
+  ISO: number
+
+  /**
+   * 档位
+   */
+  ExposureProgram: number
+
+  /**
+   * 镜头型号
+   */
+  LensModel: string
+
+  /**
+   * 镜头厂商
+   */
+  LensMake: string
+}
+
+const NotInit = Symbol('未初始化');
+
 export class Image {
   private imgPath: string;
 
   private opts: OutputSetting;
 
   private rotateImgInfo: ImgInfo;
+
+  private exitBuf: Buffer;
+
+  private isInit: boolean;
 
   constructor(imgPath: string, options?: OutputSetting) {
     this.imgPath = imgPath;
@@ -106,16 +161,21 @@ export class Image {
       bg_rate: {
         w: 0,
         h: 0,
-        ...options.bg_rate,
+        ...options?.bg_rate,
       },
     };
   }
 
   async init() {
+    if (this.isInit) { return; }
+    this.isInit = true;
+
     await this.rotateImg();
   }
 
   async createBgImg(toFilePath: string) {
+    if (!this.isInit) { throw NotInit; }
+
     let resetHeight = this.rotateImgInfo.reset_info.h;
     let resetWidth = this.rotateImgInfo.reset_info.w;
 
@@ -152,6 +212,8 @@ export class Image {
   }
 
   async createMainImg(toFilePath: string) {
+    if (!this.isInit) { throw NotInit; }
+
     const imgSharp = await this.getRotateSharp();
 
     // 输出不按照原始大小，则直接复制一份
@@ -256,9 +318,27 @@ export class Image {
     return result;
   }
 
-  getExifInfo(imgBuffer?: Buffer) {
+  getExifInfo(imgBuffer?: Buffer): ExifInfo {
+    const exifInfo = this.getOriginExifInfo(imgBuffer) || {};
+
+    return {
+      Make: (exifInfo.Make || '').toUpperCase(),
+      Model: (exifInfo.Model || '').toUpperCase(),
+      ExposureTime: exifInfo.ExposureTime || 0,
+      FNumber: exifInfo.FNumber || 0,
+      ISO: exifInfo.ISO || 0,
+      FocalLength: exifInfo.FocalLength || 0,
+      ExposureProgram: exifInfo.ExposureProgram || 0,
+      DateTimeOriginal: exifInfo.DateTimeOriginal || 0,
+      LensModel: (exifInfo.LensModel || '').toUpperCase(),
+      LensMake: (exifInfo.LensMake || '').toUpperCase(),
+    };
+  }
+
+  getOriginExifInfo(imgBuffer?: Buffer) {
     return tryCatch(() => {
-      if (!imgBuffer) {
+      imgBuffer = imgBuffer || this.exitBuf;
+      if (!imgBuffer && !this.exitBuf) {
         const buffer = Buffer.alloc(200 * 1024);
         const openImg = fs.openSync(this.imgPath, 'r');
 
@@ -266,28 +346,12 @@ export class Image {
         fs.closeSync(openImg);
 
         imgBuffer = buffer;
+        this.exitBuf = buffer;
       }
 
-      const exifInfo = ExifParser.create(imgBuffer).parse();
-
-      return {
-        ExposureTime: exifInfo.tags.ExposureTime || 0,
-        FNumber: exifInfo.tags.FNumber || 0,
-        ISO: exifInfo.tags.ISO || 0,
-        FocalLength: exifInfo.tags.FocalLength || 0,
-        Model: exifInfo.tags.Model || '',
-        ExposureProgram: exifInfo.tags.ExposureProgram || '',
-        LensModel: exifInfo.tags.LensModel || '',
-      };
-    }, {
-      ExposureTime: 0,
-      FNumber: 0,
-      ISO: 0,
-      FocalLength: 0,
-      Model: '',
-      ExposureProgram: '',
-      LensModel: '',
-    }, console.log);
+      const info = ExifParser.create(imgBuffer).parse();
+      return info?.tags;
+    }, null, console.error);
   }
 
   private async getRotateSharp() {

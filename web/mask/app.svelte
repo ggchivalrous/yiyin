@@ -2,9 +2,7 @@
   let canvas;
   let taskList = [];
   let processing = false;
-  const ORIGIN_W = 5568;
   const ORIGIN_H = 3712;
-  const ORIGIN_RATIO = ORIGIN_W / ORIGIN_H;
 
   $: startCreateTask(taskList);
 
@@ -64,6 +62,20 @@
     });
   }
 
+  // 获取图片整体亮度
+  function getAverageBrightness(ctx, width, height) {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    let totalBrightness = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+    // 简单的亮度计算方法
+      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      totalBrightness += brightness;
+    }
+    return totalBrightness / (width * height);
+  }
+
   function createBoxShadowMark(_canvas, option) {
     _canvas.width = option.w || option.img.width;
     _canvas.height = option.h || option.img.height;
@@ -74,7 +86,18 @@
 
       // 添加黑色蒙层，突出主体图片
       if (!option.option.solid_bg) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        const averageBrightness = getAverageBrightness(ctx, _canvas.width, _canvas.height);
+        console.log(averageBrightness);
+        if (averageBrightness < 15) {
+          ctx.fillStyle = 'rgba(180, 180, 180, 0.2)'; // 灰色半透明覆盖层
+        } else if (averageBrightness < 20) {
+          ctx.fillStyle = 'rgba(158, 158, 158, 0.2)'; // 灰色半透明覆盖层
+        } else if (averageBrightness < 40) {
+          ctx.fillStyle = 'rgba(128, 128, 128, 0.2)'; // 灰色半透明覆盖层
+        } else {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        }
+
         ctx.fillRect(0, 0, _canvas.width, _canvas.height);
         ctx.fillStyle = 'black';
       }
@@ -163,18 +186,21 @@
       info: null,
     };
 
+    // 移除厂商和型号有重复内容
+    exifInfo.Make = exifInfo.Make.replace('CORPORATION', '').trim();
+    exifInfo.Model = exifInfo.Model.replace(exifInfo.Make, '').trim();
+
     if (option.brand_show && exifInfo.Model) {
       if (!option.model_show) {
-        const i = exifInfo.Model.indexOf(' ');
-        exifInfo.Model = exifInfo.Model.substring(0, i === -1 ? exifInfo.Model.length : i);
+        exifInfo.Model = '';
       } else {
         exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
       }
 
-      const titleText = exifInfo.Model && charToNumberChar(exifInfo.Model[0]) + charToNumberChar(exifInfo.Model.slice(1).toLowerCase());
+      const make = exifInfo.Make && charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
   
       exif.title = createTextImg({
-        text: titleText,
+        text: `${make} ${exifInfo.Model}`,
         color: option.solid_bg ? '#000' : '#fff',
         fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
       });

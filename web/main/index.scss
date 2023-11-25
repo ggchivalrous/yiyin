@@ -31,6 +31,7 @@
   cursor: pointer;
   user-select: none;
   font-size: 14px;
+  margin-left: 10px;
 
   &:hover {
     box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
@@ -40,14 +41,14 @@
     box-shadow: var(--blackShadow), var(--whiteShadow);
   }
 
-  &:nth-child(n) {
-    margin-left: 10px;
+  &:first-of-type {
+    margin-left: 0px;
   }
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 48px);
   background-position: center center;
   background-size: 100% 100%;
   padding: 0 20px 20px;
@@ -58,31 +59,26 @@
     display: none;
   }
 
-  .wrap {
+  .content {
+    display: flex;
+  }
+
+  .action-wrap {
+    width: 450px;
     display: flex;
     flex-wrap: nowrap;
     margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  .info-wrap {
+    width: 100%;
+    background-color: aqua;
   }
 
   .right-wrap,
   .left-wrap {
-    flex: 1 0 100px;
-
-    .action-item {
-      padding: 2px 0;
-    }
-
-    .config-title {
-      display: inline-block;
-      width: 76px;
-      font-weight: bold;
-      text-align: right;
-    }
-
-    .config-value {
-      padding-left: 2px;
-      font-size: 13px;
-    }
+    flex: 2 0 100px;
 
     .open-file-line {
       cursor: pointer;
@@ -121,15 +117,19 @@
       display: inline-block;
       font-size: inherit;
       height: 20px;
-      width: 40px;
+      width: 90px;
       outline: none;
       padding: 0 4px;
       text-align: center;
     }
   }
+  
+  .left-wrap {
+    flex-grow: 1;
+  }
 
   .button-wrap {
-    margin-top: 40px;
+    margin-top: 20px;
     text-align: center;
     user-select: none;
   }
@@ -137,5 +137,11 @@
   .db-switch.is-checked .db-switch__core {
     background-color: var(--active-color);
     border-color: transparent;
+  }
+
+  .toast {
+    background-color: #d7f2eb;
+    padding: 6px 20px;
+    border-radius: 6px;
   }
 }

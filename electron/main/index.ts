@@ -25,8 +25,8 @@ async function createDefWin() {
       maxWidth: 550,
       maxHeight: 300,
     }),
-    width: 550,
-    height: 300,
+    width: 600,
+    height: 350,
     title: '壹印',
     frame: false,
   });
