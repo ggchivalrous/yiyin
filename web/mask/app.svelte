@@ -195,13 +195,16 @@
 
     // 移除厂商和型号有重复内容
     let title = '';
-    if (option.brand_show && exifInfo.Make) {
+    if (exifInfo.Make) {
       exifInfo.Make = modelMap.DEF.make_filter(exifInfo.Make.trim());
       exifInfo.Make = modelMap[exifInfo.Make].make_filter ? modelMap[exifInfo.Make].make_filter(exifInfo.Make.trim()) : exifInfo.Make.trim();
-      if (option.font === defFont) {
-        title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
-      } else {
-        title = (exifInfo.Make[0]) + (exifInfo.Make.slice(1).toLowerCase());
+
+      if (option.brand_show) {
+        if (option.font === defFont) {
+          title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+        } else {
+          title = (exifInfo.Make[0]) + (exifInfo.Make.slice(1).toLowerCase());
+        }
       }
     }
 
