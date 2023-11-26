@@ -1,0 +1,64 @@
+.font-select-wrap {
+  .font-select {
+    width: 150px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .font-list {
+    background-color: var(--bg-color);
+    border-radius: 4px;
+  
+  }
+  
+  .button.add-font {
+    width: 100%;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    border-bottom: 2px solid var(--active-color);
+    cursor: pointer;
+  }
+  
+  .listbox {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 0 4px;
+  }
+  
+  .listbox-item {
+    font-size: 14px;
+    width: 100%;
+
+    .listbox-label {
+      width: 100%;
+    }
+  
+    &:hover {
+      background-color: var(--active-color);
+      color: white;
+    }
+
+    .listbox-label-content {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .font-name {
+      flex: 1;
+      text-align: left;
+    }
+
+    .font-del {
+      width: 20px;
+      flex-shrink: 0;
+      text-align: center;
+      cursor: pointer;
+    }
+  }
+  
+  .variant-filled {
+    background-color: var(--active-color);
+    color: white;
+  }
+}

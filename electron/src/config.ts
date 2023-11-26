@@ -20,6 +20,17 @@ interface IConfig {
    */
   cacheDir: string
 
+  /**
+   * 字体信息
+   */
+  font: {
+    path: string
+
+    dir: string
+
+    map: Record<string, string>
+  }
+
   options: OutputSetting
 }
 
@@ -27,6 +38,12 @@ export const DefaultConfig: IConfig = {
   dir: path.join(app.getPath('userData'), 'config.json'),
   output: path.join(app.getPath('pictures'), 'watermark'),
   cacheDir: path.join(app.getPath('temp'), 'yiyin'),
+
+  font: {
+    path: path.join(app.getPath('userData'), 'font.json'),
+    dir: path.join(app.getPath('userData'), 'font'),
+    map: {},
+  },
 
   options: {
     landscape: false,
@@ -41,6 +58,7 @@ export const DefaultConfig: IConfig = {
       w: 0,
       h: 0,
     },
+    font: 'PingFang SC',
   },
 };
 
@@ -51,7 +69,6 @@ export function getConfig(def = false) {
     const content = fs.readFileSync(config.dir);
     const fileConfig = tryCatch(() => JSON.parse(content.toString()), {});
     Object.assign(config, {
-      dir: fileConfig.dir || config.dir,
       output: fileConfig.output || config.output,
       cacheDir: fileConfig.cacheDir || config.cacheDir,
       options: Object.assign(config.options, fileConfig.options),
@@ -64,6 +81,16 @@ export function getConfig(def = false) {
     if (!fs.existsSync(config.cacheDir)) {
       fs.mkdirSync(config.cacheDir, { recursive: true });
     }
+  }
+
+  if (!fs.existsSync(config.font.dir)) {
+    fs.mkdirSync(config.font.dir, { recursive: true });
+  }
+
+  if (fs.existsSync(config.font.path)) {
+    const content = fs.readFileSync(config.font.path);
+    const fontMap = tryCatch(() => JSON.parse(content.toString()), {});
+    config.font.map = fontMap;
   }
 
   return config;

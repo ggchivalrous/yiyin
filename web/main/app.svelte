@@ -1,11 +1,13 @@
 <script>
-  import './index.scss';
-  import { clipboard, getToastStore, initializeStores, Toast } from '@skeletonlabs/skeleton';
+  import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
   import { tick } from 'svelte';
-  import Switch from '../components/switch/index.svelte';
-  import Popup from '../components/popup/index.svelte';
   import ActionItem from '../components/action-item/index.svelte';
-  
+  import FontSelect from '../components/font-select/index.svelte';
+  import toast from '../components/message/index.ts';
+  import Popup from '../components/popup/index.svelte';
+  import Switch from '../components/switch/index.svelte';
+  import './index.scss';
+
   initializeStores();
 
   let fileUrlList = [];
@@ -22,16 +24,17 @@
     origin_wh_output: true, // 按照图片原始宽高输出
     radius: 2.1, // 圆角
     shadow: 6, // 阴影
+    font: 'PingFang SC',
     bg_rate: {
       w: '',
       h: '',
     },
     output: '',
   };
+  let fontConfig = {};
   let imgExif = '';
   let clipboardDom = null;
 
-  const toastStore = getToastStore();
   getConfig();
 
   $: {
@@ -44,8 +47,10 @@
   async function getConfig() {
     const defConf = await window.api.getConfig();
     if (defConf.code === 0) {
+      console.log('配置信息:', defConf.data);
       option.output = defConf.data.output;
       option = Object.assign(option, defConf.data.options, { init: false });
+      fontConfig = Object.assign(fontConfig, defConf.data.font);
     }
   }
 
@@ -146,34 +151,29 @@
         imgExif = JSON.stringify(info.data, null, 2);
         await tick();
         clipboardDom.click();
-        toastStore.trigger({
-          message: '复制成功',
-          classes: 'grass toast',
-          timeout: 1500,
-        });
+        toast.success('复制成功');
       }
     } else {
-      toastStore.trigger({
-        message: '请选择一张图片',
-        classes: 'grass toast',
-        timeout: 1500,
-      });
+      toast.info('请选择一张图片');
     }
-}
+  }
 
   async function resetOption() {
     const res = await window.api.resetConfig();
     if (res.code !== 0) {
-      toastStore.trigger({ message: `重置失败！！${res.message}` });
+      toast.error(`重置失败！！${res.message}`);
       return;
     }
 
     option = { ...res.data.options, init: false, output: res.data.output };
-    toastStore.trigger({ message: '重置成功' });
+    toast.success({ message: '重置成功' });
   }
 </script>
 
 <div class="header">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <FontSelect config={fontConfig} bind:value={option.font} on:update={getConfig} />
+
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Popup class="show grass button reset" on:click={resetOption}>
     <svg t="1700902065043" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4044" width="20" height="20"><path d="M491.52 819.2a304.3328 304.3328 0 0 1-217.088-90.112l28.672-28.672a266.24 266.24 0 1 0-40.96-327.68l-35.2256-21.2992A307.2 307.2 0 1 1 491.52 819.2z" p-id="4045"></path><path d="M430.08 409.6H245.76a20.48 20.48 0 0 1-20.48-20.48V204.8h40.96v163.84h163.84z" p-id="4046"></path><path d="M512 512m-61.44 0a61.44 61.44 0 1 0 122.88 0 61.44 61.44 0 1 0-122.88 0Z" p-id="4047"></path></svg>
@@ -241,7 +241,7 @@
         <ActionItem title="背景比例">
           <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
           <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.w}/>
-            :
+          :
           <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.h}/>
         </ActionItem>
 
@@ -293,5 +293,6 @@
       <a href="https://github.com/ggchivalrous/yiyin" target="_blank">© 2023 Github - GGChivalrous.</a>
     </p>
   </div>
-  <Toast />
 </div>
+
+<Modal />

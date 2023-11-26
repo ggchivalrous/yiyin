@@ -56,6 +56,11 @@ export interface OutputSetting {
    * 阴影
    */
   shadow: number
+
+  /**
+   * 选中的字体
+   */
+  font: string
 }
 
 interface ImgInfo {

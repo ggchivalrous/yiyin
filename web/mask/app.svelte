@@ -4,9 +4,16 @@
   let canvas;
   let taskList = [];
   let processing = false;
+  let config = {};
+  let fontList = [];
+  const defFont = 'PingFang SC';
   const ORIGIN_H = 3712;
 
+  getConfig();
+
   $: startCreateTask(taskList);
+  $: formatFontMap(config?.font?.map);
+  $: importFont(fontList);
 
   window.api['on:createMask']((info) => {
     console.log(info);
@@ -158,8 +165,7 @@
   function createTextImg(option) {
     const can = createCanvas(1, option.fontSize);
     const ctx = can.getContext('2d');
-
-    const font = option.font || `bold ${option.fontSize}px PingFang SC`;
+    const font = `bold ${option.fontSize}px ${option.font},'PingFang SC'`;
     ctx.font = font;
     const textInfo = ctx.measureText(option.text);
     can.width = textInfo.width;
@@ -192,7 +198,11 @@
     if (option.brand_show && exifInfo.Make) {
       exifInfo.Make = modelMap.DEF.make_filter(exifInfo.Make.trim());
       exifInfo.Make = modelMap[exifInfo.Make].make_filter ? modelMap[exifInfo.Make].make_filter(exifInfo.Make.trim()) : exifInfo.Make.trim();
-      title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+      if (option.font === defFont) {
+        title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+      } else {
+        title = (exifInfo.Make[0]) + (exifInfo.Make.slice(1).toLowerCase());
+      }
     }
 
     const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
@@ -206,6 +216,7 @@
         text: title,
         color: option.solid_bg ? '#000' : '#fff',
         fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
+        font: option.font,
       });
     }
 
@@ -237,6 +248,7 @@
           text: infoTextArr.join(' '),
           color: option.solid_bg ? '#000' : '#fff',
           fontSize: 80 * (maxHeight / ORIGIN_H),
+          font: option.font,
         });
       }
     }
@@ -271,6 +283,39 @@
     _canvas.width = w;
     _canvas.height = h;
     return _canvas;
+  }
+
+  async function importFont(arr) {
+    for (const i of arr) {
+      const font = new FontFace(i.name, `url('${i.path}')`);
+      const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
+      if (_font) {
+        document.fonts.add(_font);
+      }
+    }
+  }
+
+  async function getConfig() {
+    const defConf = await window.api.getConfig();
+    if (defConf.code === 0) {
+      config = defConf.data;
+      console.log('配置信息:', config);
+    }
+  }
+
+  function formatFontMap(fontMap) {
+    if (fontMap) {
+      const list = [];
+      // eslint-disable-next-line guard-for-in
+      for (const key in fontMap) {
+        list.push({
+          name: key,
+          path: `file://${config.font.dir}/${fontMap[key]}`,
+        });
+      }
+
+      fontList = list;
+    }
   }
 </script>
 
