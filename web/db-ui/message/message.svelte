@@ -111,10 +111,7 @@
   use:transition={'db-message-fade'}
   use:show={visible}
   on:afterLeave={handleAfterLeave}
-  class:db-message={true}
-  class:grass={true}
-  class:toast={true}
-  class="{type && !iconClass ? `db-message--${type}` : ''} {customClass}"
+  class="db-message grass {type && !iconClass ? `db-message--${type}` : ''} {customClass}"
   class:is-center={center}
   class:is-closable={showClose}
   style="top: {verticalOffset}px; z-index: {zIndex}"

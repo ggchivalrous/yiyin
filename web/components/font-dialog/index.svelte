@@ -2,7 +2,7 @@
   // eslint-disable-next-line import/first
   import { getModalStore } from '@skeletonlabs/skeleton';
   // eslint-disable-next-line import/first
-  import Message from '../message';
+  import Message from '@db-ui/message';
 
   const fontForm = {
     name: '',

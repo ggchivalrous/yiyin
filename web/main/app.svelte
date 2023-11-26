@@ -1,11 +1,11 @@
 <script>
   import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
   import { tick } from 'svelte';
-  import ActionItem from '../components/action-item/index.svelte';
-  import FontSelect from '../components/font-select/index.svelte';
-  import toast from '../components/message/index.ts';
-  import Popup from '../components/popup/index.svelte';
-  import Switch from '../components/switch/index.svelte';
+  import toast from '@db-ui/message';
+  import Switch from '@db-ui/switch';
+  import ActionItem from '@components/action-item';
+  import FontSelect from '@components/font-select';
+  import Popup from '@components/popup';
   import './index.scss';
 
   initializeStores();

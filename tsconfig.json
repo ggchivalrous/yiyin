@@ -19,7 +19,10 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "skipLibCheck": true,
-    "paths": {},
+    "paths": {
+      "@db-ui/*": ["web/db-ui/*"],
+      "@components/*": ["web/components/*"],
+    },
     "strictNullChecks": false,
     "types": [
       "node",
