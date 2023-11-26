@@ -39,7 +39,7 @@ r.listen<any, boolean>(routerConfig.startTask, async (data: StartTaskData) => {
 
   for (const fileInfo of data.fileUrlList) {
     const { path: url, name } = fileInfo;
-    const _md5 = md5(url);
+    const _md5 = `${md5(url)}${Math.random()}${Date.now()}`;
     const imgPath = path.resolve(config.cacheDir, _md5);
 
     const imgTool = new Image(url, data.option);
