@@ -10,7 +10,7 @@
     "build:web": "vite build",
     "test": "node test.js",
     "package:dir": "yarn build:web && electron-builder -c electron-make.ts --dir",
-    "package": "yarn build:web && electron-builder -c electron-make.ts",
+    "package": "yarn build:web && electron-builder",
     "make": "yarn build:web && electron-builder -p never && node release.js"
   },
   "author": {

@@ -1,5 +1,13 @@
 import { toRoman } from './util';
 
+type StrToStrFn = (str: string) => string;
+
+interface IFilter {
+  make_filter?: StrToStrFn;
+
+  model_filter?: StrToStrFn;
+}
+
 export default {
   DEF: {
     make_filter: (e) => e.replace('CORPORATION', '').trim(),
@@ -11,11 +19,12 @@ export default {
 
       const arr = str.split('_');
       if (arr.length > 1) {
-        if (!Number.isNaN(+arr[1])) {
-          return `${arr[0]} ${toRoman()}`;
+        const i = arr.pop();
+        if (i && !Number.isNaN(+i)) {
+          return `${arr.join(' ')} ${toRoman(+i)}`;
         }
 
-        return `${arr[0]} ${arr[1]}`;
+        return `${arr.join(' ')} ${i}`;
       }
 
       return str;
@@ -28,4 +37,4 @@ export default {
       return str;
     },
   },
-};
+} as Record<string, IFilter>;

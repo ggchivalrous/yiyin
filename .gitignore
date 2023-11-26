@@ -9,8 +9,6 @@ images
 node_modules
 dist
 tests/coverage
-cjs
-esm
 
 # Log files
 npm-debug.log*

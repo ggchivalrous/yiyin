@@ -1,6 +1,6 @@
 <script>
   // eslint-disable-next-line import/first
-  import YiWen from '../yiwen/index.svelte';
+  import YiWen from '@components/yiwen/index.svelte';
 
   // eslint-disable-next-line import/no-mutable-exports
   export let title = '';

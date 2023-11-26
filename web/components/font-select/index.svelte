@@ -1,12 +1,13 @@
 <script>
+  // eslint-disable-next-line import/order
+  import { createEventDispatcher } from 'svelte';
   // eslint-disable-next-line import/first
   import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
   // eslint-disable-next-line import/first
-  import FontDialog from '../font-dialog/index.svelte';
+  import FontDialog from '@components/font-dialog';
   import './index.scss';
-  import Message from '../message';
   // eslint-disable-next-line import/order
-  import { createEventDispatcher } from 'svelte';
+  import Message from '@db-ui/message';
 
   // eslint-disable-next-line import/no-mutable-exports
   export let config = {};

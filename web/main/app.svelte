@@ -1,11 +1,11 @@
 <script>
   import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
   import { tick } from 'svelte';
-  import ActionItem from '../components/action-item/index.svelte';
-  import FontSelect from '../components/font-select/index.svelte';
-  import toast from '../components/message/index.ts';
-  import Popup from '../components/popup/index.svelte';
-  import Switch from '../components/switch/index.svelte';
+  import toast from '@db-ui/message';
+  import Switch from '@db-ui/switch';
+  import ActionItem from '@components/action-item';
+  import FontSelect from '@components/font-select';
+  import Popup from '@components/popup';
   import './index.scss';
 
   initializeStores();
@@ -48,8 +48,8 @@
     const defConf = await window.api.getConfig();
     if (defConf.code === 0) {
       console.log('配置信息:', defConf.data);
-      option.output = defConf.data.output;
       option = Object.assign(option, defConf.data.options, { init: false });
+      option.output = defConf.data.output;
       fontConfig = Object.assign(fontConfig, defConf.data.font);
     }
   }
@@ -99,6 +99,7 @@
     const data = await window.api['open:selectPath'](option);
     if (data.code === 0 && data.data.output) {
       option.output = data.data.output;
+      console.log('配置信息:', option);
     }
   }
 

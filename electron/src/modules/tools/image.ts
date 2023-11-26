@@ -5,6 +5,10 @@ import fs from 'fs';
 import type { RGBA } from 'sharp';
 import sharp from 'sharp';
 import { tryCatch, usePromise } from '../../utils';
+// eslint-disable-next-line import/no-relative-packages
+import { Logger } from '../logger';
+
+const log = new Logger('ImageM');
 
 export interface OutputSetting {
   /**
@@ -312,11 +316,11 @@ export class Image {
       .composite(composite)
       .toFile(toFilePath, (err) => {
         if (err) {
-          console.error(err);
+          log.error(err);
           rej(err);
         } else {
           res(true);
-          console.log('水印已添加并保存为 ', toFilePath);
+          log.info('水印已添加并保存为 ', toFilePath);
         }
       });
 
@@ -356,7 +360,7 @@ export class Image {
 
       const info = ExifParser.create(imgBuffer).parse();
       return info?.tags;
-    }, null, console.error);
+    }, null, (e) => log.error(e));
   }
 
   private async getRotateSharp() {
