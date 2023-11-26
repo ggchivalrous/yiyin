@@ -1,6 +1,6 @@
 import { BrowserWindow, app } from 'electron';
 import { release } from 'node:os';
-import { query, open } from '../src/router';
+import { query, open, image } from '../src/router';
 import { createWindow } from './create-window';
 
 // Windows 7 禁用GPU加速
@@ -19,12 +19,14 @@ let win: BrowserWindow | null = null;
 
 async function createDefWin() {
   win = await createWindow('main', {
-    minWidth: 550,
-    minHeight: 300,
-    maxWidth: 550,
-    maxHeight: 300,
-    width: 550,
-    height: 300,
+    ...(process.env.URL ? {} : {
+      minWidth: 600,
+      minHeight: 400,
+      maxWidth: 600,
+      maxHeight: 400,
+    }),
+    width: 600,
+    height: 400,
     title: '壹印',
     frame: false,
   });
@@ -34,8 +36,13 @@ app.whenReady().then(async () => {
   await createDefWin();
   query.use(win);
   open.use(win);
+  image.use(win);
   win.on('closed', () => app.quit());
   win.webContents.on('before-input-event', (event, input) => {
+    if (process.env.URL) {
+      return;
+    }
+
     if ((input.key === 'r' && input.meta) || input.key.toLowerCase() === 'f5') {
       event.preventDefault();
     }

@@ -1,0 +1,13 @@
+.yiwen-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: rgba(128, 128, 128, .2);
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 0 2px;
+}

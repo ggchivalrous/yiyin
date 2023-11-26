@@ -1,9 +1,6 @@
-:root {
-  --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
-  --blackShadow: -4px -4px 8px rgba(255, 255, 255, .8);
-}
-
 .header {
+  display: flex;
+  justify-content: right;
   -webkit-app-region: drag;
   padding: 10px;
   text-align: right;
@@ -18,6 +15,21 @@
     -webkit-app-region: no-drag;
     padding: 4px 12px;
     cursor: pointer;
+  }
+
+  .reset {
+    padding: 4px 6px;
+
+    .icon {
+      display: inline-block;
+    }
+  }
+
+  .button {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
   }
 }
 
@@ -36,6 +48,7 @@
   cursor: pointer;
   user-select: none;
   font-size: 14px;
+  margin-left: 10px;
 
   &:hover {
     box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
@@ -45,18 +58,17 @@
     box-shadow: var(--blackShadow), var(--whiteShadow);
   }
 
-  &:nth-child(n) {
-    margin-left: 10px;
+  &:first-child {
+    margin-left: 0px;
   }
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 48px);
   background-position: center center;
   background-size: 100% 100%;
   padding: 0 20px 20px;
-  color: #081E3D;
   font-size: 14px;
   box-sizing: border-box;
 
@@ -64,27 +76,26 @@
     display: none;
   }
 
-  .action-item {
-    margin-bottom: 20px;
+  .content {
+    display: flex;
   }
 
-  .wrap {
+  .action-wrap {
+    width: 450px;
     display: flex;
     flex-wrap: nowrap;
     margin-bottom: 20px;
+    flex-shrink: 0;
   }
 
+  .info-wrap {
+    width: 100%;
+    background-color: aqua;
+  }
+
+  .right-wrap,
   .left-wrap {
-    flex: 1 0 100px;
-
-    .config-title {
-      font-weight: bold;
-    }
-
-    .config-value {
-      padding-left: 2px;
-      font-size: 13px;
-    }
+    flex: 2 0 100px;
 
     .open-file-line {
       cursor: pointer;
@@ -123,16 +134,42 @@
       display: inline-block;
       font-size: inherit;
       height: 20px;
-      width: 40px;
+      width: 90px;
       outline: none;
       padding: 0 4px;
       text-align: center;
     }
   }
+  
+  .left-wrap {
+    flex-grow: 1;
+  }
 
   .button-wrap {
-    margin-top: 40px;
+    margin-top: 20px;
     text-align: center;
     user-select: none;
+  }
+
+  .db-switch.is-checked .db-switch__core {
+    background-color: var(--active-color);
+    border-color: transparent;
+  }
+
+  .toast {
+    background-color: #d7f2eb;
+    padding: 6px 20px;
+    border-radius: 6px;
+  }
+
+  .foot {
+    width: 100%;
+    padding: 20px 0;
+    margin-top: 15px;
+    color: #8f9094;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 }

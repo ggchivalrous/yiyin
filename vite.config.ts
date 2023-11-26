@@ -4,6 +4,7 @@ import { join, resolve } from 'path';
 import { defineConfig } from 'vite';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
+import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import pkg from './package.json';
 
 const electronOutDir = join(__dirname, 'dist-electron');
@@ -75,6 +76,7 @@ export default defineConfig(({ command }) => {
       svelte({
         preprocess: vitePreprocess(),
       }),
+      purgeCss(),
     ],
     clearScreen: false,
     server: {

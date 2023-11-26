@@ -1,12 +1,19 @@
 <script>
+  import modelMap from '../util/model-map';
+
   let canvas;
   let taskList = [];
   let processing = false;
-  const ORIGIN_W = 5568;
+  let config = {};
+  let fontList = [];
+  const defFont = 'PingFang SC';
   const ORIGIN_H = 3712;
-  const ORIGIN_RATIO = ORIGIN_W / ORIGIN_H;
+
+  getConfig();
 
   $: startCreateTask(taskList);
+  $: formatFontMap(config?.font?.map);
+  $: importFont(fontList);
 
   window.api['on:createMask']((info) => {
     console.log(info);
@@ -31,8 +38,8 @@
           contentImg: scaleImg,
           textImgInfo,
           shadow: {
-            blur: Math.min(375 * (task.blur.width / ORIGIN_W), 250),
-            radius: Math.min(250 * ((task.blur.width / task.blur.height) / ORIGIN_RATIO), 100),
+            blur: task.blur.height * ((task.option.shadow || 6) / 100),
+            radius: task.blur.height * ((task.option.radius || 2.1) / 100),
           },
           option: task.option,
         });
@@ -64,6 +71,20 @@
     });
   }
 
+  // 获取图片整体亮度
+  function getAverageBrightness(ctx, width, height) {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    let totalBrightness = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+    // 简单的亮度计算方法
+      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      totalBrightness += brightness;
+    }
+    return totalBrightness / (width * height);
+  }
+
   function createBoxShadowMark(_canvas, option) {
     _canvas.width = option.w || option.img.width;
     _canvas.height = option.h || option.img.height;
@@ -71,11 +92,24 @@
 
     if (option.img) {
       ctx.drawImage(option.img, 0, 0, _canvas.width, _canvas.height);
-    }
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-    ctx.fillRect(0, 0, _canvas.width, _canvas.height);
-    ctx.fillStyle = 'black';
+      // 添加黑色蒙层，突出主体图片
+      if (!option.option.solid_bg) {
+        const averageBrightness = getAverageBrightness(ctx, _canvas.width, _canvas.height);
+        if (averageBrightness < 15) {
+          ctx.fillStyle = 'rgba(180, 180, 180, 0.2)'; // 灰色半透明覆盖层
+        } else if (averageBrightness < 20) {
+          ctx.fillStyle = 'rgba(158, 158, 158, 0.2)'; // 灰色半透明覆盖层
+        } else if (averageBrightness < 40) {
+          ctx.fillStyle = 'rgba(128, 128, 128, 0.2)'; // 灰色半透明覆盖层
+        } else {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        }
+
+        ctx.fillRect(0, 0, _canvas.width, _canvas.height);
+        ctx.fillStyle = 'black';
+      }
+    }
 
     let heightPosition = 3;
     if ((!option.option.ext_show && !option.option.brand_show) || (!option.textImgInfo.title && !option.textImgInfo.info)) {
@@ -85,16 +119,18 @@
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
     const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
 
-    ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
-    ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
-    ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
-    ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+    if (option.option.shadow) {
+      ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
+      ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
+      ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
+      ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+    }
 
     const rectX = contentOffsetX || ctx.shadowBlur;
     const rectY = contentOffsetY || ctx.shadowBlur;
     const rectWidth = option.contentImg.width;
     const rectHeight = option.contentImg.height;
-    const cornerRadius = option.shadow.radius;
+    const cornerRadius = option.option.radius ? option.shadow.radius : 0;
 
     ctx.beginPath();
     ctx.moveTo(rectX + cornerRadius, rectY);
@@ -129,8 +165,7 @@
   function createTextImg(option) {
     const can = createCanvas(1, option.fontSize);
     const ctx = can.getContext('2d');
-
-    const font = option.font || `bold ${option.fontSize}px PingFang SC`;
+    const font = `bold ${option.fontSize}px ${option.font},'PingFang SC'`;
     ctx.font = font;
     const textInfo = ctx.measureText(option.text);
     can.width = textInfo.width;
@@ -158,20 +193,33 @@
       info: null,
     };
 
-    if (option.brand_show && exifInfo.Model) {
-      if (!option.model_show) {
-        const i = exifInfo.Model.indexOf(' ');
-        exifInfo.Model = exifInfo.Model.substring(0, i === -1 ? exifInfo.Model.length : i);
-      } else {
-        exifInfo.Model = exifInfo.Model.replace('Z', 'ℤ');
-      }
+    // 移除厂商和型号有重复内容
+    let title = '';
+    if (exifInfo.Make) {
+      exifInfo.Make = modelMap.DEF.make_filter(exifInfo.Make.trim());
+      exifInfo.Make = modelMap[exifInfo.Make].make_filter ? modelMap[exifInfo.Make].make_filter(exifInfo.Make.trim()) : exifInfo.Make.trim();
 
-      const titleText = exifInfo.Model && charToNumberChar(exifInfo.Model[0]) + charToNumberChar(exifInfo.Model.slice(1).toLowerCase());
-  
+      if (option.brand_show) {
+        if (option.font === defFont) {
+          title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+        } else {
+          title = (exifInfo.Make[0]) + (exifInfo.Make.slice(1).toLowerCase());
+        }
+      }
+    }
+
+    const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
+    if (option.model_show && exifInfo.Model) {
+      exifInfo.Model = _modelMap.model_filter(exifInfo.Model.replace(exifInfo.Make, '').trim());
+      title += ` ${exifInfo.Model.toLowerCase()}`;
+    }
+
+    if (title) {
       exif.title = createTextImg({
-        text: titleText,
-        color: '#ffffff',
+        text: title,
+        color: option.solid_bg ? '#000' : '#fff',
         fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
+        font: option.font,
       });
     }
 
@@ -188,7 +236,7 @@
   
       if (exifInfo.ExposureTime) {
         if (exifInfo.ExposureTime < 1) {
-          infoTextArr.push(`1/${1 / exifInfo.ExposureTime}s`);
+          infoTextArr.push(`1/${Math.round(1 / exifInfo.ExposureTime)}s`);
         } else {
           infoTextArr.push(`${exifInfo.ExposureTime}s`);
         }
@@ -201,8 +249,9 @@
       if (infoTextArr.length) {
         exif.info = createTextImg({
           text: infoTextArr.join(' '),
-          color: '#ffffff',
+          color: option.solid_bg ? '#000' : '#fff',
           fontSize: 80 * (maxHeight / ORIGIN_H),
+          font: option.font,
         });
       }
     }
@@ -237,6 +286,39 @@
     _canvas.width = w;
     _canvas.height = h;
     return _canvas;
+  }
+
+  async function importFont(arr) {
+    for (const i of arr) {
+      const font = new FontFace(i.name, `url('${i.path}')`);
+      const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
+      if (_font) {
+        document.fonts.add(_font);
+      }
+    }
+  }
+
+  async function getConfig() {
+    const defConf = await window.api.getConfig();
+    if (defConf.code === 0) {
+      config = defConf.data;
+      console.log('配置信息:', config);
+    }
+  }
+
+  function formatFontMap(fontMap) {
+    if (fontMap) {
+      const list = [];
+      // eslint-disable-next-line guard-for-in
+      for (const key in fontMap) {
+        list.push({
+          name: key,
+          path: `file://${config.font.dir}/${fontMap[key]}`,
+        });
+      }
+
+      fontList = list;
+    }
   }
 </script>
 
