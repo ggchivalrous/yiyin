@@ -77,10 +77,10 @@ export function getConfig(def = false) {
 
   if (process.env.URL) {
     config.cacheDir = path.join(config.output, '.catch');
+  }
 
-    if (!fs.existsSync(config.cacheDir)) {
-      fs.mkdirSync(config.cacheDir, { recursive: true });
-    }
+  if (!fs.existsSync(config.cacheDir)) {
+    fs.mkdirSync(config.cacheDir, { recursive: true });
   }
 
   if (!fs.existsSync(config.font.dir)) {
