@@ -1,4 +1,4 @@
-import { toRoman } from './util';
+import { toRoman, charToNumberChar } from './util';
 
 type StrToStrFn = (str: string) => string;
 
@@ -9,12 +9,15 @@ interface IFilter {
 }
 
 export default {
+  INIT: {
+    make_filter: (e) => e = e.replace('CORPORATION', '').trim(),
+  },
   DEF: {
-    make_filter: (e) => e.replace('CORPORATION', '').trim(),
-    model_filter: (e) => e,
+    make_filter: (s) =>  charToNumberChar(s[0] + s.slice(1).toLowerCase()),
+    model_filter: (e) => charToNumberChar(e.toLowerCase()),
   },
   NIKON: {
-    model_filter(str) {
+    model_filter: (str) => {
       str = str.replace('Z', 'ℤ');
 
       const arr = str.split('_');
@@ -34,7 +37,7 @@ export default {
     model_filter(str) {
       str = str.replace('ILCE-', 'α ');
 
-      return str;
+      return str.toLowerCase();
     },
   },
 } as Record<string, IFilter>;

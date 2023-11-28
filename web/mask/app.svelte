@@ -196,14 +196,15 @@
     // 移除厂商和型号有重复内容
     let title = '';
     if (exifInfo.Make) {
-      exifInfo.Make = modelMap.DEF.make_filter(exifInfo.Make.trim());
-      exifInfo.Make = modelMap[exifInfo.Make].make_filter ? modelMap[exifInfo.Make].make_filter(exifInfo.Make.trim()) : exifInfo.Make.trim();
+      // 先走一层默认的过滤
+      exifInfo.Make = modelMap.INIT.make_filter(exifInfo.Make.trim());
+      const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
 
       if (option.brand_show) {
         if (option.font === defFont) {
-          title = charToNumberChar(exifInfo.Make[0]) + charToNumberChar(exifInfo.Make.slice(1).toLowerCase());
+          title = _modelMap.make_filter(exifInfo.Make);
         } else {
-          title = (exifInfo.Make[0]) + (exifInfo.Make.slice(1).toLowerCase());
+          title = exifInfo.Make[0] + exifInfo.Make.slice(1);
         }
       }
     }
@@ -211,7 +212,7 @@
     const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
     if (option.model_show && exifInfo.Model) {
       exifInfo.Model = _modelMap.model_filter(exifInfo.Model.replace(exifInfo.Make, '').trim());
-      title += ` ${exifInfo.Model.toLowerCase()}`;
+      title += ` ${exifInfo.Model}`;
     }
 
     if (title) {

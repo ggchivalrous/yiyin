@@ -360,7 +360,7 @@ export class Image {
 
       const info = ExifParser.create(imgBuffer).parse();
       return info?.tags;
-    }, null, (e) => log.error(e));
+    }, null, (e) => log.error('相机参数获取失败', e.message));
   }
 
   private async getRotateSharp() {
@@ -436,11 +436,13 @@ export class Image {
 
     // 生成模糊背景;
     await new Promise((r) => {
-      ffmpeg
-        .input(toFilePath)
-        .outputOptions('-vf', `boxblur=${blur}:2`)
-        .saveToFile(toFilePath || this.imgPath)
-        .on('end', r);
+      tryCatch(() => {
+        ffmpeg
+          .input(toFilePath)
+          .outputOptions('-vf', `boxblur=${blur}:2`)
+          .saveToFile(toFilePath || this.imgPath)
+          .on('end', r);
+      }, null, e => log.error('Ffmpeg异常', e));
     });
     return bgInfo;
   }
