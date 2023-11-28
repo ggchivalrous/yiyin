@@ -1,5 +1,8 @@
 import { IpcMainInvokeEvent, ipcMain, BrowserWindow } from 'electron';
 import { format } from 'util';
+import { Logger } from '../logger'
+
+const log = new Logger('RouterM');
 
 export interface Handler<Data = any, Result = any> {
   (data: Data, event: IpcMainInvokeEvent, window: BrowserWindow): Promise<void | Result>
@@ -39,6 +42,7 @@ export class Router {
           const _data = await handler(data, event, win);
           returnData.data = _data;
         } catch (e) {
+          log.error('接口【%s】异常:', title, e);
           returnData.code = 500;
           returnData.message = format(e);
         }

@@ -83,6 +83,10 @@ export function getConfig(def = false) {
     fs.mkdirSync(config.cacheDir, { recursive: true });
   }
 
+  if (!fs.existsSync(config.output)) {
+    fs.mkdirSync(config.output, { recursive: true });
+  }
+
   if (!fs.existsSync(config.font.dir)) {
     fs.mkdirSync(config.font.dir, { recursive: true });
   }
