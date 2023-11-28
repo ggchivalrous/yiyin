@@ -191,6 +191,7 @@
   <input
     type="file"
     id="path"
+    accept=".jpg, .png, .jpeg"
     bind:this={fileSelectDom}
     on:change={onFileChange}
     multiple
