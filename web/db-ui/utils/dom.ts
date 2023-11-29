@@ -44,7 +44,7 @@ export const off = (function () {
 }());
 
 export const once = function (el: HTMLElement | Document | Window, event: string, fn: EventListener) {
-  const listener = function (...args) {
+  const listener = function (...args: any) {
     if (fn) { fn.apply(this, args); }
     off(el, event, listener);
   };
@@ -150,10 +150,10 @@ export const getStyle = ieVersion < 9 ? function (element: HTMLElement, styleNam
           return 1.0;
         }
       default:
-        return element.style[styleName] as string | number;
+        return element.style[styleName as any] as string | number;
     }
   } catch (e) {
-    return element.style[styleName] as string | number;
+    return element.style[styleName as any] as string | number;
   }
 } : function (element: HTMLElement, styleName: string) {
   if (!element || !styleName) { return null; }
@@ -162,10 +162,10 @@ export const getStyle = ieVersion < 9 ? function (element: HTMLElement, styleNam
     styleName = 'cssFloat';
   }
   try {
-    const computed = document.defaultView?.getComputedStyle(element, '') || {};
-    return (element.style[styleName] || computed ? computed[styleName] : null) as string | number;
+    const computed: any = document.defaultView?.getComputedStyle(element, '') || {};
+    return (element.style[styleName as any] || computed ? computed[styleName] : null) as string | number;
   } catch (e) {
-    return element.style[styleName] as string | number;
+    return element.style[styleName as any] as string | number;
   }
 };
 
@@ -184,7 +184,7 @@ export function setStyle(element: HTMLElement, styleName: string | { [key: strin
     if (styleName === 'opacity' && ieVersion < 9) {
       element.style.filter = Number.isNaN((value as number)) ? '' : `alpha(opacity=${(value as number) * 100})`;
     } else {
-      element.style[styleName] = value;
+      element.style[styleName as any] = value as string;
     }
   }
 }

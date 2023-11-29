@@ -172,19 +172,15 @@
 </script>
 
 <div class="header">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <FontSelect config={fontConfig} bind:value={option.font} on:update={getConfig} />
 
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Popup class="show grass button reset" on:click={resetOption}>
     <svg t="1700902065043" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4044" width="20" height="20"><path d="M491.52 819.2a304.3328 304.3328 0 0 1-217.088-90.112l28.672-28.672a266.24 266.24 0 1 0-40.96-327.68l-35.2256-21.2992A307.2 307.2 0 1 1 491.52 819.2z" p-id="4045"></path><path d="M430.08 409.6H245.76a20.48 20.48 0 0 1-20.48-20.48V204.8h40.96v163.84h163.84z" p-id="4046"></path><path d="M512 512m-61.44 0a61.44 61.44 0 1 0 122.88 0 61.44 61.44 0 1 0-122.88 0Z" p-id="4047"></path></svg>
     <p slot="message">重置回默认选项</p>
   </Popup>
 
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="show grass button" on:click={miniSizeWindow}>-</div>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="close grass button" on:click={closeApp}>x</div>
+  <div class="show grass button" on:click={miniSizeWindow} on:keypress>-</div>
+  <div class="close grass button" on:click={closeApp} on:keypress>x</div>
 </div>
 
 <div id="root">
@@ -236,7 +232,7 @@
 
         <ActionItem title="输出目录">
           <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
-          <span class="open-file-line" on:click={() => openDir(option.output)}>{outputDirName}</span>
+          <span class="open-file-line" on:click={() => openDir(option.output)} on:keypress>{outputDirName}</span>
         </ActionItem>
 
         <ActionItem title="背景比例">
@@ -274,13 +270,10 @@
   <div class="button-wrap">
     {#if !processing}
       <label for="path" class="button grass">选择图片</label>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="button grass" on:click={generatePictureFrames}>生成印框</div>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="button grass" on:click={getExitInfo}>相机信息</div>
+      <div class="button grass" on:click={generatePictureFrames} on:keypress>生成印框</div>
+      <div class="button grass" on:click={getExitInfo} on:keypress>相机信息</div>
       <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="button grass" on:click={changeOutputPath}>输出目录</div>
+      <div class="button grass" on:click={changeOutputPath} on:keypress>输出目录</div>
     {:else}
       印框生成中...
     {/if}

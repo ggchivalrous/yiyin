@@ -4,11 +4,18 @@ import { join, resolve } from 'path';
 import { defineConfig } from 'vite';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
-// import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import pkg from './package.json';
 
 const electronOutDir = join(__dirname, 'dist-electron');
 const electronPkg = join(electronOutDir, 'package.json');
+const electronAlias = {
+  '@root': resolve(__dirname, 'electron'),
+  '@src': resolve(__dirname, 'electron/src'),
+  '@config': resolve(__dirname, 'electron/src/config.ts'),
+  '@modules': resolve(__dirname, 'electron/src/modules'),
+  '@utils': resolve(__dirname, 'electron/src/utils'),
+  '@router': resolve(__dirname, 'electron/src/router'),
+};
 
 export default defineConfig(({ command }) => {
   const port = 5173;
@@ -44,6 +51,10 @@ export default defineConfig(({ command }) => {
             }
           },
           vite: {
+            resolve: {
+              alias: electronAlias,
+              extensions: ['.ts', '.js', '.mjs'],
+            },
             build: {
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
@@ -60,6 +71,10 @@ export default defineConfig(({ command }) => {
             options.reload();
           },
           vite: {
+            resolve: {
+              alias: electronAlias,
+              extensions: ['.ts', '.js', '.mjs'],
+            },
             build: {
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
@@ -76,7 +91,6 @@ export default defineConfig(({ command }) => {
       svelte({
         preprocess: vitePreprocess(),
       }),
-      // purgeCss(),
     ],
     clearScreen: false,
     server: {
@@ -100,6 +114,7 @@ export default defineConfig(({ command }) => {
         '@pages': resolve(__dirname, 'web/pages'),
         '@components': resolve(__dirname, 'web/components'),
         '@db-ui': resolve(__dirname, 'web/db-ui'),
+        '@modules': resolve(__dirname, 'electron/src/modules'),
       },
       extensions: ['.js', '.mjs', '.svelte', '.ts'],
     },

@@ -1,11 +1,11 @@
 import { BrowserWindow, app } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import routerConfig from '../../router-config';
-import { config, getConfig } from '../config';
-import { Router } from '../modules/router';
-import { Image } from '../modules/tools/image';
-import md5 from '../utils/md5';
+import { config, getConfig } from '@config';
+import { Router } from '@modules/router';
+import { Image } from '@modules/tools/image';
+import { md5 } from '@utils';
+import routerConfig from '@root/router-config';
 
 const r = new Router();
 

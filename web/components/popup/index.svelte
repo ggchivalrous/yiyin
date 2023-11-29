@@ -3,16 +3,12 @@
 </script>
 
 <script>
-  // eslint-disable-next-line import/first
   import { popup } from '@skeletonlabs/skeleton';
 
-  // eslint-disable-next-line import/no-mutable-exports
-  export let event = 'hover';
-  // eslint-disable-next-line import/no-mutable-exports
-  export let placement = 'top';
-
-  // eslint-disable-next-line import/no-mutable-exports
   let classes = '';
+
+  export let event = 'hover';
+  export let placement = 'top';
   export { classes as class };
 
   const popupHover = {
@@ -22,13 +18,12 @@
   };
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div use:popup={popupHover} class={classes} on:click>
+<div use:popup={popupHover} class={classes} on:click on:keypress>
   <slot></slot>
 </div>
 
 <div class="popup grass" data-popup={popupHover.target}>
-	<slot name="message"></slot>
+  <slot name="message"></slot>
   <div class="arrow variant-filled-secondary" />
 </div>
 

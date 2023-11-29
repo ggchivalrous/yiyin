@@ -4,7 +4,7 @@ export interface IInstances {
   [key: string]: IInstance | null
 }
 
-type Fn = (...any) => any
+type Fn = (...any: any) => any
 
 export interface IInstance {
   visible?: Writable<boolean>,

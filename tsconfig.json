@@ -6,9 +6,11 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "lib": [
-      "ESNext"
+      "ESNext",
+      "DOM"
     ],
     "esModuleInterop": true,
+    "noImplicitThis": false,
     "allowJs": true,
     "sourceMap": true,
     "strict": true,
@@ -31,7 +33,8 @@
     ]
   },
   "include": [
-    "electron/**/*.ts",
+    "*.ts",
+    "**/*.ts"
   ],
   "exclude": [
     "node_modules",

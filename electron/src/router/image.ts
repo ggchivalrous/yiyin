@@ -1,15 +1,13 @@
 import { BrowserWindow } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-// eslint-disable-next-line import/no-relative-packages
-import { Logger } from '../modules/logger';
-import { createWindow } from '../../main/create-window';
-import routerConfig from '../../router-config';
-import { config } from '../config';
-import { Router } from '../modules/router';
-import { Image, OutputSetting } from '../modules/tools/image';
-import md5 from '../utils/md5';
-import { getFileName } from '../utils';
+import { Logger } from '@modules/logger';
+import { config } from '@config';
+import { Router } from '@modules/router';
+import { Image, OutputSetting } from '@modules/tools/image';
+import { md5, getFileName } from '@utils';
+import { createWindow } from '@root/main/create-window';
+import routerConfig from '@root/router-config';
 
 const r = new Router();
 let maskGenWin: BrowserWindow = null;

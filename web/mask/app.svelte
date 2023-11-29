@@ -225,15 +225,15 @@
 
     if (option.ext_show) {
       const infoTextArr = [];
-  
+
       if (exifInfo.FocalLength) {
         infoTextArr.push(`${exifInfo.FocalLength}mm`);
       }
-  
+
       if (exifInfo.FNumber) {
         infoTextArr.push(`f/${exifInfo.FNumber}`);
       }
-  
+
       if (exifInfo.ExposureTime) {
         if (exifInfo.ExposureTime < 1) {
           infoTextArr.push(`1/${Math.round(1 / exifInfo.ExposureTime)}s`);
@@ -241,11 +241,11 @@
           infoTextArr.push(`${exifInfo.ExposureTime}s`);
         }
       }
-  
+
       if (exifInfo.ISO) {
         infoTextArr.push(`ISO${exifInfo.ISO}`);
       }
-  
+
       if (infoTextArr.length) {
         exif.info = createTextImg({
           text: infoTextArr.join(' '),

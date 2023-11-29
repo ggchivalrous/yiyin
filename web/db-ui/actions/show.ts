@@ -1,11 +1,13 @@
 import { getCustomAttrToDom } from '../utils';
 
-export default function (dom: HTMLElement, visible: any) {
+export default (dom: HTMLElement, visible: any) => {
   const orginDisplay = dom.style.display;
   let oldVisible = visible;
 
-  // eslint-disable-next-line no-unused-expressions
-  visible && getCustomAttrToDom(dom, 'transitionAction', () => { })(visible);
+  if (visible) {
+    getCustomAttrToDom(dom, 'transitionAction', () => { })(visible);
+  }
+
   dom.style.display = oldVisible ? orginDisplay : 'none';
 
   dom.addEventListener('afterEnter', () => {
@@ -17,10 +19,9 @@ export default function (dom: HTMLElement, visible: any) {
   });
 
   return {
-    // eslint-disable-next-line no-shadow
-    update(visible) {
-      if (oldVisible !== visible) {
-        oldVisible = visible;
+    update(_visible: boolean) {
+      if (oldVisible !== _visible) {
+        oldVisible = _visible;
         const actionTransitionCb = getCustomAttrToDom(dom, 'transitionAction');
 
         if (oldVisible) {
@@ -28,9 +29,11 @@ export default function (dom: HTMLElement, visible: any) {
         } else if (!actionTransitionCb) {
           dom.style.display = 'none';
         }
-        // eslint-disable-next-line no-unused-expressions
-        actionTransitionCb && actionTransitionCb(visible);
+
+        if (actionTransitionCb) {
+          actionTransitionCb(_visible);
+        }
       }
     },
   };
-}
+};

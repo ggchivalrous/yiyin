@@ -1,17 +1,11 @@
 <script>
-  // eslint-disable-next-line import/order
-  import { createEventDispatcher } from 'svelte';
-  // eslint-disable-next-line import/first
-  import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
-  // eslint-disable-next-line import/first
   import FontDialog from '@components/font-dialog';
-  import './index.scss';
-  // eslint-disable-next-line import/order
   import Message from '@db-ui/message';
+  import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
+  import { createEventDispatcher } from 'svelte';
+  import './index.scss';
 
-  // eslint-disable-next-line import/no-mutable-exports
   export let config = {};
-  // eslint-disable-next-line import/no-mutable-exports
   export let value = 'PingFang SC';
 
   const modalStore = getModalStore();
@@ -74,21 +68,18 @@
 </script>
 
 <div class="font-select-wrap">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="show grass button font-select" use:popup={popupCombobox}>
     {value}
   </div>
 
   <div class="font-list w-48 shadow-xl py-2 grass" data-popup="popupCombobox">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="button add-font" on:click={addFont}>+</div>
+    <div class="button add-font" on:click={addFont} on:keypress>+</div>
     <ListBox rounded="rounded-none">
       {#each fontList as i}
         <ListBoxItem bind:group={value} name="medium" value={i.name}>
           <span class="font-name">{i.name}</span>
           {#if i.fileName}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <span class="font-del" on:click|preventDefault|capture={() => delFont(i)}>x</span>
+            <span class="font-del" on:click|preventDefault|capture={() => delFont(i)} on:keypress>x</span>
           {/if}
         </ListBoxItem>
       {/each}

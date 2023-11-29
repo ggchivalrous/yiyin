@@ -79,6 +79,10 @@ export function getConfig(def = false) {
     config.cacheDir = path.join(config.output, '.catch');
   }
 
+  if (!fs.existsSync(config.output)) {
+    fs.mkdirSync(config.output, { recursive: true });
+  }
+
   if (!fs.existsSync(config.cacheDir)) {
     fs.mkdirSync(config.cacheDir, { recursive: true });
   }

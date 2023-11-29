@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import routerConfig from '../router-config';
+import routerConfig from '@root/router-config';
 
 function generateRouter(config: any): string[] {
   const list = [];

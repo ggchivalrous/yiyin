@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 export * from './date';
-export * from './md5';
+export { default as md5 } from './md5';
 
 export const tryCatch = <T = any>(p: () => T, defV?: T, errCb?: (e: Error) => void) => {
   try {

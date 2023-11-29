@@ -4,9 +4,8 @@ import fluentFfmpeg from 'fluent-ffmpeg';
 import fs from 'fs';
 import type { RGBA } from 'sharp';
 import sharp from 'sharp';
-import { tryCatch, usePromise } from '../../utils';
-// eslint-disable-next-line import/no-relative-packages
-import { Logger } from '../logger';
+import { Logger } from '@modules/logger';
+import { tryCatch, usePromise } from '@utils';
 
 const log = new Logger('ImageM');
 

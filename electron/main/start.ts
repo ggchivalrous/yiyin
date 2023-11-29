@@ -1,18 +1,7 @@
+import { createWindow } from '@root/main/create-window';
+import { image, open, query } from '@router';
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
 import { release } from 'node:os';
-import path from 'node:path';
-import { query, open, image } from '../src/router';
-import { createWindow } from './create-window';
-// eslint-disable-next-line import/no-relative-packages
-import { setLoggerConfig } from '../src/modules/logger';
-import { config } from '../src/config';
-
-setLoggerConfig({
-  namespace: 'main',
-  exportMode: process.env.URL ? 'CONSOLE_FILE' : 'FILE',
-  path: process.env.URL ? path.resolve(app.getPath('userData'), '/logs') : path.resolve(config.cacheDir, './logs'),
-  level: 'DEBUG',
-});
 
 // Windows 7 禁用GPU加速
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();

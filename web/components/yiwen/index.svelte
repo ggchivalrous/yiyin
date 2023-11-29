@@ -1,4 +1,3 @@
-
 <script>
   import './index.css';
   import Popup from '@components/popup';

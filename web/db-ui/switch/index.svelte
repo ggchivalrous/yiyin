@@ -1,7 +1,7 @@
 <script>
   import { onMount, createEventDispatcher, tick } from 'svelte';
   import './index.css';
-  
+
   let className = '';
   export { className as class };
   export let style = '';
@@ -18,6 +18,7 @@
   export let inactiveValue = false;
   export let name = '';
 
+  // eslint-disable-next-line svelte/valid-compile
   export let validateEvent = true;
   export let id = '';
   export let el = null;
@@ -85,6 +86,7 @@
 </script>
 
 <div
+  tabindex={id}
   class="db-switch {className}"
   class:is-disabled={switchDisabled}
   class:is-checked={checked}
@@ -93,6 +95,7 @@
   aria-checked={checked}
   aria-disabled={switchDisabled}
   on:click|preventDefault={changeValue}
+  on:keypress
   bind:this={el}
 >
   <input

@@ -5,43 +5,25 @@
   import { show, transition } from '../actions';
   import './index.css';
 
-  // eslint-disable-next-line import/no-mutable-exports
-  export let message = '';
-  // eslint-disable-next-line import/no-mutable-exports
-  export let el = null;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let visible = false;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let duration = 3000;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let iconClass = '';
-  // eslint-disable-next-line import/no-mutable-exports
-  export let customClass = '';
-  // eslint-disable-next-line import/no-mutable-exports
-  export let showClose = false;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let closed = false;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let verticalOffset = 0;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let dangerouslyUseHTMLString = false;
-  // eslint-disable-next-line import/no-mutable-exports
-  export let center = false;
-  // eslint-disable-next-line import/no-mutable-exports
+  // eslint-disable-next-line svelte/valid-compile
   export let id = '';
-  // eslint-disable-next-line import/no-mutable-exports
+  export let message = '';
+  export let el = null;
+  export let visible = false;
+  export let duration = 3000;
+  export let iconClass = '';
+  export let customClass = '';
+  export let showClose = false;
+  export let closed = false;
+  export let verticalOffset = 0;
+  export let dangerouslyUseHTMLString = false;
+  export let center = false;
   export let zIndex = 1;
-  
   /** @type {'info'|'success'|'warning'|'error'} */
-  // eslint-disable-next-line import/no-mutable-exports
   export let type = 'info';
-  
   /** @type {Function} */
-  // eslint-disable-next-line import/no-mutable-exports
   export let destroy = null;
-  
   /** @type {Function} */
-  // eslint-disable-next-line import/no-mutable-exports
   export let onClose = null;
 
   const typeMap = {
@@ -128,6 +110,7 @@
   <slot>
     {#if dangerouslyUseHTMLString}
       <p class="db-message__content">
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         {@html message}
       </p>
     {:else}
@@ -137,6 +120,6 @@
     {/if}
   </slot>
   {#if showClose}
-    <i class="db-message__closeBtn db-icon-close" on:click={close} />
+    <i class="db-message__closeBtn db-icon-close" on:click={close} on:keypress />
   {/if}
 </div>

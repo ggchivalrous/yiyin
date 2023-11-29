@@ -1,8 +1,6 @@
 <script>
-  // eslint-disable-next-line import/first
   import YiWen from '@components/yiwen/index.svelte';
 
-  // eslint-disable-next-line import/no-mutable-exports
   export let title = '';
 </script>
 
@@ -15,7 +13,6 @@
     <slot></slot>
   </span>
 </p>
-
 
 <style scoped>
 .action-item {
@@ -32,10 +29,5 @@
 .config-value {
   padding-left: 2px;
   font-size: 13px;
-}
-
-.icon {
-  width: 30px;
-  height: 30px;
 }
 </style>

@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@modules": ["electron/src/modules"],
+      "@modules/*": ["electron/src/modules/*"],
+      "@utils": ["electron/src/utils"],
+      "@utils/*": ["electron/src/utils/*"],
+      "@src/*": ["electron/src/*"],
+      "@config": ["electron/src/config.ts"],
+      "@router": ["electron/src/router"],
+      "@root/*": ["electron/*"],
+    },
+  }
+}

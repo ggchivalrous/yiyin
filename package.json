@@ -7,11 +7,10 @@
   "description": "一款照片水印添加工具",
   "scripts": {
     "start": "vite",
-    "build:web": "vite build",
-    "test": "node test.js",
-    "package:dir": "yarn build:web && electron-builder -c electron-make.ts --dir",
-    "package": "yarn build:web && electron-builder",
-    "make": "yarn build:web && electron-builder -p never && node release.js"
+    "build": "vite build",
+    "package:dir": "yarn build && electron-builder -c electron-make.ts --dir",
+    "package": "yarn build && electron-builder",
+    "make": "yarn build && electron-builder -p never && node release.js"
   },
   "author": {
     "name": "ggchivalrous",
@@ -35,7 +34,7 @@
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-svelte3": "^4.0.0",
+    "eslint-plugin-svelte": "^2.35.1",
     "exif-parser": "^0.1.12",
     "exifreader": "^4.13.0",
     "mime": "^3.0.0",
@@ -102,14 +101,8 @@
     "win": {
       "icon": "./icon/icon.ico",
       "target": [
-        "msi",
-        "nsis"
+        "msi"
       ]
-    },
-    "nsis": {
-      "allowToChangeInstallationDirectory": true,
-      "oneClick": false,
-      "perMachine": false
     },
     "linux": {
       "icon": "./icon/icon.ico",

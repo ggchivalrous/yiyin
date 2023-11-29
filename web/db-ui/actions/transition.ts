@@ -14,13 +14,13 @@ interface ITransitionCallBack {
   cancelled?: boolean
 }
 
-export default function (
+export default (
   dom: HTMLElement & {
     __db_transition_leave_cb?: ITransitionCallBack,
     __db_transition_enter_cb?: ITransitionCallBack
   },
   options: IOptions | string,
-) {
+) => {
   setCustomAttrToDom(dom, 'transitionAction', (visible: boolean) => (visible ? enter() : leave()));
 
   const {
@@ -133,7 +133,7 @@ export default function (
       });
     }
   }
-}
+};
 
 function resolveTransition(options: IOptions | string) {
   if (typeof options === 'string') {
@@ -157,7 +157,7 @@ function resolveTransition(options: IOptions | string) {
   return data;
 }
 
-function getDomTransitionInfo(dom: HTMLElement, options) {
+function getDomTransitionInfo(dom: HTMLElement, options: any) {
   if (typeof options === 'string') {
     options = {
       name: options,
@@ -177,7 +177,7 @@ function getDomTransitionInfo(dom: HTMLElement, options) {
   return data;
 }
 
-function listenTransitionEnd(dom, type, cb) {
+function listenTransitionEnd(dom: HTMLElement, type: string, cb: () => any) {
   if (type === 'transitionend') {
     dom.addEventListener('transitionend', cb, false);
   } else {
@@ -186,8 +186,8 @@ function listenTransitionEnd(dom, type, cb) {
 }
 
 function onceFun(fn: any): ITransitionCallBack {
-  let res;
-  return function (...args: any) {
+  let res: ITransitionCallBack;
+  return (...args: any) => {
     if (fn) {
       res = fn.apply(this, args);
       fn = null;

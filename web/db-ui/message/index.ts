@@ -6,7 +6,7 @@ let instance: MessageComponent;
 let seed = 1;
 const instances: MessageComponent[] = [];
 
-const Message: IMessage = function (options: Props | string) {
+const Message: IMessage = (options: Props | string) => {
   if (typeof options === 'string') {
     options = {
       message: options,
@@ -16,7 +16,7 @@ const Message: IMessage = function (options: Props | string) {
   const id = `message_${seed++}`;
   const userOnClose = options.onClose as IUserCloseFun;
 
-  options.onClose = function () {
+  options.onClose = () => {
     Message.close(id, userOnClose);
   };
 
@@ -61,7 +61,7 @@ Message.waring = createMessageFun(Type.warning);
 Message.error = createMessageFun(Type.error);
 
 function createMessageFun(type: Type) {
-  return function (options: Props | string) {
+  return (options: Props | string) => {
     if (typeof options === 'string') {
       options = {
         message: options,
@@ -72,7 +72,7 @@ function createMessageFun(type: Type) {
   };
 }
 
-Message.close = function (id: string, userOnClose) {
+Message.close = (id: string, userOnClose) => {
   const len = instances.length;
   let index = -1;
   let removedHeight;
@@ -101,7 +101,7 @@ Message.close = function (id: string, userOnClose) {
   }
 };
 
-Message.closeAll = function () {
+Message.closeAll = () => {
   for (let i = instances.length - 1; i >= 0; i--) {
     (instances[i] as any).onClose();
   }
