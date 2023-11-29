@@ -168,9 +168,8 @@ export class Image {
       ...options,
 
       bg_rate: {
-        w: 0,
-        h: 0,
-        ...options?.bg_rate,
+        w: +options?.bg_rate?.w || 0,
+        h: +options?.bg_rate?.h || 0,
       },
     };
   }
@@ -432,17 +431,17 @@ export class Image {
       .toBuffer({ resolveWithObject: true });
     fs.writeFileSync(toFilePath, bgInfo.data);
 
-    const blur = Math.round(Math.sqrt(this.rotateImgInfo.info.w ** 2 + this.rotateImgInfo.info.h ** 2) / 10) - 65;
+    const diagonal = Math.round(Math.sqrt(this.rotateImgInfo.info.w ** 2 + this.rotateImgInfo.info.h ** 2) / 10);
+    const blur = diagonal < 100 ? diagonal : diagonal - 65;
 
     // 生成模糊背景;
     await new Promise((r) => {
-      tryCatch(() => {
-        ffmpeg
-          .input(toFilePath)
-          .outputOptions('-vf', `boxblur=${blur}:2`)
-          .saveToFile(toFilePath || this.imgPath)
-          .on('end', r);
-      }, null, e => log.error('Ffmpeg异常', e));
+      ffmpeg
+        .input(toFilePath)
+        .outputOptions('-vf', `boxblur=${blur}:2`)
+        .saveToFile(toFilePath || this.imgPath)
+        .on('end', r)
+        .on('error', e => log.error('Ffmpeg异常', e));
     });
     return bgInfo;
   }
