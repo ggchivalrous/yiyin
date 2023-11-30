@@ -1,4 +1,4 @@
-export function toRoman(num: number) {
+export const toRoman = (num: number) => {
   const romanNumerals = [
     { value: 1000, numeral: 'M' },
     { value: 900, numeral: 'CM' },
@@ -25,4 +25,26 @@ export function toRoman(num: number) {
   }
 
   return roman;
+}
+
+export const charToNumberChar = (originStr, mathematicalFontStart = 0x1d63c) => {
+  let str = '';
+
+  for (let i = 0; i < originStr.length; i++) {
+    const originalChar = originStr[i];
+    const lowercaseOffset = originalChar.charCodeAt(0) - 'a'.charCodeAt(0); // 小写字母的偏移量
+    const uppercaseOffset = originalChar.charCodeAt(0) - 'A'.charCodeAt(0); // 大写字母的偏移量
+
+    if (lowercaseOffset >= 0 && lowercaseOffset <= 25) {
+      const mathematicalCharCode = mathematicalFontStart + 26 + lowercaseOffset;
+      str += String.fromCodePoint(mathematicalCharCode);
+    } else if (uppercaseOffset >= 0 && uppercaseOffset <= 25) {
+      const mathematicalCharCode = mathematicalFontStart + uppercaseOffset;
+      str += String.fromCodePoint(mathematicalCharCode);
+    } else {
+      str += originalChar;
+    }
+  }
+
+  return str; // 将 Unicode 码点转换成字符
 }

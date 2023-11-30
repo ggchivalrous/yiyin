@@ -167,9 +167,8 @@ export class Image {
       ...options,
 
       bg_rate: {
-        w: 0,
-        h: 0,
-        ...options?.bg_rate,
+        w: +options?.bg_rate?.w || 0,
+        h: +options?.bg_rate?.h || 0,
       },
     };
   }
@@ -359,7 +358,7 @@ export class Image {
 
       const info = ExifParser.create(imgBuffer).parse();
       return info?.tags;
-    }, null, (e) => log.error(e));
+    }, null, (e) => log.error('相机参数获取失败', e.message));
   }
 
   private async getRotateSharp() {
@@ -431,7 +430,8 @@ export class Image {
       .toBuffer({ resolveWithObject: true });
     fs.writeFileSync(toFilePath, bgInfo.data);
 
-    const blur = Math.round(Math.sqrt(this.rotateImgInfo.info.w ** 2 + this.rotateImgInfo.info.h ** 2) / 10) - 65;
+    const diagonal = Math.round(Math.sqrt(this.rotateImgInfo.info.w ** 2 + this.rotateImgInfo.info.h ** 2) / 10);
+    const blur = diagonal < 100 ? diagonal : diagonal - 65;
 
     // 生成模糊背景;
     await new Promise((r) => {
@@ -439,7 +439,8 @@ export class Image {
         .input(toFilePath)
         .outputOptions('-vf', `boxblur=${blur}:2`)
         .saveToFile(toFilePath || this.imgPath)
-        .on('end', r);
+        .on('end', r)
+        .on('error', e => log.error('Ffmpeg异常', e));
     });
     return bgInfo;
   }
