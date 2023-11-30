@@ -23,8 +23,11 @@
     solid_bg: false, // 纯色背景
     origin_wh_output: true, // 按照图片原始宽高输出
     radius: 2.1, // 圆角
+    radius_show: true,
     shadow: 6, // 阴影
+    shadow_show: true,
     font: 'PingFang SC',
+    bg_rate_show: true,
     bg_rate: {
       w: '',
       h: '',
@@ -37,11 +40,7 @@
 
   getConfig();
 
-  $: {
-    const arr = option.output.split('/');
-    outputDirName = arr[arr.length - 1] || '/';
-  }
-
+  $: getPathName(option.output);
   $: setConfig(option);
 
   async function getConfig() {
@@ -169,6 +168,26 @@
     option = { ...res.data.options, init: false, output: res.data.output };
     toast.success({ message: '重置成功' });
   }
+
+  function getPathName(path) {
+    path = path.trim();
+
+    if (!path) {
+      outputDirName = '异常目录无法识别';
+      return;
+    }
+
+    const isMatch = path.match(/^([A-Za-z]:)\\/);
+
+    if (isMatch) {
+      const arr = path.replace(isMatch[1], '').split('\\');
+      outputDirName = arr[arr.length - 1] || isMatch[0];
+      return;
+    }
+
+    const arr = path.split('/');
+    outputDirName = arr[arr.length - 1] || '/';
+  }
 </script>
 
 <div class="header">
@@ -193,90 +212,95 @@
     class="hide"
   />
 
-  <div class="content">
-    <div class="action-wrap">
-      <div class="left-wrap">
-        <ActionItem title="横屏输出">
-          <svelte:fragment slot="popup">软件自己判断宽高比，将图片进行背景横向输出，适合竖图生成横屏图片</svelte:fragment>
-          <Switch bind:value={option.landscape} />
-        </ActionItem>
+  <div class="body">
+    <div class="content">
+      <div class="action-wrap">
+        <div class="left-wrap">
+          <ActionItem title="横屏输出">
+            <svelte:fragment slot="popup">软件自己判断宽高比，将图片进行背景横向输出，适合竖图生成横屏图片</svelte:fragment>
+            <Switch bind:value={option.landscape} />
+          </ActionItem>
 
-        <ActionItem title="参数显示">
-          <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
-          <Switch bind:value={option.ext_show} />
-        </ActionItem>
+          <ActionItem title="参数显示">
+            <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
+            <Switch bind:value={option.ext_show} />
+          </ActionItem>
 
-        <ActionItem title="机型显示">
-          <svelte:fragment slot="popup">是否显示机型</svelte:fragment>
-          <Switch bind:value={option.brand_show} />
-        </ActionItem>
+          <ActionItem title="机型显示">
+            <svelte:fragment slot="popup">是否显示机型</svelte:fragment>
+            <Switch bind:value={option.brand_show} />
+          </ActionItem>
 
-        <ActionItem title="型号显示">
-          <svelte:fragment slot="popup">是否显示机子型号</svelte:fragment>
-          <Switch bind:value={option.model_show} />
-        </ActionItem>
+          <ActionItem title="型号显示">
+            <svelte:fragment slot="popup">是否显示机子型号</svelte:fragment>
+            <Switch bind:value={option.model_show} />
+          </ActionItem>
 
-        <ActionItem title="纯色背景">
-          <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
-          <Switch bind:value={option.solid_bg} />
-        </ActionItem>
+          <ActionItem title="纯色背景">
+            <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
+            <Switch bind:value={option.solid_bg} />
+          </ActionItem>
 
-        <ActionItem title="原宽高输出">
-          <svelte:fragment slot="popup">输出图片是否按照原始宽高，开启将缩放原图</svelte:fragment>
-          <Switch bind:value={option.origin_wh_output} />
-        </ActionItem>
-      </div>
+          <ActionItem title="原宽高输出">
+            <svelte:fragment slot="popup">输出图片是否按照原始宽高，开启将缩放原图</svelte:fragment>
+            <Switch bind:value={option.origin_wh_output} />
+          </ActionItem>
+        </div>
 
-      <div class="right-wrap">
-        <ActionItem title="选中数量">{fileUrlList.length}</ActionItem>
+        <div class="right-wrap">
+          <ActionItem title="选中数量">{fileUrlList.length}</ActionItem>
 
-        <ActionItem title="输出目录">
-          <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
-          <span class="open-file-line" on:click={() => openDir(option.output)} on:keypress>{outputDirName}</span>
-        </ActionItem>
+          <ActionItem title="输出目录">
+            <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
+            <span class="open-file-line" on:click={() => openDir(option.output)} on:keypress>{outputDirName}</span>
+          </ActionItem>
 
-        <ActionItem title="背景比例">
-          <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
-          <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.w}/>
-          :
-          <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.h}/>
-        </ActionItem>
+          <ActionItem title="背景比例">
+            <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
+            <Switch bind:value={option.bg_rate_show} />
+            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.w}/>
+            :
+            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={option.bg_rate.h}/>
+          </ActionItem>
 
-        <ActionItem title="圆角大小">
-          <svelte:fragment slot="popup">指定圆角的大小，不指定则为直角</svelte:fragment>
-          <input
-            class="bg-rate-input"
-            type="text"
-            value={option.radius}
-            on:input={(v) => onNumInput(v, 'radius', 30, 0)}
-            on:change={(v) => onNumInputChange(v, 'radius')}
-          />
-        </ActionItem>
+          <ActionItem title="圆角大小">
+            <svelte:fragment slot="popup">指定圆角的大小，不指定则为直角(默认使用高度的 0.021%)</svelte:fragment>
+            <Switch bind:value={option.radius_show} />
+            <input
+              class="bg-rate-input"
+              type="text"
+              value={option.radius}
+              on:input={(v) => onNumInput(v, 'radius', 30, 0)}
+              on:change={(v) => onNumInputChange(v, 'radius')}
+            />
+          </ActionItem>
 
-        <ActionItem title="阴影大小">
-          <svelte:fragment slot="popup">指定阴影的大小，不指定则无阴影</svelte:fragment>
-          <input
-            class="bg-rate-input"
-            type="text"
-            value={option.shadow}
-            on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
-            on:change={(v) => onNumInputChange(v, 'shadow')}
-          />
-        </ActionItem>
+          <ActionItem title="阴影大小">
+            <svelte:fragment slot="popup">指定阴影的大小，不指定则无阴影(默认使用高度的 0.06%)</svelte:fragment>
+            <Switch bind:value={option.shadow_show} />
+            <input
+              class="bg-rate-input"
+              type="text"
+              value={option.shadow}
+              on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
+              on:change={(v) => onNumInputChange(v, 'shadow')}
+            />
+          </ActionItem>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="button-wrap">
-    {#if !processing}
-      <label for="path" class="button grass">选择图片</label>
-      <div class="button grass" on:click={generatePictureFrames} on:keypress>生成印框</div>
-      <div class="button grass" on:click={getExitInfo} on:keypress>相机信息</div>
-      <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
-      <div class="button grass" on:click={changeOutputPath} on:keypress>输出目录</div>
-    {:else}
-      印框生成中...
-    {/if}
+    <div class="button-wrap">
+      {#if !processing}
+        <label for="path" class="button grass">选择图片</label>
+        <div class="button grass" on:click={generatePictureFrames} on:keypress>生成印框</div>
+        <div class="button grass" on:click={getExitInfo} on:keypress>相机信息</div>
+        <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
+        <div class="button grass" on:click={changeOutputPath} on:keypress>输出目录</div>
+      {:else}
+        印框生成中...
+      {/if}
+    </div>
   </div>
 
   <div class="foot">

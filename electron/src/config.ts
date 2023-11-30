@@ -53,7 +53,10 @@ export const DefaultConfig: IConfig = {
     solid_bg: false,
     origin_wh_output: true,
     radius: 2.1,
+    radius_show: true,
     shadow: 6,
+    shadow_show: true,
+    bg_rate_show: true,
     bg_rate: {
       w: 0,
       h: 0,
@@ -62,8 +65,12 @@ export const DefaultConfig: IConfig = {
   },
 };
 
+function getDefConf():IConfig {
+  return JSON.parse(JSON.stringify(DefaultConfig));
+}
+
 export function getConfig(def = false) {
-  const config:IConfig = JSON.parse(JSON.stringify(DefaultConfig));
+  const config:IConfig = getDefConf();
 
   if (!def && fs.existsSync(config.dir)) {
     const content = fs.readFileSync(config.dir);

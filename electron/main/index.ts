@@ -2,7 +2,7 @@ import path from 'node:path';
 import { app } from 'electron';
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
 
-import('../src/config').then(async ({ config }) => {
+import('@src/config').then(async ({ config }) => {
   setLoggerConfig({
     namespace: 'main',
     exportMode: process.env.URL ? 'CONSOLE_FILE' : 'FILE',

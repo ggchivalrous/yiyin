@@ -38,8 +38,8 @@
           contentImg: scaleImg,
           textImgInfo,
           shadow: {
-            blur: task.blur.height * ((task.option.shadow || 6) / 100),
-            radius: task.blur.height * ((task.option.radius || 2.1) / 100),
+            blur: task.option.shadow_show ? task.blur.height * ((task.option.shadow || 6) / 100) : 0,
+            radius: task.option.radius_show ? task.blur.height * ((task.option.radius || 2.1) / 100) : 0,
           },
           option: task.option,
         });
@@ -119,18 +119,18 @@
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
     const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
 
-    if (option.option.shadow) {
-      ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
-      ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
+    if (option.shadow.blur) {
+      ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
+      ctx.shadowOffsetY = option.shadow.offsetY || 0; // 阴影垂直偏移
       ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
-      ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+      ctx.shadowColor = '#000'; // 阴影颜色
     }
 
     const rectX = contentOffsetX || ctx.shadowBlur;
     const rectY = contentOffsetY || ctx.shadowBlur;
     const rectWidth = option.contentImg.width;
     const rectHeight = option.contentImg.height;
-    const cornerRadius = option.option.radius ? option.shadow.radius : 0;
+    const cornerRadius = option.shadow.radius;
 
     ctx.beginPath();
     ctx.moveTo(rectX + cornerRadius, rectY);
@@ -258,28 +258,6 @@
     }
 
     return exif;
-  }
-
-  function charToNumberChar(originStr, mathematicalFontStart = 0x1d63c) {
-    let str = '';
-
-    for (let i = 0; i < originStr.length; i++) {
-      const originalChar = originStr[i];
-      const lowercaseOffset = originalChar.charCodeAt(0) - 'a'.charCodeAt(0); // 小写字母的偏移量
-      const uppercaseOffset = originalChar.charCodeAt(0) - 'A'.charCodeAt(0); // 大写字母的偏移量
-
-      if (lowercaseOffset >= 0 && lowercaseOffset <= 25) {
-        const mathematicalCharCode = mathematicalFontStart + 26 + lowercaseOffset;
-        str += String.fromCodePoint(mathematicalCharCode);
-      } else if (uppercaseOffset >= 0 && uppercaseOffset <= 25) {
-        const mathematicalCharCode = mathematicalFontStart + uppercaseOffset;
-        str += String.fromCodePoint(mathematicalCharCode);
-      } else {
-        str += originalChar;
-      }
-    }
-
-    return str; // 将 Unicode 码点转换成字符
   }
 
   function createCanvas(w, h) {

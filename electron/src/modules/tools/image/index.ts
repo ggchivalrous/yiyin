@@ -2,146 +2,16 @@ import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 import ExifParser from 'exif-parser';
 import fluentFfmpeg from 'fluent-ffmpeg';
 import fs from 'fs';
-import type { RGBA } from 'sharp';
 import sharp from 'sharp';
 import { Logger } from '@modules/logger';
 import { tryCatch, usePromise } from '@utils';
+import { getConfig } from '@src/config';
+import type { RGBA } from 'sharp';
+import type { OutputSetting, ImgInfo, TextInfo, ExifInfo } from './interface';
+
+export * from './interface';
 
 const log = new Logger('ImageM');
-
-export interface OutputSetting {
-  /**
-   * 是否横屏显示
-   */
-  landscape: boolean
-
-  /**
-   * 是否显示参数
-   */
-  ext_show: boolean
-
-  /**
-   * 是否显示机型
-   */
-  model_show: boolean
-
-  /**
-   * 是否显示品牌
-   */
-  brand_show: boolean
-
-  /**
-   * 纯色背景
-   */
-  solid_bg: false,
-
-  /**
-   * 背景比例
-   */
-  bg_rate: {
-    w: number
-    h: number
-  }
-
-  /**
-   * 是否按照原始宽高输出
-   *
-   * @default false
-   */
-  origin_wh_output: boolean
-
-  /**
-   * 圆角
-   */
-  radius: number
-
-  /**
-   * 阴影
-   */
-  shadow: number
-
-  /**
-   * 选中的字体
-   */
-  font: string
-}
-
-interface ImgInfo {
-  buf: Buffer
-  info: {
-    w: number
-    h: number
-  }
-  reset_info: {
-    w: number
-    h: number
-  }
-}
-
-interface TextInfo {
-  title: {
-    width: number
-    height: number
-    data: Buffer
-    path: string
-  }
-  info: {
-    width: number
-    height: number
-    path: string
-    data: Buffer
-  }
-}
-
-interface ExifInfo {
-  /**
-   * 相机厂商
-   */
-  Make: string
-
-  /**
-   * 机型 Nikon Z 30
-   */
-  Model: string
-
-  /**
-   * 照片拍摄时间
-   */
-  DateTimeOriginal: number
-
-  /**
-   * 快门速度
-   */
-  ExposureTime: number
-
-  /**
-   * 光圈大小
-   */
-  FNumber: number
-
-  /**
-   * 焦段
-   */
-  FocalLength: number
-
-  ISO: number
-
-  /**
-   * 档位
-   */
-  ExposureProgram: number
-
-  /**
-   * 镜头型号
-   */
-  LensModel: string
-
-  /**
-   * 镜头厂商
-   */
-  LensMake: string
-}
-
 const NotInit = Symbol('未初始化');
 
 export class Image {
@@ -158,17 +28,12 @@ export class Image {
   constructor(imgPath: string, options?: OutputSetting) {
     this.imgPath = imgPath;
     this.opts = {
-      landscape: false,
-      ext_show: true,
-      model_show: true,
-      brand_show: true,
-      solid_bg: false,
-      origin_wh_output: true,
+      ...getConfig(true),
       ...options,
 
       bg_rate: {
-        w: +options?.bg_rate?.w || 0,
-        h: +options?.bg_rate?.h || 0,
+        w: (options?.bg_rate?.w ? +options.bg_rate.w : 0) || 0,
+        h: (options?.bg_rate?.h ? +options.bg_rate.h : 0) || 0,
       },
     };
   }
@@ -358,7 +223,7 @@ export class Image {
 
       const info = ExifParser.create(imgBuffer).parse();
       return info?.tags;
-    }, null, (e) => log.error('相机参数获取失败', e.message));
+    }, null, (e) => log.error('图片 %s 相机参数获取失败', this.imgPath, e.message));
   }
 
   private async getRotateSharp() {
@@ -383,7 +248,7 @@ export class Image {
     };
 
     // 重置宽高比
-    if (this.opts.bg_rate.w && this.opts.bg_rate.h) {
+    if (this.opts.bg_rate_show && this.opts.bg_rate.w && this.opts.bg_rate.h) {
       const rate = +this.opts.bg_rate.w / +this.opts.bg_rate.h;
 
       if (imgInfo.info.w >= imgInfo.info.h) {
@@ -440,7 +305,7 @@ export class Image {
         .outputOptions('-vf', `boxblur=${blur}:2`)
         .saveToFile(toFilePath || this.imgPath)
         .on('end', r)
-        .on('error', e => log.error('Ffmpeg异常', e));
+        .on('error', (e) => log.error('Ffmpeg异常', e));
     });
     return bgInfo;
   }

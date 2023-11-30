@@ -33,14 +33,6 @@
   }
 }
 
-.grass {
-  box-shadow: var(--blackShadow), var(--whiteShadow);
-}
-
-.grass-unset {
-  box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
-}
-
 .button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -68,12 +60,19 @@
   height: calc(100vh - 48px);
   background-position: center center;
   background-size: 100% 100%;
-  padding: 0 20px 20px;
+  padding: 0 20px;
   font-size: 14px;
   box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 
   .hide {
     display: none;
+  }
+
+  .body {
+    flex: 1;
   }
 
   .content {
@@ -157,9 +156,9 @@
   }
 
   .foot {
+    flex-shrink: 0;
     width: 100%;
     padding: 20px 0;
-    margin-top: 15px;
     color: #8f9094;
     display: flex;
     flex-direction: column;

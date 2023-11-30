@@ -59,7 +59,7 @@ app.on('window-all-closed', () => {
 
 app.on('second-instance', () => {
   if (win) {
-    // Focus on the main window if the user tried to open another
+    // 如果用户试图打开另一个窗口，则关注主窗口
     if (win.isMinimized()) win.restore();
     win.focus();
   }

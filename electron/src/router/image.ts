@@ -5,7 +5,7 @@ import { Logger } from '@modules/logger';
 import { config } from '@config';
 import { Router } from '@modules/router';
 import { Image, OutputSetting } from '@modules/tools/image';
-import { md5, getFileName } from '@utils';
+import { md5, getFileName, tryAsyncCatch } from '@utils';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
 
@@ -47,10 +47,18 @@ r.listen<any, boolean>(routerConfig.startTask, async (data: StartTaskData) => {
     await imgTool.init();
 
     // 生成背景图片
-    const blurInfo = await imgTool.createBgImg(path.resolve(`${imgPath}_bg.jpg`)).catch((e) => log.error('模糊图片生成失败', e));
+    const blurInfo = await tryAsyncCatch(
+      imgTool.createBgImg(path.resolve(`${imgPath}_bg.jpg`)),
+      null,
+      (e) => log.error('模糊图片生成失败【%s】', url, e),
+    );
 
     // 生成主图
-    const scaleInfo = await imgTool.createMainImg(path.resolve(`${imgPath}_main.jpg`)).catch((e) => log.error('缩放图片生成失败', e));
+    const scaleInfo = await tryAsyncCatch(
+      imgTool.createMainImg(path.resolve(`${imgPath}_main.jpg`)),
+      null,
+      (e) => log.error('缩放图片生成失败【%s】', url, e),
+    );
 
     // 获取图片Exif信息
     const exifInfo = await imgTool.getExifInfo();
