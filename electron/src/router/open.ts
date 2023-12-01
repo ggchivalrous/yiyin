@@ -1,9 +1,10 @@
-import { dialog, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { config } from '@config';
-import routerConfig from '@root/router-config';
 import { Router } from '@modules/router';
+import routerConfig from '@root/router-config';
+import { dialog, shell } from 'electron';
 
 const r = new Router();
 

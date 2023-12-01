@@ -1,5 +1,5 @@
 <script>
-  import YiWen from '@components/yiwen/index.svelte';
+  import YiWen from '@components/yiwen';
 
   export let title = '';
 </script>

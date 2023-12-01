@@ -25,9 +25,9 @@ export const toRoman = (num: number) => {
   }
 
   return roman;
-}
+};
 
-export const charToNumberChar = (originStr, mathematicalFontStart = 0x1d63c) => {
+export const charToNumberChar = (originStr: string, mathematicalFontStart = 0x1d63c) => {
   let str = '';
 
   for (let i = 0; i < originStr.length; i++) {
@@ -47,4 +47,4 @@ export const charToNumberChar = (originStr, mathematicalFontStart = 0x1d63c) => 
   }
 
   return str; // 将 Unicode 码点转换成字符
-}
+};

@@ -5,13 +5,17 @@
     "browser": true
   },
   "parser": "@typescript-eslint/parser",
+  // "parserOptions": {
+  //   "project": "./tsconfig.json",
+  //   "extraFileExtensions": [".svelte"]
+  // },
   "extends": [
     "airbnb-base",
     "plugin:@typescript-eslint/recommended",
     "plugin:svelte/recommended"
   ],
   "overrides": [{
-    "files": ["*.svelte"],
+    "files": ["*.svelte", "**/*.svelte"],
     "parser": "svelte-eslint-parser",
     "parserOptions": {
       "sourceType": "module",
@@ -28,7 +32,8 @@
     }
   }],
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "import"
   ],
   "rules": {
     "max-len": "off",
@@ -36,6 +41,14 @@
     "import/no-extraneous-dependencies": "off",
     "import/extensions": "off",
     "import/no-unresolved": "off",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc", "caseInsensitive": true }
+      }
+    ],
+    // "import/order": ["error", { "newlines-between": "always" }],
     "object-curly-newline": ["error", {
       "ImportDeclaration": { "multiline": true },
       "ExportDeclaration": { "multiline": true }
@@ -52,6 +65,7 @@
     "prefer-destructuring": "off",
     "no-plusplus": "off",
     "no-bitwise": "off",
-    "import/no-relative-packages": "off"
+    "import/no-relative-packages": "off",
+    "guard-for-in": "off"
   }
 }

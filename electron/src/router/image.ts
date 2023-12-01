@@ -1,13 +1,14 @@
-import { BrowserWindow } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import { Logger } from '@modules/logger';
+
 import { config } from '@config';
+import { Logger } from '@modules/logger';
 import { Router } from '@modules/router';
 import { Image, OutputSetting } from '@modules/tools/image';
-import { md5, getFileName, tryAsyncCatch } from '@utils';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
+import { getFileName, md5, tryAsyncCatch } from '@utils';
+import { BrowserWindow } from 'electron';
 
 const r = new Router();
 let maskGenWin: BrowserWindow = null;

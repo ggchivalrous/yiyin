@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
+
 import { getSubscribeValue } from '..';
 import { addClass, removeClass } from '../dom';
+
 import type { IInstance, IInstances } from './interfaces';
 
 export const idSeed = writable(1);
@@ -129,7 +131,7 @@ class PopupManager {
     this.modalStack.push({ id, zIndex, modalClass });
   }
 
-  static closeModal(id) {
+  static closeModal(id: string) {
     const modalDom = getModal();
 
     if (this.modalStack.length > 0) {

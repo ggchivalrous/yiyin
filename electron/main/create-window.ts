@@ -1,5 +1,6 @@
-import { BrowserWindow, app, shell } from 'electron';
 import { join } from 'node:path';
+
+import { BrowserWindow, app, shell } from 'electron';
 
 export const preload = join(process.env.DIST_ELECTRON || app.getAppPath(), 'preload/index.js');
 export const webDir = join(process.env.VITE_WEB || app.getAppPath(), 'web');

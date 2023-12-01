@@ -1,11 +1,12 @@
-import { BrowserWindow, app } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { config, getConfig } from '@config';
 import { Router } from '@modules/router';
 import { Image } from '@modules/tools/image';
-import { md5 } from '@utils';
 import routerConfig from '@root/router-config';
+import { md5 } from '@utils';
+import { BrowserWindow, app } from 'electron';
 
 const r = new Router();
 
@@ -53,16 +54,16 @@ r.listen(routerConfig.addFont, async (data: any) => {
   return 3;
 });
 
-r.listen(routerConfig.delFont, async (data: any) => {
-  if (config.font.map[data.name]) {
-    const filePath = path.resolve(config.font.path, config.font.map[data.name]);
+r.listen(routerConfig.delFont, async (name: string) => {
+  if (config.font.map[name]) {
+    const filePath = path.resolve(config.font.path, config.font.map[name]);
     if (fs.existsSync(filePath)) {
       // 删除文件
       fs.rmSync(filePath);
     }
 
     // 移除记录
-    delete config.font.map[data.name];
+    delete config.font.map[name];
     // 写入文件
     fs.writeFileSync(config.font.path, JSON.stringify(config.font.map));
     return true;

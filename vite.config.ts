@@ -1,9 +1,11 @@
-import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import fs from 'fs';
 import { join, resolve } from 'path';
+
+import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
+
 import pkg from './package.json';
 
 const electronOutDir = join(__dirname, 'dist-electron');
@@ -114,7 +116,7 @@ export default defineConfig(({ command }) => {
         '@pages': resolve(__dirname, 'web/pages'),
         '@components': resolve(__dirname, 'web/components'),
         '@db-ui': resolve(__dirname, 'web/db-ui'),
-        '@modules': resolve(__dirname, 'electron/src/modules'),
+        ...electronAlias,
       },
       extensions: ['.js', '.mjs', '.svelte', '.ts'],
     },

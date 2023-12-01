@@ -1,7 +1,8 @@
+import { release } from 'node:os';
+
 import { createWindow } from '@root/main/create-window';
 import { image, open, query } from '@router';
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
-import { release } from 'node:os';
 
 // Windows 7 禁用GPU加速
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();

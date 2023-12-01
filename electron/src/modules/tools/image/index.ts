@@ -1,12 +1,14 @@
+import fs from 'fs';
+
 import ffmpegPath from '@ffmpeg-installer/ffmpeg';
+import { Logger } from '@modules/logger';
+import { getConfig } from '@src/config';
+import { tryCatch, usePromise } from '@utils';
 import ExifParser from 'exif-parser';
 import fluentFfmpeg from 'fluent-ffmpeg';
-import fs from 'fs';
 import sharp from 'sharp';
-import { Logger } from '@modules/logger';
-import { tryCatch, usePromise } from '@utils';
-import { getConfig } from '@src/config';
 import type { RGBA } from 'sharp';
+
 import type { OutputSetting, ImgInfo, TextInfo, ExifInfo } from './interface';
 
 export * from './interface';

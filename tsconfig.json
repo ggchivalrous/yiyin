@@ -24,6 +24,14 @@
     "paths": {
       "@db-ui/*": ["web/db-ui/*"],
       "@components/*": ["web/components/*"],
+      "@modules": ["electron/src/modules"],
+      "@modules/*": ["electron/src/modules/*"],
+      "@utils": ["electron/src/utils"],
+      "@utils/*": ["electron/src/utils/*"],
+      "@src/*": ["electron/src/*"],
+      "@config": ["electron/src/config.ts"],
+      "@router": ["electron/src/router"],
+      "@root/*": ["electron/*"],
     },
     "strictNullChecks": false,
     "types": [
@@ -34,7 +42,8 @@
   },
   "include": [
     "*.ts",
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.svelte"
   ],
   "exclude": [
     "node_modules",

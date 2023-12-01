@@ -1,6 +1,6 @@
 import { setCustomAttrToDom } from '../utils';
-import { isFunction } from '../utils/types';
 import { removeClass, replaceClass, addClass } from '../utils/dom';
+import { isFunction } from '../utils/types';
 
 interface IOptions {
   delayEnter?: number,

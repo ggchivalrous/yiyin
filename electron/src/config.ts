@@ -1,38 +1,10 @@
-import { app } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import type { IConfig } from '@src/interface';
+import { app } from 'electron';
+
 import { tryCatch } from './utils';
-import { OutputSetting } from './modules/tools/image';
-
-interface IConfig {
-  /**
-   * 配置文件存放路径
-   */
-  dir: string
-
-  /**
-   * 图片输出路径
-   */
-  output: string
-
-  /**
-   * 缓存存放目录
-   */
-  cacheDir: string
-
-  /**
-   * 字体信息
-   */
-  font: {
-    path: string
-
-    dir: string
-
-    map: Record<string, string>
-  }
-
-  options: OutputSetting
-}
 
 export const DefaultConfig: IConfig = {
   dir: path.join(app.getPath('userData'), 'config.json'),

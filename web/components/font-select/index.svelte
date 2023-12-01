@@ -1,20 +1,20 @@
-<script>
+<script lang="ts">
   import FontDialog from '@components/font-dialog';
   import Message from '@db-ui/message';
   import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
   import { createEventDispatcher } from 'svelte';
   import './index.scss';
 
-  export let config = {};
+  export let fontMap: Record<string, string> = {};
   export let value = 'PingFang SC';
 
   const modalStore = getModalStore();
   const dispatch = createEventDispatcher();
   let fontList = [{ name: 'PingFang SC', fileName: '' }];
 
-  $: listenConfigChange(config);
+  $: listenFontMapChange(fontMap);
 
-  const popupCombobox = {
+  const popupCombobox: any = {
     event: 'click',
     target: 'popupCombobox',
     placement: 'bottom',
@@ -31,7 +31,7 @@
     });
   }
 
-  async function delFont(i) {
+  async function delFont(i: string) {
     const res = await window.api.delFont(i);
     if (res.code === 0) {
       if (res.data) {
@@ -46,21 +46,20 @@
     Message.error(res.message);
   }
 
-  function listenConfigChange() {
-    if (config?.map) {
+  function listenFontMapChange(arr: typeof fontMap) {
+    if (arr) {
       const list = [];
 
-      // eslint-disable-next-line guard-for-in
-      for (const key in config.map) {
+      for (const key in fontMap) {
         list.push({
           name: key,
-          fileName: config.map[key],
+          fileName: fontMap[key],
         });
       }
 
       fontList = [{ name: 'PingFang SC', fileName: '' }, ...list];
 
-      if (!config.map[value]) {
+      if (!fontMap[value]) {
         value = fontList[0].name;
       }
     }
@@ -79,7 +78,7 @@
         <ListBoxItem bind:group={value} name="medium" value={i.name}>
           <span class="font-name">{i.name}</span>
           {#if i.fileName}
-            <span class="font-del" on:click|preventDefault|capture={() => delFont(i)} on:keypress>x</span>
+            <span class="font-del" on:click|preventDefault|capture={() => delFont(i.name)} on:keypress>x</span>
           {/if}
         </ListBoxItem>
       {/each}

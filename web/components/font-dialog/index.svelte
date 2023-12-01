@@ -1,6 +1,6 @@
 <script>
-  import { getModalStore } from '@skeletonlabs/skeleton';
   import Message from '@db-ui/message';
+  import { getModalStore } from '@skeletonlabs/skeleton';
 
   const fontForm = {
     name: '',

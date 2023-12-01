@@ -10,10 +10,10 @@ interface IFilter {
 
 export default {
   INIT: {
-    make_filter: (e) => e = e.replace('CORPORATION', '').trim(),
+    make_filter: (e) => e.replace('CORPORATION', '').trim(),
   },
   DEF: {
-    make_filter: (s) =>  charToNumberChar(s[0] + s.slice(1).toLowerCase()),
+    make_filter: (s) => charToNumberChar(s[0] + s.slice(1).toLowerCase()),
     model_filter: (e) => charToNumberChar(e.toLowerCase()),
   },
   NIKON: {

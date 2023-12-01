@@ -1,9 +1,10 @@
-import { Octokit } from 'octokit';
-import fs from 'fs';
-import path from 'path';
 import { exec } from 'child_process';
+import fs from 'fs';
 import os from 'os';
+import path from 'path';
+
 import mime from 'mime';
+import { Octokit } from 'octokit';
 
 const __dirname = path.parse(import.meta.url.slice(os.platform() === 'win32' ? 8 : 7)).dir;
 const octokit = new Octokit({

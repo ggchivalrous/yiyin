@@ -1,6 +1,7 @@
-import MessageComponent from './message.svelte';
 import PopupManager from '../utils/popup';
+
 import type { IMessage, Props, IUserCloseFun } from './interfaces';
+import MessageComponent from './message.svelte';
 
 let instance: MessageComponent;
 let seed = 1;

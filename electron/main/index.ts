@@ -1,6 +1,7 @@
 import path from 'node:path';
-import { app } from 'electron';
+
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
+import { app } from 'electron';
 
 import('@src/config').then(async ({ config }) => {
   setLoggerConfig({
