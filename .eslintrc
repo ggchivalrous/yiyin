@@ -5,10 +5,6 @@
     "browser": true
   },
   "parser": "@typescript-eslint/parser",
-  // "parserOptions": {
-  //   "project": "./tsconfig.json",
-  //   "extraFileExtensions": [".svelte"]
-  // },
   "extends": [
     "airbnb-base",
     "plugin:@typescript-eslint/recommended",
@@ -25,10 +21,6 @@
         "js": "espree",
         "typescript": "@typescript-eslint/parser"
       }
-    },
-    "rules": {
-      "import/no-mutable-exports": "off",
-      "no-unused-expressions": "off"
     }
   }],
   "plugins": [
@@ -37,6 +29,8 @@
   ],
   "rules": {
     "max-len": "off",
+    "import/no-mutable-exports": "off",
+    "no-unused-expressions": "off",
     "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "off",
     "import/extensions": "off",
@@ -48,7 +42,6 @@
         "alphabetize": { "order": "asc", "caseInsensitive": true }
       }
     ],
-    // "import/order": ["error", { "newlines-between": "always" }],
     "object-curly-newline": ["error", {
       "ImportDeclaration": { "multiline": true },
       "ExportDeclaration": { "multiline": true }
@@ -66,6 +59,7 @@
     "no-plusplus": "off",
     "no-bitwise": "off",
     "import/no-relative-packages": "off",
-    "guard-for-in": "off"
+    "guard-for-in": "off",
+    "@typescript-eslint/type-annotation-spacing": "error"
   }
 }

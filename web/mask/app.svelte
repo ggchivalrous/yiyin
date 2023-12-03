@@ -1,11 +1,14 @@
-<script>
-  import modelMap from '../util/model-map';
+<script lang="ts">
+  import modelMap from '@web-utils/model-map';
 
-  let canvas;
-  let taskList = [];
+  import type { ITaskInfo, IImgFileInfo, ExifInfo, IConfig, IFontInfo, OutputSetting, IBoxShadowMarkOption, ITextImgOption, IExifImgInfo } from './interface';
+
+  let canvas: HTMLCanvasElement;
+  let taskList: ITaskInfo[] = [];
   let processing = false;
-  let config = {};
-  let fontList = [];
+  let config: IConfig = null;
+  let fontList: IFontInfo[] = [];
+
   const defFont = 'PingFang SC';
   const ORIGIN_H = 3712;
 
@@ -15,17 +18,17 @@
   $: formatFontMap(config?.font?.map);
   $: importFont(fontList);
 
-  window.api['on:createMask']((info) => {
+  window.api['on:createMask']((info: ITaskInfo) => {
     console.log(info);
     taskList.push(info);
     taskList = taskList;
   });
 
-  async function startCreateTask() {
+  async function startCreateTask(list: ITaskInfo[]) {
     if (processing) return;
 
     processing = true;
-    for (let i = 0; i < taskList.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       const task = taskList[i];
 
       try {
@@ -39,8 +42,10 @@
           textImgInfo,
           shadow: {
             blur: task.option.shadow_show ? task.blur.height * ((task.option.shadow || 6) / 100) : 0,
-            radius: task.option.radius_show ? task.blur.height * ((task.option.radius || 2.1) / 100) : 0,
+            offsetX: 0,
+            offsetY: 0,
           },
+          radius: task.option.radius_show ? task.blur.height * ((task.option.radius || 2.1) / 100) : 0,
           option: task.option,
         });
 
@@ -59,22 +64,22 @@
     processing = false;
   }
 
-  function loadImage(info) {
+  function loadImage(info: IImgFileInfo): Promise<HTMLImageElement> {
     const img = new Image();
     img.width = info.width;
     img.height = info.height;
     img.src = `file://${info.path}`;
 
-    return new Promise((r, j) => {
+    return new Promise<HTMLImageElement>((r, j) => {
       img.onload = () => r(img);
       img.onerror = j;
     });
   }
 
   // 获取图片整体亮度
-  function getAverageBrightness(ctx, width, height) {
+  function getAverageBrightness(ctx: CanvasRenderingContext2D, width: number, height: number) {
     const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
+    const { data } = imageData;
     let totalBrightness = 0;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -85,9 +90,9 @@
     return totalBrightness / (width * height);
   }
 
-  function createBoxShadowMark(_canvas, option) {
-    _canvas.width = option.w || option.img.width;
-    _canvas.height = option.h || option.img.height;
+  function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption) {
+    _canvas.width = option.img.width;
+    _canvas.height = option.img.height;
     const ctx = _canvas.getContext('2d');
 
     if (option.img) {
@@ -130,7 +135,7 @@
     const rectY = contentOffsetY || ctx.shadowBlur;
     const rectWidth = option.contentImg.width;
     const rectHeight = option.contentImg.height;
-    const cornerRadius = option.shadow.radius;
+    const cornerRadius = option.radius;
 
     ctx.beginPath();
     ctx.moveTo(rectX + cornerRadius, rectY);
@@ -162,7 +167,7 @@
     return _canvas.toDataURL('image/png');
   }
 
-  function createTextImg(option) {
+  function createTextImg(option: ITextImgOption): IImgFileInfo {
     const can = createCanvas(1, option.fontSize);
     const ctx = can.getContext('2d');
     const font = `bold ${option.fontSize}px ${option.font},'PingFang SC'`;
@@ -183,12 +188,12 @@
     return {
       width: can.width,
       height: can.height,
-      data: can.toDataURL(),
+      path: can.toDataURL(),
     };
   }
 
-  function createExifImg(exifInfo, maxHeight, option) {
-    const exif = {
+  function createExifImg(exifInfo: ExifInfo, maxHeight: number, option: OutputSetting) {
+    const exif: IExifImgInfo = {
       title: null,
       info: null,
     };
@@ -260,19 +265,19 @@
     return exif;
   }
 
-  function createCanvas(w, h) {
+  function createCanvas(w: number, h: number) {
     const _canvas = document.createElement('canvas');
     _canvas.width = w;
     _canvas.height = h;
     return _canvas;
   }
 
-  async function importFont(arr) {
+  async function importFont(arr: IFontInfo[]) {
     for (const i of arr) {
       const font = new FontFace(i.name, `url('${i.path}')`);
       const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
       if (_font) {
-        document.fonts.add(_font);
+        (document.fonts as any).add(_font);
       }
     }
   }
@@ -285,10 +290,9 @@
     }
   }
 
-  function formatFontMap(fontMap) {
+  function formatFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
-      // eslint-disable-next-line guard-for-in
       for (const key in fontMap) {
         list.push({
           name: key,

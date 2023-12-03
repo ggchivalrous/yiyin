@@ -112,9 +112,8 @@ export default defineConfig(({ command }) => {
     resolve: {
       alias: {
         '@web': resolve(__dirname, 'web'),
-        '@page': resolve(__dirname, 'web/page'),
-        '@pages': resolve(__dirname, 'web/pages'),
         '@components': resolve(__dirname, 'web/components'),
+        '@web-utils': resolve(__dirname, 'web/util'),
         '@db-ui': resolve(__dirname, 'web/db-ui'),
         ...electronAlias,
       },

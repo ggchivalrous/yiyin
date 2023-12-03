@@ -136,3 +136,9 @@ export interface ExifInfo {
    */
   LensMake: string
 }
+
+export interface IImgFileInfo {
+  path: string
+  width: number
+  height: number
+}

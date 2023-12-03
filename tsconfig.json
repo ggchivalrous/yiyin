@@ -24,6 +24,7 @@
     "paths": {
       "@db-ui/*": ["web/db-ui/*"],
       "@components/*": ["web/components/*"],
+      "@web-utils/*": ["web/util/*"],
       "@modules": ["electron/src/modules"],
       "@modules/*": ["electron/src/modules/*"],
       "@utils": ["electron/src/utils"],
@@ -43,7 +44,8 @@
   "include": [
     "*.ts",
     "**/*.ts",
-    "**/*.svelte"
+    "**/*.svelte",
+    "*.svelte",
   ],
   "exclude": [
     "node_modules",

@@ -9,7 +9,7 @@ import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import type { RGBA } from 'sharp';
 
-import type { OutputSetting, ImgInfo, TextInfo, ExifInfo } from './interface';
+import type { OutputSetting, ImgInfo, TextInfo, ExifInfo, IImgFileInfo } from './interface';
 
 export * from './interface';
 
@@ -47,7 +47,7 @@ export class Image {
     await this.rotateImg();
   }
 
-  async createBgImg(toFilePath: string) {
+  async createBgImg(toFilePath: string): Promise<IImgFileInfo> {
     if (!this.isInit) { throw NotInit; }
 
     let resetHeight = this.rotateImgInfo.reset_info.h;
@@ -85,7 +85,7 @@ export class Image {
     };
   }
 
-  async createMainImg(toFilePath: string) {
+  async createMainImg(toFilePath: string): Promise<IImgFileInfo> {
     if (!this.isInit) { throw NotInit; }
 
     const imgSharp = await this.getRotateSharp();
