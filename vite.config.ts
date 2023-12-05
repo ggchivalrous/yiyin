@@ -114,7 +114,6 @@ export default defineConfig(({ command }) => {
         '@web': resolve(__dirname, 'web'),
         '@components': resolve(__dirname, 'web/components'),
         '@web-utils': resolve(__dirname, 'web/util'),
-        '@db-ui': resolve(__dirname, 'web/db-ui'),
         ...electronAlias,
       },
       extensions: ['.js', '.mjs', '.svelte', '.ts'],

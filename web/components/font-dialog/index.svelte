@@ -1,5 +1,5 @@
 <script>
-  import Message from '@db-ui/message';
+  import { Message } from '@ggchivalrous/db-ui';
   import { getModalStore } from '@skeletonlabs/skeleton';
 
   const fontForm = {

@@ -1,5 +1,6 @@
 :root {
   --text-color: #081E3D;
+  --text-color-1: rgba(16, 33, 55, 0.75);
   --active-border-color: #13325eca;
   --active-color: #13325eba;
   --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
@@ -27,4 +28,49 @@ html, body {
   overflow: hidden;
   background-color: var(--bg-color);
   color: var(--text-color);
+}
+
+body {
+  .db-drawer {
+    background-color: var(--bg-color);
+  }
+  
+  .db-switch {
+    &.is-checked {
+      .db-switch__core {
+        background-color: var(--active-color);
+        border-color: transparent;
+      }
+    }
+  
+    .db-switch__label {
+      color: var(--active-color);
+  
+      &.is-active {
+        color: var(--text-color);
+      }
+    }
+  }
+
+  .db-input{
+    .db-input__inner {
+      box-shadow: var(--blackShadow), var(--whiteShadow);
+      background-color: var(--bg-color);
+      color: var(--text-color-1);
+      border: none;
+    }
+
+    &.is-active .db-input__inner,
+    .db-input__inner:focus {
+      border-color: var(--text-color);
+    }
+  }
+
+  .db-dialog {
+    background-color: var(--bg-color);
+
+    .db-dialog__title {
+      color: var(--text-color);
+    }
+  }
 }

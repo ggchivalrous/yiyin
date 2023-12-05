@@ -1,5 +1,5 @@
 <script>
-  import YiWen from '@components/yiwen';
+  import Popup from '@components/popup';
 
   export let title = '';
 </script>
@@ -7,7 +7,9 @@
 <p class="action-item">
   <span class="config-title">{title}</span>
   {#if $$slots.popup}
-    <YiWen><slot name="popup" /></YiWen>
+    <Popup class="db-icon-question icon">
+      <slot name="popup" slot="message"></slot>
+    </Popup>
   {/if}
   <span class="config-value">
     <slot></slot>

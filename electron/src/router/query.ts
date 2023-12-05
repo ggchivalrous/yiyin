@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { config, getConfig } from '@config';
+import { config, getConfig, storeConfig } from '@config';
 import { Router } from '@modules/router';
 import { Image } from '@modules/tools/image';
 import routerConfig from '@root/router-config';
@@ -13,14 +13,15 @@ const r = new Router();
 r.listen(routerConfig.getConfig, async () => config);
 
 r.listen(routerConfig.setConfig, async (data: any) => {
-  Object.assign(config.options, data);
-  fs.writeFileSync(config.dir, JSON.stringify(config, null, 0));
+  storeConfig({
+    options: Object.assign(config.options, data.options),
+    cameraInfo: Object.assign(config.cameraInfo, data.cameraInfo),
+  });
+  return config;
 });
 
 r.listen(routerConfig.resetConfig, async () => {
-  const conf = getConfig(true);
-  Object.assign(config, conf);
-  fs.writeFileSync(config.dir, JSON.stringify(config, null, 0));
+  storeConfig(getConfig(true));
   return config;
 });
 

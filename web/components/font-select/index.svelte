@@ -1,6 +1,6 @@
 <script lang="ts">
   import FontDialog from '@components/font-dialog';
-  import Message from '@db-ui/message';
+  import { Message } from '@ggchivalrous/db-ui';
   import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
   import { createEventDispatcher } from 'svelte';
   import './index.scss';

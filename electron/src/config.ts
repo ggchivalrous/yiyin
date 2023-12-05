@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import type { IConfig } from '@src/interface';
+import type { ICameraInfoItem, IConfig } from '@src/interface';
 import { app } from 'electron';
 
 import { tryCatch } from './utils';
@@ -35,14 +35,36 @@ export const DefaultConfig: IConfig = {
     },
     font: 'PingFang SC',
   },
+
+  cameraInfo: {
+    Make: getDefOptionItem(''),
+    Model: getDefOptionItem(''),
+    ExposureTime: getDefOptionItem(''),
+    FNumber: getDefOptionItem(''),
+    ISO: getDefOptionItem(''),
+    FocalLength: getDefOptionItem(''),
+    ExposureProgram: getDefOptionItem(''),
+    DateTimeOriginal: getDefOptionItem(0),
+    LensModel: getDefOptionItem(''),
+    LensMake: getDefOptionItem(''),
+    PersonalSign: getDefOptionItem(''),
+  },
 };
 
-function getDefConf():IConfig {
+function getDefOptionItem<T>(defV: T): ICameraInfoItem<T> {
+  return {
+    use: false,
+    value: defV,
+    type: 'text',
+  };
+}
+
+function getDefConf(): IConfig {
   return JSON.parse(JSON.stringify(DefaultConfig));
 }
 
 export function getConfig(def = false) {
-  const config:IConfig = getDefConf();
+  const config: IConfig = getDefConf();
 
   if (!def && fs.existsSync(config.dir)) {
     const content = fs.readFileSync(config.dir);
@@ -51,7 +73,8 @@ export function getConfig(def = false) {
       output: fileConfig.output || config.output,
       cacheDir: fileConfig.cacheDir || config.cacheDir,
       options: Object.assign(config.options, fileConfig.options),
-    });
+      cameraInfo: Object.assign(config.cameraInfo, fileConfig.cameraInfo),
+    } as Partial<IConfig>);
   }
 
   if (process.env.URL) {
@@ -81,6 +104,11 @@ export function getConfig(def = false) {
   }
 
   return config;
+}
+
+export function storeConfig(conf: Partial<IConfig>) {
+  Object.assign(config, conf);
+  fs.writeFileSync(config.dir, JSON.stringify(config, null, 2));
 }
 
 export const config = getConfig();

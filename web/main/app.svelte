@@ -2,12 +2,13 @@
   import ActionItem from '@components/action-item';
   import FontSelect from '@components/font-select';
   import Popup from '@components/popup';
-  import toast from '@db-ui/message';
   import './index.scss';
-  import Switch from '@db-ui/switch';
+  import { Switch, Message as toast } from '@ggchivalrous/db-ui';
   import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
   import { tick } from 'svelte';
 
+  import { Setting } from './components';
+  import { config, getConfig, resetConfig } from './config';
   import type { IConfig, IFileInfo, TInputEvent } from './interface';
 
   initializeStores();
@@ -17,51 +18,10 @@
   let fileSelectDom: HTMLInputElement = null;
   let clipboardDom: HTMLDivElement = null;
   let outputDirName = '';
-  let fontMap: Record<string, string> = {};
   let imgExif = '';
-  const config: IConfig = {
-    init: true,
-    options: {
-      landscape: false, // 横屏输出
-      ext_show: true, // 参数显示
-      model_show: true, // 机型显示
-      brand_show: true, // 型号显示
-      solid_bg: false, // 纯色背景
-      origin_wh_output: true, // 按照图片原始宽高输出
-      radius: 2.1, // 圆角
-      radius_show: true,
-      shadow: 6, // 阴影
-      shadow_show: true,
-      bg_rate_show: true,
-      font: 'PingFang SC',
-      bg_rate: {
-        w: 0,
-        h: 0,
-      },
-    },
-    output: '',
-  };
+  let showSetting = false;
 
-  getConfig();
-
-  $: getPathName(config.output);
-  $: setConfig(config);
-
-  async function getConfig() {
-    const defConf = await window.api.getConfig();
-    if (defConf.code === 0) {
-      console.log('配置信息:', defConf.data);
-      config.options = Object.assign(config.options, defConf.data.options);
-      config.output = defConf.data.output;
-      fontMap = Object.assign(fontMap, defConf.data.font);
-    }
-  }
-
-  async function setConfig(opts: IConfig) {
-    if (!opts.init) {
-      await window.api.setConfig(config.options);
-    }
-  }
+  $: getPathName($config.output);
 
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
@@ -84,8 +44,8 @@
       processing = true;
       const res = await window.api.startTask({
         fileUrlList,
-        output: config.output,
-        option: config.options,
+        output: $config.output,
+        option: $config.options,
       });
 
       if (res.code !== 0) {
@@ -99,10 +59,9 @@
   }
 
   async function changeOutputPath() {
-    const data = await window.api['open:selectPath'](config);
+    const data = await window.api['open:selectPath']();
     if (data.code === 0 && data.data.output) {
-      config.output = data.data.output;
-      console.log('配置信息:', config);
+      $config.output = data.data.output;
     }
   }
 
@@ -132,20 +91,20 @@
     else if (num < min) num = min;
     else if (num > max) num = max;
 
-    (config.options[key] as number) = num;
+    ($config.options[key] as number) = num;
     v.currentTarget.value = `${num}`;
   }
 
   function onNumInputChange(v: TInputEvent, key: keyof IConfig['options']) {
-    const match = `${config.options[key]}`.match(numReg);
+    const match = `${$config.options[key]}`.match(numReg);
 
     if (match && match.length) {
-      (config.options[key] as number) = +match[0];
+      ($config.options[key] as number) = +match[0];
     } else {
-      (config.options[key] as number) = 0;
+      ($config.options[key] as number) = 0;
     }
 
-    v.currentTarget.value = config.options[key] as string;
+    v.currentTarget.value = $config.options[key] as string;
   }
 
   async function getExitInfo() {
@@ -161,18 +120,6 @@
     } else {
       toast.info('请选择一张图片');
     }
-  }
-
-  async function resetOption() {
-    const res = await window.api.resetConfig();
-    if (res.code !== 0) {
-      toast.error(`重置失败！！${res.message}`);
-      return;
-    }
-
-    config.options = res.data.options;
-    config.output = res.data.output;
-    toast.success({ message: '重置成功' });
   }
 
   function getPathName(path: string) {
@@ -197,9 +144,9 @@
 </script>
 
 <div class="header">
-  <FontSelect fontMap={fontMap} bind:value={config.options.font} on:update={getConfig} />
+  <FontSelect fontMap={$config.fontMap} bind:value={$config.options.font} on:update={getConfig} />
 
-  <Popup class="show grass button reset" on:click={resetOption}>
+  <Popup class="show grass button reset" on:click={resetConfig}>
     <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="M491.52 819.2a304.3328 304.3328 0 0 1-217.088-90.112l28.672-28.672a266.24 266.24 0 1 0-40.96-327.68l-35.2256-21.2992A307.2 307.2 0 1 1 491.52 819.2z"></path><path d="M430.08 409.6H245.76a20.48 20.48 0 0 1-20.48-20.48V204.8h40.96v163.84h163.84z"></path><path d="M512 512m-61.44 0a61.44 61.44 0 1 0 122.88 0 61.44 61.44 0 1 0-122.88 0Z"></path></svg>
     <p slot="message">重置回默认选项</p>
   </Popup>
@@ -224,32 +171,32 @@
         <div class="left-wrap">
           <ActionItem title="横屏输出">
             <svelte:fragment slot="popup">软件自己判断宽高比，将图片进行背景横向输出，适合竖图生成横屏图片</svelte:fragment>
-            <Switch bind:value={config.options.landscape} />
+            <Switch bind:value={$config.options.landscape} />
           </ActionItem>
 
           <ActionItem title="参数显示">
             <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
-            <Switch bind:value={config.options.ext_show} />
+            <Switch bind:value={$config.options.ext_show} />
           </ActionItem>
 
           <ActionItem title="机型显示">
             <svelte:fragment slot="popup">是否显示机型</svelte:fragment>
-            <Switch bind:value={config.options.brand_show} />
+            <Switch bind:value={$config.options.brand_show} />
           </ActionItem>
 
           <ActionItem title="型号显示">
             <svelte:fragment slot="popup">是否显示机子型号</svelte:fragment>
-            <Switch bind:value={config.options.model_show} />
+            <Switch bind:value={$config.options.model_show} />
           </ActionItem>
 
           <ActionItem title="纯色背景">
             <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
-            <Switch bind:value={config.options.solid_bg} />
+            <Switch bind:value={$config.options.solid_bg} />
           </ActionItem>
 
           <ActionItem title="原宽高输出">
             <svelte:fragment slot="popup">输出图片是否按照原始宽高，开启将缩放原图</svelte:fragment>
-            <Switch bind:value={config.options.origin_wh_output} />
+            <Switch bind:value={$config.options.origin_wh_output} />
           </ActionItem>
         </div>
 
@@ -258,24 +205,25 @@
 
           <ActionItem title="输出目录">
             <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
-            <span class="open-file-line" on:click={() => openDir(config.output)} on:keypress>{outputDirName}</span>
+            <span class="db-icon-setting output-setting" on:click|stopPropagation={changeOutputPath} on:keypress></span>
+            <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress>{outputDirName}</span>
           </ActionItem>
 
           <ActionItem title="背景比例">
             <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
-            <Switch bind:value={config.options.bg_rate_show} />
-            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={config.options.bg_rate.w}/>
+            <Switch bind:value={$config.options.bg_rate_show} />
+            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.w}/>
             :
-            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={config.options.bg_rate.h}/>
+            <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.h}/>
           </ActionItem>
 
           <ActionItem title="圆角大小">
             <svelte:fragment slot="popup">指定圆角的大小，不指定则为直角(默认使用高度的 0.021%)</svelte:fragment>
-            <Switch bind:value={config.options.radius_show} />
+            <Switch bind:value={$config.options.radius_show} />
             <input
               class="bg-rate-input"
               type="text"
-              value={config.options.radius}
+              value={$config.options.radius}
               on:input={(v) => onNumInput(v, 'radius', 30, 0)}
               on:change={(v) => onNumInputChange(v, 'radius')}
             />
@@ -283,11 +231,11 @@
 
           <ActionItem title="阴影大小">
             <svelte:fragment slot="popup">指定阴影的大小，不指定则无阴影(默认使用高度的 0.06%)</svelte:fragment>
-            <Switch bind:value={config.options.shadow_show} />
+            <Switch bind:value={$config.options.shadow_show} />
             <input
               class="bg-rate-input"
               type="text"
-              value={config.options.shadow}
+              value={$config.options.shadow}
               on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
               on:change={(v) => onNumInputChange(v, 'shadow')}
             />
@@ -302,7 +250,7 @@
         <div class="button grass" on:click={generatePictureFrames} on:keypress>生成印框</div>
         <div class="button grass" on:click={getExitInfo} on:keypress>相机信息</div>
         <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
-        <div class="button grass" on:click={changeOutputPath} on:keypress>输出目录</div>
+        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress>自定义参数</div>
       {:else}
         印框生成中...
       {/if}
@@ -317,6 +265,8 @@
       <a href="https://github.com/ggchivalrous/yiyin" target="_blank">© 2023 Github - GGChivalrous.</a>
     </p>
   </div>
+
+  <Setting bind:visible={showSetting} />
 </div>
 
 <Modal />

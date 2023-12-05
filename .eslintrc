@@ -21,6 +21,9 @@
         "js": "espree",
         "typescript": "@typescript-eslint/parser"
       }
+    },
+    "rules": {
+      "no-return-assign": "off"
     }
   }],
   "plugins": [

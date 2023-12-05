@@ -27,5 +27,33 @@ export interface IConfig {
     map: Record<string, string>
   }
 
+  /**
+   * 参数信息
+   */
   options: OutputSetting
+
+  /**
+   * 相机参数信息
+   */
+  cameraInfo: ICameraInfo
+}
+
+export interface ICameraInfoItem<T = string> {
+  use: boolean
+  value: T
+  type: 'text' | 'img'
+}
+
+export interface ICameraInfo {
+  Make: ICameraInfoItem
+  Model: ICameraInfoItem
+  ExposureTime: ICameraInfoItem
+  FNumber: ICameraInfoItem
+  ISO: ICameraInfoItem
+  FocalLength: ICameraInfoItem
+  ExposureProgram: ICameraInfoItem
+  DateTimeOriginal: ICameraInfoItem<number>
+  LensModel: ICameraInfoItem
+  LensMake: ICameraInfoItem
+  PersonalSign: ICameraInfoItem
 }

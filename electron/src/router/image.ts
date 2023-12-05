@@ -87,11 +87,11 @@ r.listen<any, any>(routerConfig.composite, async (data) => {
     const buffer = Buffer.from(data.mask.split(',')[1], 'base64');
 
     if (data.text.title) {
-      data.text.title.data = Buffer.from(data.text.title.data.split(',')[1], 'base64');
+      data.text.title.data = Buffer.from(data.text.title.path.split(',')[1], 'base64');
     }
 
     if (data.text.info) {
-      data.text.info.data = Buffer.from(data.text.info.data.split(',')[1], 'base64');
+      data.text.info.data = Buffer.from(data.text.info.path.split(',')[1], 'base64');
     }
 
     await Image.imgComposite(buffer, mainImgPath, path.resolve(config.output, getFileName(config.output, data.name)), data.text).catch((e) => {
