@@ -9,6 +9,7 @@
 
   export let event = 'hover';
   export let placement = 'top';
+  export let style = '';
   export { classes as class };
 
   const popupHover = {
@@ -18,7 +19,7 @@
   };
 </script>
 
-<div use:popup={popupHover} class={classes} on:click on:keypress>
+<div use:popup={popupHover} class={classes} on:click on:keypress {style}>
   <slot></slot>
 </div>
 
@@ -37,6 +38,7 @@
   padding: 6px 20px;
   border-radius: 4px;
   font-size: 14px;
+  z-index: 2;
 }
 
 .arrow {

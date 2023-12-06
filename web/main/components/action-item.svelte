@@ -9,6 +9,7 @@
   export let content: any = '';
   export let contentType: 'text' | 'img' = 'text';
   export let showType = false;
+  export let showEdit = true;
 
   const dispatch = createEventDispatcher();
   const form = {
@@ -48,7 +49,7 @@
 <p class="action-item">
   <span class="config-title">{title}</span>
   {#if $$slots.popup}
-    <Popup class="db-icon-question icon">
+    <Popup class="db-icon-question icon" style="padding-right: 4px; color: var(--text-color);">
       <slot name="popup" slot="message" />
     </Popup>
   {/if}
@@ -67,7 +68,9 @@
     {/if}
   </span>
 
-  <i class="db-icon-edit icon" on:click={showDialog} on:keypress></i>
+  {#if showEdit}
+    <i class="db-icon-edit icon" on:click={showDialog} on:keypress></i>
+  {/if}
 </p>
 
 <Dialog title="设置{title}" bind:visible={form.show} appendToBody width="450px">

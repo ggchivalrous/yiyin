@@ -37,6 +37,7 @@ export const DefaultConfig: IConfig = {
   },
 
   cameraInfo: {
+    Force: getDefOptionItem(true),
     Make: getDefOptionItem(''),
     Model: getDefOptionItem(''),
     ExposureTime: getDefOptionItem(''),

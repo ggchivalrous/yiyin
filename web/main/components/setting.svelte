@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Drawer } from '@ggchivalrous/db-ui';
-  import { config } from '@web/main/config';
-  import type { ICameraInfoItem, ICameraInfo } from '@web/main/interface';
+  import type { ICameraInfo } from '@web/main/interface';
+  import { config } from '@web/store/config';
 
   import { ActionItem } from '.';
 
@@ -13,7 +13,7 @@
   $: option = JSON.parse(JSON.stringify($config.cameraInfo));
 
   function onSave(field: keyof ICameraInfo) {
-    return async (e: CustomEvent<ICameraInfoItem<string> & ICameraInfoItem<number>>) => {
+    return async (e: CustomEvent<any>) => {
       config.update((v) => {
         v.cameraInfo[field] = { ...v.cameraInfo[field], ...e.detail };
         return v;
@@ -30,6 +30,11 @@
   direction="rtl"
   {beforeClose}
 >
+  <ActionItem title="模式" showSwitch showEdit={false} bind:value={option.Force.use} on:save={onSave('Force')}>
+    <svelte:fragment slot="popup">
+      是否强制使用自定义参数作为最终输出，默认参数识别失败将使用自定义参数作为最终输出，开启将强制使用自定义参数
+    </svelte:fragment>
+  </ActionItem>
   <ActionItem
     title="个性签名"
     showType

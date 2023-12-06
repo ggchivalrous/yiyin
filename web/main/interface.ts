@@ -11,6 +11,7 @@ export interface IConfig {
   options: Config['options']
   output: string
   fontMap: Record<string, string>
+  fontDir: string
   cameraInfo: Config['cameraInfo']
 }
 

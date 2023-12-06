@@ -2,7 +2,7 @@
 import { Message } from '@ggchivalrous/db-ui';
 import { writable } from 'svelte/store';
 
-import type { IConfig, ICameraInfoItem } from './interface';
+import type { IConfig, ICameraInfoItem } from '../main/interface';
 
 let initConfig = false;
 
@@ -26,7 +26,9 @@ export const config = writable<IConfig>({
     },
   },
   fontMap: {},
+  fontDir: '',
   cameraInfo: {
+    Force: getDefOptionItem(true),
     Make: getDefOptionItem(''),
     Model: getDefOptionItem(''),
     ExposureTime: getDefOptionItem(''),
@@ -49,10 +51,12 @@ export async function getConfig() {
       v.options = defConf.data.options;
       v.output = defConf.data.output;
       v.fontMap = defConf.data.font.map;
+      v.fontDir = defConf.data.font.dir;
       v.cameraInfo = defConf.data.cameraInfo;
       return v;
     });
     console.log('配置信息:', defConf.data);
+    config.subscribe((v) => console.log('使用配置信息:', v))();
   }
 }
 
@@ -67,6 +71,7 @@ export async function resetConfig() {
     v.options = res.data.options;
     v.output = res.data.output;
     v.fontMap = res.data.font.map;
+    v.fontDir = res.data.font.dir;
     return v;
   });
   Message.success({ message: '重置成功' });
@@ -83,6 +88,7 @@ config.subscribe(async (v) => {
     }
 
     console.log('配置信息:', _conf.data);
+    config.subscribe((_v) => console.log('使用配置信息:', _v))();
   }
 });
 

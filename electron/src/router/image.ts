@@ -37,6 +37,10 @@ interface StartTaskData {
 }
 
 r.listen<any, boolean>(routerConfig.startTask, async (data: StartTaskData) => {
+  if (maskGenWin) {
+    maskGenWin.close();
+    maskGenWin = null;
+  }
   await createMaskWin();
 
   for (const fileInfo of data.fileUrlList) {

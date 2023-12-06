@@ -5,10 +5,10 @@
   import './index.scss';
   import { Switch, Message as toast } from '@ggchivalrous/db-ui';
   import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
+  import { config, getConfig, resetConfig } from '@web/store/config';
   import { tick } from 'svelte';
 
   import { Setting } from './components';
-  import { config, getConfig, resetConfig } from './config';
   import type { IConfig, IFileInfo, TInputEvent } from './interface';
 
   initializeStores();

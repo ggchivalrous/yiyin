@@ -1,21 +1,20 @@
 <script lang="ts">
+  import { config } from '@web/store/config';
   import modelMap from '@web-utils/model-map';
 
-  import type { ITaskInfo, IImgFileInfo, ExifInfo, IConfig, IFontInfo, OutputSetting, IBoxShadowMarkOption, ITextImgOption, IExifImgInfo } from './interface';
+  import type { ExifInfo, IBoxShadowMarkOption, IExifImgInfo, IFontInfo, IImgFileInfo, ITaskInfo, ITextImgOption, OutputSetting } from './interface';
+  import { importFont, calcAverageBrightness, loadImage } from './main';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
   let processing = false;
-  let config: IConfig = null;
   let fontList: IFontInfo[] = [];
 
   const defFont = 'PingFang SC';
   const ORIGIN_H = 3712;
 
-  getConfig();
-
   $: startCreateTask(taskList);
-  $: formatFontMap(config?.font?.map);
+  $: formatFontMap($config.fontMap);
   $: importFont(fontList);
 
   window.api['on:createMask']((info: ITaskInfo) => {
@@ -64,32 +63,6 @@
     processing = false;
   }
 
-  function loadImage(info: IImgFileInfo): Promise<HTMLImageElement> {
-    const img = new Image();
-    img.width = info.width;
-    img.height = info.height;
-    img.src = `file://${info.path}`;
-
-    return new Promise<HTMLImageElement>((r, j) => {
-      img.onload = () => r(img);
-      img.onerror = j;
-    });
-  }
-
-  // 获取图片整体亮度
-  function getAverageBrightness(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const { data } = imageData;
-    let totalBrightness = 0;
-
-    for (let i = 0; i < data.length; i += 4) {
-    // 简单的亮度计算方法
-      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      totalBrightness += brightness;
-    }
-    return totalBrightness / (width * height);
-  }
-
   function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption) {
     _canvas.width = option.img.width;
     _canvas.height = option.img.height;
@@ -100,7 +73,7 @@
 
       // 添加黑色蒙层，突出主体图片
       if (!option.option.solid_bg) {
-        const averageBrightness = getAverageBrightness(ctx, _canvas.width, _canvas.height);
+        const averageBrightness = calcAverageBrightness(ctx, _canvas.width, _canvas.height);
         if (averageBrightness < 15) {
           ctx.fillStyle = 'rgba(180, 180, 180, 0.2)'; // 灰色半透明覆盖层
         } else if (averageBrightness < 20) {
@@ -198,25 +171,22 @@
       info: null,
     };
 
+    // 先对参数做格式化
+    exifInfo = formatExifInfo(exifInfo);
+
     // 移除厂商和型号有重复内容
     let title = '';
     if (exifInfo.Make) {
-      // 先走一层默认的过滤
-      exifInfo.Make = modelMap.INIT.make_filter(exifInfo.Make.trim());
-      const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
-
       if (option.brand_show) {
         if (option.font === defFont) {
-          title = _modelMap.make_filter(exifInfo.Make);
+          title = exifInfo.Make;
         } else {
           title = exifInfo.Make[0] + exifInfo.Make.slice(1);
         }
       }
     }
 
-    const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
     if (option.model_show && exifInfo.Model) {
-      exifInfo.Model = _modelMap.model_filter(exifInfo.Model.replace(exifInfo.Make, '').trim());
       title += ` ${exifInfo.Model}`;
     }
 
@@ -272,36 +242,56 @@
     return _canvas;
   }
 
-  async function importFont(arr: IFontInfo[]) {
-    for (const i of arr) {
-      const font = new FontFace(i.name, `url('${i.path}')`);
-      const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
-      if (_font) {
-        (document.fonts as any).add(_font);
-      }
-    }
-  }
-
-  async function getConfig() {
-    const defConf = await window.api.getConfig();
-    if (defConf.code === 0) {
-      config = defConf.data;
-      console.log('配置信息:', config);
-    }
-  }
-
   function formatFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
       for (const key in fontMap) {
         list.push({
           name: key,
-          path: `file://${config.font.dir}/${fontMap[key]}`,
+          path: `file://${$config.fontDir}/${fontMap[key]}`,
         });
       }
 
       fontList = list;
     }
+  }
+
+  function getExifInfo(exifInfo: ExifInfo) {
+    const _exifInfo: ExifInfo = { ...exifInfo };
+
+    // 强制使用自定义参数
+    if ($config.cameraInfo.Force) {
+      for (const field in $config.cameraInfo) {
+        const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
+        if (info.use) {
+          _exifInfo[field as keyof ExifInfo] = info.value as never;
+        }
+      }
+
+      return _exifInfo;
+    }
+
+    // 非强制使用，则使用自定义参数补空
+    for (const field in $config.cameraInfo) {
+      const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
+      if (info.use && !_exifInfo[field as keyof ExifInfo]) {
+        _exifInfo[field as keyof ExifInfo] = info.value as never;
+      }
+    }
+
+    return _exifInfo;
+  }
+
+  function formatExifInfo(exifInfo: ExifInfo) {
+    const exif: ExifInfo = { ...exifInfo };
+    exif.Make = modelMap.INIT.make_filter(exifInfo.Make).trim();
+
+    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make]);
+
+    exif.Model = _modelMap.model_filter(exif.Model.replace(exif.Make, ''))?.trim() || '';
+    exif.Make = _modelMap.make_filter(exif.Make)?.trim() || '';
+
+    return getExifInfo(exif);
   }
 </script>
 

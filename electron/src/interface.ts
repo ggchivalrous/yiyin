@@ -45,6 +45,7 @@ export interface ICameraInfoItem<T = string> {
 }
 
 export interface ICameraInfo {
+  Force: ICameraInfoItem<boolean>
   Make: ICameraInfoItem
   Model: ICameraInfoItem
   ExposureTime: ICameraInfoItem
