@@ -4,7 +4,7 @@ import path from 'node:path';
 import { config } from '@config';
 import { Logger } from '@modules/logger';
 import { Router } from '@modules/router';
-import { Image, OutputSetting } from '@modules/tools/image';
+import { IImgFileInfo, Image, OutputSetting } from '@modules/tools/image';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
 import { getFileName, md5, tryAsyncCatch } from '@utils';
@@ -89,16 +89,14 @@ r.listen<any, any>(routerConfig.composite, async (data) => {
     const mainImgPath = path.resolve(config.cacheDir, `${data.md5}_main.jpg`);
     const bgImgPath = path.resolve(config.cacheDir, `${data.md5}_bg.jpg`);
     const buffer = Buffer.from(data.mask.split(',')[1], 'base64');
+    const textList: IImgFileInfo[] = data.text?.length ? data.text.map((i: IImgFileInfo) => ({
+      path: i.path,
+      data: Buffer.from(i.path.split(',')[1], 'base64'),
+      width: i.width,
+      height: i.height,
+    })) : [];
 
-    if (data.text.title) {
-      data.text.title.data = Buffer.from(data.text.title.path.split(',')[1], 'base64');
-    }
-
-    if (data.text.info) {
-      data.text.info.data = Buffer.from(data.text.info.path.split(',')[1], 'base64');
-    }
-
-    await Image.imgComposite(buffer, mainImgPath, path.resolve(config.output, getFileName(config.output, data.name)), data.text).catch((e) => {
+    await Image.imgComposite(buffer, mainImgPath, path.resolve(config.output, getFileName(config.output, data.name)), textList).catch((e) => {
       log.error('图片合成失败', e);
     });
 

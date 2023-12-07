@@ -73,21 +73,6 @@ export interface ImgInfo {
   }
 }
 
-export interface TextInfo {
-  title: {
-    width: number
-    height: number
-    data: Buffer
-    path: string
-  }
-  info: {
-    width: number
-    height: number
-    path: string
-    data: Buffer
-  }
-}
-
 export interface ExifInfo {
   /**
    * 相机厂商
@@ -138,6 +123,7 @@ export interface ExifInfo {
 }
 
 export interface IImgFileInfo {
+  data?: string
   path: string
   width: number
   height: number

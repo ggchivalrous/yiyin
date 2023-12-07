@@ -33,7 +33,7 @@ export interface ITextImgOption {
 export interface IBoxShadowMarkOption {
   img: HTMLImageElement
   contentImg: HTMLImageElement
-  textImgInfo: IExifImgInfo
+  textImgList: IImgFileInfo[]
   shadow: {
     blur?: number
     offsetX?: number

@@ -9,7 +9,7 @@ import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import type { RGBA } from 'sharp';
 
-import type { OutputSetting, ImgInfo, TextInfo, ExifInfo, IImgFileInfo } from './interface';
+import type { OutputSetting, ImgInfo, ExifInfo, IImgFileInfo } from './interface';
 
 export * from './interface';
 
@@ -122,7 +122,7 @@ export class Image {
     };
   }
 
-  static async imgComposite(bgPath: string | Buffer, mainPath: string, toFilePath: string, textInfo: TextInfo) {
+  static async imgComposite(bgPath: string | Buffer, mainPath: string, toFilePath: string, textInfo: IImgFileInfo[]) {
     const bgInfo = await sharp(bgPath)
       .toFormat('png')
       .toBuffer({ resolveWithObject: true });
@@ -136,28 +136,28 @@ export class Image {
 
     const rem = originHeight / 3712;
     const contentOffsetX = Math.round((originWidth - mainImgInfo.width) / 2);
-    const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / (!textInfo.title?.data && !textInfo.info?.data ? 2 : 3));
+    const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / (!textInfo.length ? 2 : 3));
 
     const composite: any[] = [
       { input: mainPath, top: contentOffsetY, left: contentOffsetX },
       { input: bgInfo.data, gravity: sharp.gravity.center },
     ];
 
-    if (textInfo.title?.data) {
-      const top = originHeight - Math.round((textInfo.info?.height || 0) + 250 * rem);
+    if (textInfo[0]?.data) {
+      const top = originHeight - Math.round((textInfo[0]?.height || 0) + 250 * rem);
       composite.push({
-        input: textInfo.title.data,
+        input: textInfo[0].data,
         top,
-        left: Math.round((originWidth - textInfo.title.width) / 2),
+        left: Math.round((originWidth - textInfo[0].width) / 2),
       });
     }
 
-    if (textInfo.info?.data) {
+    if (textInfo[1]?.data) {
       const top = originHeight - Math.round(200 * rem);
       const infoPosition = {
-        input: textInfo.info.data,
+        input: textInfo[1].data,
         top,
-        left: Math.round((originWidth - textInfo.info.width) / 2),
+        left: Math.round((originWidth - textInfo[1].width) / 2),
       };
       composite.push(infoPosition);
     }

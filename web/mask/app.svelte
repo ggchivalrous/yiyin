@@ -2,16 +2,13 @@
   import { config } from '@web/store/config';
   import modelMap from '@web-utils/model-map';
 
-  import type { ExifInfo, IBoxShadowMarkOption, IExifImgInfo, IFontInfo, IImgFileInfo, ITaskInfo, ITextImgOption, OutputSetting } from './interface';
-  import { importFont, calcAverageBrightness, loadImage } from './main';
+  import type { ExifInfo, IBoxShadowMarkOption, IFontInfo, IImgFileInfo, ITaskInfo } from './interface';
+  import { calcAverageBrightness, importFont, loadImage } from './main';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
   let processing = false;
   let fontList: IFontInfo[] = [];
-
-  const defFont = 'PingFang SC';
-  const ORIGIN_H = 3712;
 
   $: startCreateTask(taskList);
   $: formatFontMap($config.fontMap);
@@ -33,12 +30,31 @@
       try {
         const blurImg = await loadImage(task.blur);
         const scaleImg = await loadImage(task.scale);
-        const textImgInfo = createExifImg(task.exifInfo, task.blur.height, task.option);
+        const textImgList = createTextList(task.exifInfo, [
+          {
+            text: '{Make} {Model}',
+            opts: {
+              size: task.scale.height * 0.04,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+            },
+          },
+          {
+            text: '{FocalLength}  {FNumber}  {ExposureTime}  {ISO}',
+            opts: {
+              size: task.scale.height * 0.025,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+            },
+          },
+        ]);
 
         const maskUrl = await createBoxShadowMark(canvas, {
           img: blurImg,
           contentImg: scaleImg,
-          textImgInfo,
+          textImgList,
           shadow: {
             blur: task.option.shadow_show ? task.blur.height * ((task.option.shadow || 6) / 100) : 0,
             offsetX: 0,
@@ -52,7 +68,7 @@
           name: task.name,
           md5: task.md5,
           mask: maskUrl,
-          text: textImgInfo,
+          text: textImgList,
           option: task.option,
         });
       } catch (e) {
@@ -90,7 +106,7 @@
     }
 
     let heightPosition = 3;
-    if ((!option.option.ext_show && !option.option.brand_show) || (!option.textImgInfo.title && !option.textImgInfo.info)) {
+    if ((!option.option.ext_show && !option.option.brand_show) || !option.textImgList.length) {
       heightPosition = 2;
     }
 
@@ -140,101 +156,6 @@
     return _canvas.toDataURL('image/png');
   }
 
-  function createTextImg(option: ITextImgOption): IImgFileInfo {
-    const can = createCanvas(1, option.fontSize);
-    const ctx = can.getContext('2d');
-    const font = `bold ${option.fontSize}px ${option.font},'PingFang SC'`;
-    ctx.font = font;
-    const textInfo = ctx.measureText(option.text);
-    can.width = textInfo.width;
-    can.height = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
-
-    if (option.background) {
-      ctx.fillStyle = option.background;
-      ctx.fillRect(0, 0, can.width, can.height);
-    }
-
-    ctx.fillStyle = option.color || '#000000';
-    ctx.font = font;
-    ctx.fillText(option.text, 0, 0 + textInfo.actualBoundingBoxAscent);
-
-    return {
-      width: can.width,
-      height: can.height,
-      path: can.toDataURL(),
-    };
-  }
-
-  function createExifImg(exifInfo: ExifInfo, maxHeight: number, option: OutputSetting) {
-    const exif: IExifImgInfo = {
-      title: null,
-      info: null,
-    };
-
-    // 先对参数做格式化
-    exifInfo = formatExifInfo(exifInfo);
-
-    // 移除厂商和型号有重复内容
-    let title = '';
-    if (exifInfo.Make) {
-      if (option.brand_show) {
-        if (option.font === defFont) {
-          title = exifInfo.Make;
-        } else {
-          title = exifInfo.Make[0] + exifInfo.Make.slice(1);
-        }
-      }
-    }
-
-    if (option.model_show && exifInfo.Model) {
-      title += ` ${exifInfo.Model}`;
-    }
-
-    if (title) {
-      exif.title = createTextImg({
-        text: title,
-        color: option.solid_bg ? '#000' : '#fff',
-        fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
-        font: option.font,
-      });
-    }
-
-    if (option.ext_show) {
-      const infoTextArr = [];
-
-      if (exifInfo.FocalLength) {
-        infoTextArr.push(`${exifInfo.FocalLength}mm`);
-      }
-
-      if (exifInfo.FNumber) {
-        infoTextArr.push(`f/${exifInfo.FNumber}`);
-      }
-
-      if (exifInfo.ExposureTime) {
-        if (exifInfo.ExposureTime < 1) {
-          infoTextArr.push(`1/${Math.round(1 / exifInfo.ExposureTime)}s`);
-        } else {
-          infoTextArr.push(`${exifInfo.ExposureTime}s`);
-        }
-      }
-
-      if (exifInfo.ISO) {
-        infoTextArr.push(`ISO${exifInfo.ISO}`);
-      }
-
-      if (infoTextArr.length) {
-        exif.info = createTextImg({
-          text: infoTextArr.join(' '),
-          color: option.solid_bg ? '#000' : '#fff',
-          fontSize: 80 * (maxHeight / ORIGIN_H),
-          font: option.font,
-        });
-      }
-    }
-
-    return exif;
-  }
-
   function createCanvas(w: number, h: number) {
     const _canvas = document.createElement('canvas');
     _canvas.width = w;
@@ -256,42 +177,124 @@
     }
   }
 
-  function getExifInfo(exifInfo: ExifInfo) {
-    const _exifInfo: ExifInfo = { ...exifInfo };
+  function formatExifInfo(exifInfo: ExifInfo) {
+    const exif: Record<keyof ExifInfo, string | number> = { ...exifInfo };
+    exif.Make = modelMap.INIT.make_filter(exifInfo.Make).trim();
+
+    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make]);
+
+    exif.Model = _modelMap.model_filter(exifInfo.Model.replace(exif.Make, ''))?.trim() || '';
+    exif.Make = _modelMap.make_filter(exif.Make)?.trim() || '';
+
+    if (exifInfo.FocalLength) {
+      exif.FocalLength = `${exifInfo.FocalLength}mm`;
+    }
+
+    if (exifInfo.FNumber) {
+      exif.FNumber = `f/${exifInfo.FNumber}`;
+    }
+
+    if (exifInfo.ExposureTime) {
+      if (exifInfo.ExposureTime < 1) {
+        exif.ExposureTime = `1/${Math.round(1 / exifInfo.ExposureTime)}s`;
+      } else {
+        exif.ExposureTime = `${exifInfo.ExposureTime}s`;
+      }
+    }
+
+    if (exifInfo.ISO) {
+      exif.ISO = `ISO${exifInfo.ISO}`;
+    }
 
     // 强制使用自定义参数
     if ($config.cameraInfo.Force) {
       for (const field in $config.cameraInfo) {
         const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
         if (info.use) {
-          _exifInfo[field as keyof ExifInfo] = info.value as never;
+          exif[field as keyof ExifInfo] = info.value as never;
         }
       }
-
-      return _exifInfo;
-    }
-
-    // 非强制使用，则使用自定义参数补空
-    for (const field in $config.cameraInfo) {
-      const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
-      if (info.use && !_exifInfo[field as keyof ExifInfo]) {
-        _exifInfo[field as keyof ExifInfo] = info.value as never;
+    } else { // 非强制使用，则使用自定义参数补空
+      for (const field in $config.cameraInfo) {
+        const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
+        if (info.use && !exif[field as keyof ExifInfo]) {
+          exif[field as keyof ExifInfo] = info.value as never;
+        }
       }
     }
 
-    return _exifInfo;
+    return exif;
   }
 
-  function formatExifInfo(exifInfo: ExifInfo) {
-    const exif: ExifInfo = { ...exifInfo };
-    exif.Make = modelMap.INIT.make_filter(exifInfo.Make).trim();
+  interface ITextOption {
+    size: number
+    font?: string
+    color?: string
+    bold?: boolean
+    height?: number
+    /**
+     * 斜体
+     */
+    italic?: boolean
+  }
 
-    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make]);
+  interface ITextItem {
+    text: string
+    opts: ITextOption
+  }
 
-    exif.Model = _modelMap.model_filter(exif.Model.replace(exif.Make, ''))?.trim() || '';
-    exif.Make = _modelMap.make_filter(exif.Make)?.trim() || '';
+  function createTextList(exifInfo: ExifInfo, arr: ITextItem[]): IImgFileInfo[] {
+    const _exifInfo = formatExifInfo(exifInfo);
 
-    return getExifInfo(exif);
+    return arr.map(({ text, opts }) => {
+      for (const field in _exifInfo) {
+        text = text.replaceAll(`{${field}}`, `${_exifInfo[field as keyof typeof _exifInfo]}`).trim();
+      }
+      return createTextImg(text, opts);
+    });
+  }
+
+  function createTextFont(opts: ITextOption) {
+    let font = '';
+
+    if (opts.bold) {
+      font += 'bold ';
+    }
+
+    if (opts.italic) {
+      font += 'italic ';
+    }
+
+    if (opts.size) {
+      font += `${opts.size}px `;
+    }
+
+    if (opts.font) {
+      font += `${opts.font},`;
+    }
+
+    font += '"PingFang SC"';
+
+    return font;
+  }
+
+  function createTextImg(text: string, opts: ITextOption): IImgFileInfo {
+    const can = createCanvas(1, 1);
+    const ctx = can.getContext('2d');
+    ctx.font = createTextFont(opts);
+    const textInfo = ctx.measureText(text);
+
+    can.width = textInfo.width;
+    can.height = opts.height || textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
+    ctx.fillStyle = opts.color || '#000';
+    ctx.font = createTextFont(opts);
+    ctx.fillText(text, 0, textInfo.actualBoundingBoxAscent);
+
+    return {
+      width: can.width,
+      height: can.height,
+      path: can.toDataURL(),
+    };
   }
 </script>
 
