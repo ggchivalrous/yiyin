@@ -1,48 +1,35 @@
 <script lang="ts">
   import Popup from '@components/popup';
-  import { Dialog, Input, Switch } from '@ggchivalrous/db-ui';
+  import { Switch } from '@ggchivalrous/db-ui';
   import { createEventDispatcher } from 'svelte';
 
+  import type { ICameraInfoItem } from '../interface';
+
+  import type { TActionItemData } from './interface';
+
   export let title = '';
-  export let value = false;
   export let showSwitch = true;
-  export let content: any = '';
-  export let contentType: 'text' | 'img' = 'text';
-  export let showType = false;
   export let showEdit = true;
+  export let data: ICameraInfoItem<string | number | boolean> = null;
 
   const dispatch = createEventDispatcher();
-  const form = {
-    value: false,
-    content: '',
-    contentType: 'text',
-    show: false,
+  let form: TActionItemData = {
+    use: false,
+    value: '',
+    bImg: '',
+    wImg: '',
+    type: 'text',
+    title: '',
   };
 
-  $: form.value = value;
-  $: form.content = content;
-  $: form.contentType = contentType;
+  $: form = { ...form, ...data };
 
-  function showDialog() {
-    form.value = value;
-    form.content = content;
-    form.contentType = contentType;
-    form.show = true;
-  }
-
-  function onFileChange(e: CustomEvent) {
-    if (e.detail) {
-      form.content = e.detail;
-    }
+  function onEdit() {
+    dispatch('edit', form);
   }
 
   function onSave() {
-    dispatch('save', {
-      type: form.contentType,
-      use: form.value,
-      value: form.content,
-    });
-    form.show = false;
+    dispatch('save', form);
   }
 </script>
 
@@ -55,53 +42,26 @@
   {/if}
 
   {#if showSwitch}
-    <Switch bind:value={form.value} on:change={onSave} />
+    <Switch bind:value={form.use} on:change={onSave} />
   {/if}
 
   <span class="config-value">
-    {#if content}
-      {#if contentType === 'text'}
-        {content}
-      {:else if contentType === 'img'}
-        <img src={content} alt={content} />
+    {#if data.type === 'text'}
+      {form.value}
+    {:else if data.type === 'img'}
+      {#if form.wImg}
+        <img src="file://{form.wImg}" alt="图片" />
+      {/if}
+      {#if form.bImg}
+        <img src="file://{form.bImg}" alt="图片" />
       {/if}
     {/if}
   </span>
 
   {#if showEdit}
-    <i class="db-icon-edit icon" on:click={showDialog} on:keypress></i>
+    <i class="db-icon-edit icon" on:click={onEdit} on:keypress></i>
   {/if}
 </p>
-
-<Dialog title="设置{title}" bind:visible={form.show} appendToBody width="450px">
-  {#if showType}
-    <div class="form-item">
-      <Switch
-        bind:value={form.contentType}
-        inactiveValue="text"
-        inactiveText="Text"
-        activeText="Iamge"
-        activeValue="img"
-        on:change={() => (form.content = '')}
-      />
-    </div>
-  {/if}
-
-  <div class="form-item">
-    {#if form.contentType === 'text'}
-      <Input type="text" bind:value={form.content} />
-    {:else}
-      <Input type="file" on:input={onFileChange} />
-    {/if}
-  </div>
-
-  <footer>
-    <div class="button grass" on:click={() => (form.show = false)} on:keypress>
-      取 消
-    </div>
-    <div class="button grass" on:click={onSave} on:keypress>保 存</div>
-  </footer>
-</Dialog>
 
 <style scoped>
   .action-item {
@@ -127,6 +87,15 @@
     box-sizing: border-box;
   }
 
+  .config-value img {
+    display: inline-block;
+    height: 16px;
+  }
+
+  .config-value img:last-of-type {
+    margin-left: 10px;
+  }
+
   .icon {
     color: var(--text-color);
     padding: 0 4px;
@@ -136,14 +105,5 @@
     cursor: pointer;
     font-weight: bold;
     color: var(--active-color);
-  }
-
-  footer {
-    margin-top: 20px;
-    text-align: right;
-  }
-
-  .form-item {
-    padding: 8px 0;
   }
 </style>

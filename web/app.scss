@@ -14,14 +14,6 @@
   user-select: none;
 }
 
-.grass {
-  box-shadow: var(--blackShadow), var(--whiteShadow);
-}
-
-.grass-unset {
-  box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
-}
-
 html, body {
   width: 100vw;
   height: 100vh;
@@ -71,6 +63,45 @@ body {
 
     .db-dialog__title {
       color: var(--text-color);
+    }
+  }
+
+  .grass {
+    box-shadow: var(--blackShadow), var(--whiteShadow);
+  }
+  
+  .grass-unset {
+    box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
+  }
+}
+
+.normal-input {
+  box-shadow: var(--blackShadow), var(--whiteShadow);
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  box-sizing: border-box;
+  display: inline-block;
+  font-size: inherit;
+  outline: none;
+  padding: 0 15px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 4px;
+  width: 100%;
+
+  &[type='file'] {
+    background: unset;
+    border-color: inherit;
+    border-width: 0;
+    border-radius: 4px;
+    padding: 0;
+    font-size: unset;
+    line-height: 40px;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
     }
   }
 }

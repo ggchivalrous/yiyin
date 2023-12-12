@@ -17,8 +17,8 @@ export function calcAverageBrightness(ctx: CanvasRenderingContext2D, width: numb
 // 加载图片
 export function loadImage(info: IImgFileInfo): Promise<HTMLImageElement> {
   const img = new Image();
-  img.width = info.width;
-  img.height = info.height;
+  if (info.width) img.width = info.width;
+  if (info.height) img.height = info.height;
   img.src = `file://${info.path}`;
 
   return new Promise<HTMLImageElement>((r, j) => {

@@ -13,6 +13,7 @@ export interface IConfig {
   fontMap: Record<string, string>
   fontDir: string
   cameraInfo: Config['cameraInfo']
+  staticDir: Config['staticDir']
 }
 
 export type TInputEvent = Event & {

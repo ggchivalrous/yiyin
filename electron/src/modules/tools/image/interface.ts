@@ -125,6 +125,6 @@ export interface ExifInfo {
 export interface IImgFileInfo {
   data?: string
   path: string
-  width: number
-  height: number
+  width?: number
+  height?: number
 }

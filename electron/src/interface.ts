@@ -17,6 +17,11 @@ export interface IConfig {
   cacheDir: string
 
   /**
+   * 图片资源存放目录
+   */
+  staticDir: string
+
+  /**
    * 字体信息
    */
   font: {
@@ -40,7 +45,21 @@ export interface IConfig {
 
 export interface ICameraInfoItem<T = string> {
   use: boolean
+
+  /**
+   * 文本
+   */
   value: T
+
+  /**
+   * 暗色背景使用
+   */
+  wImg: string
+
+  /**
+   * 亮色背景使用
+   */
+  bImg: string
   type: 'text' | 'img'
 }
 

@@ -73,4 +73,14 @@ r.listen(routerConfig.delFont, async (name: string) => {
   return false;
 });
 
+r.listen(routerConfig.uploadExifImg, async (data: any) => {
+  if (data && data.path) {
+    const filePath = path.resolve(config.staticDir, `${data.name}.png`);
+    fs.copyFileSync(data.path, filePath);
+    return filePath;
+  }
+
+  return false;
+});
+
 export default r;

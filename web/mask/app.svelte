@@ -2,7 +2,7 @@
   import { config } from '@web/store/config';
   import modelMap from '@web-utils/model-map';
 
-  import type { ExifInfo, IBoxShadowMarkOption, IFontInfo, IImgFileInfo, ITaskInfo } from './interface';
+  import type { TExifInfo, ExifInfo, IBoxShadowMarkOption, IFontInfo, IImgFileInfo, ITaskInfo } from './interface';
   import { calcAverageBrightness, importFont, loadImage } from './main';
 
   let canvas: HTMLCanvasElement;
@@ -30,20 +30,24 @@
       try {
         const blurImg = await loadImage(task.blur);
         const scaleImg = await loadImage(task.scale);
-        const textImgList = createTextList(task.exifInfo, [
+        const textImgList = await createTextList(task.exifInfo, [
           {
             text: '{Make} {Model}',
             opts: {
-              size: task.scale.height * 0.04,
+              width: blurImg.width,
+              size: task.blur.height * 0.03,
+              // size: task.scale.height * 0.04,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
             },
           },
           {
-            text: '{FocalLength}  {FNumber}  {ExposureTime}  {ISO}',
+            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} by {PersonalSign}',
             opts: {
-              size: task.scale.height * 0.025,
+              width: blurImg.width,
+              size: task.blur.height * 0.02,
+              // size: task.scale.height * 0.025,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -178,47 +182,73 @@
   }
 
   function formatExifInfo(exifInfo: ExifInfo) {
-    const exif: Record<keyof ExifInfo, string | number> = { ...exifInfo };
-    exif.Make = modelMap.INIT.make_filter(exifInfo.Make).trim();
+    const exif: TExifInfo = {
+      Make: { type: 'text', value: '', bImg: '', wImg: '' },
+      Model: { type: 'text', value: '', bImg: '', wImg: '' },
+      DateTimeOriginal: { type: 'text', value: '', bImg: '', wImg: '' },
+      ExposureTime: { type: 'text', value: '', bImg: '', wImg: '' },
+      FNumber: { type: 'text', value: '', bImg: '', wImg: '' },
+      FocalLength: { type: 'text', value: '', bImg: '', wImg: '' },
+      ISO: { type: 'text', value: '', bImg: '', wImg: '' },
+      ExposureProgram: { type: 'text', value: '', bImg: '', wImg: '' },
+      LensModel: { type: 'text', value: '', bImg: '', wImg: '' },
+      LensMake: { type: 'text', value: '', bImg: '', wImg: '' },
+    };
 
-    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make]);
+    exif.Make.value = modelMap.INIT.make_filter(exifInfo.Make).trim();
+    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make.value]);
 
-    exif.Model = _modelMap.model_filter(exifInfo.Model.replace(exif.Make, ''))?.trim() || '';
-    exif.Make = _modelMap.make_filter(exif.Make)?.trim() || '';
+    if ($config.options.model_show) {
+      exif.Model.value = _modelMap.model_filter(exifInfo.Model.replace(exif.Make.value, ''))?.trim() || '';
+    }
+
+    if ($config.options.brand_show) {
+      exif.Make.value = _modelMap.make_filter(exif.Make.value)?.trim() || '';
+    } else {
+      exif.Make.value = '';
+    }
 
     if (exifInfo.FocalLength) {
-      exif.FocalLength = `${exifInfo.FocalLength}mm`;
+      exif.FocalLength.value = `${Math.round(exifInfo.FocalLength)}mm`;
     }
 
     if (exifInfo.FNumber) {
-      exif.FNumber = `f/${exifInfo.FNumber}`;
+      exif.FNumber.value = `f/${exifInfo.FNumber}`;
     }
 
     if (exifInfo.ExposureTime) {
       if (exifInfo.ExposureTime < 1) {
-        exif.ExposureTime = `1/${Math.round(1 / exifInfo.ExposureTime)}s`;
+        exif.ExposureTime.value = `1/${Math.round(1 / exifInfo.ExposureTime)}s`;
       } else {
-        exif.ExposureTime = `${exifInfo.ExposureTime}s`;
+        exif.ExposureTime.value = `${exifInfo.ExposureTime}s`;
       }
     }
 
     if (exifInfo.ISO) {
-      exif.ISO = `ISO${exifInfo.ISO}`;
+      exif.ISO.value = `ISO${exifInfo.ISO}`;
     }
 
     // 强制使用自定义参数
-    if ($config.cameraInfo.Force) {
+    if ($config.cameraInfo.Force.use) {
       for (const field in $config.cameraInfo) {
         const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
         if (info.use) {
-          exif[field as keyof ExifInfo] = info.value as never;
+          exif[field as keyof ExifInfo] = exif[field as keyof ExifInfo] || { type: 'text', value: '', bImg: '', wImg: '' };
+          exif[field as keyof ExifInfo].type = info.type;
+          exif[field as keyof ExifInfo].value = `${info.value}`;
+          exif[field as keyof ExifInfo].bImg = `${info.bImg}`;
+          exif[field as keyof ExifInfo].wImg = `${info.wImg}`;
         }
       }
     } else { // 非强制使用，则使用自定义参数补空
       for (const field in $config.cameraInfo) {
         const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
-        if (info.use && !exif[field as keyof ExifInfo]) {
-          exif[field as keyof ExifInfo] = info.value as never;
+        if (info.use && !exif[field as keyof ExifInfo]?.value) {
+          exif[field as keyof ExifInfo] = exif[field as keyof ExifInfo] || { type: 'text', value: '', bImg: '', wImg: '' };
+          exif[field as keyof ExifInfo].type = info.type;
+          exif[field as keyof ExifInfo].value = `${info.value}`;
+          exif[field as keyof ExifInfo].bImg = `${info.bImg}`;
+          exif[field as keyof ExifInfo].wImg = `${info.wImg}`;
         }
       }
     }
@@ -232,6 +262,7 @@
     color?: string
     bold?: boolean
     height?: number
+    width?: number
     /**
      * 斜体
      */
@@ -243,15 +274,45 @@
     opts: ITextOption
   }
 
-  function createTextList(exifInfo: ExifInfo, arr: ITextItem[]): IImgFileInfo[] {
+  async function createTextList(exifInfo: ExifInfo, arr: ITextItem[]): Promise<IImgFileInfo[]> {
     const _exifInfo = formatExifInfo(exifInfo);
+    const imgFileInfoList: IImgFileInfo[] = [];
+    console.log('设备信息', _exifInfo);
 
-    return arr.map(({ text, opts }) => {
-      for (const field in _exifInfo) {
-        text = text.replaceAll(`{${field}}`, `${_exifInfo[field as keyof typeof _exifInfo]}`).trim();
+    for (const i of arr) {
+      let text = i.text.trim();
+      const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
+      const textList = [];
+      const imgList = [];
+
+      if (tempList?.length) {
+        for (const temp of tempList) {
+          const [field] = temp.match(/[A-Za-z0-9]+/);
+          const info = _exifInfo[field as keyof typeof _exifInfo];
+          if (info.type === 'text') {
+            text = text.replace(temp, info.value);
+          } else {
+            imgList.push(await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg }));
+            text = text.replace(temp, '{\\-/}');
+          }
+        }
+
+        const _arr = text.split('{\\-/}');
+        if (_arr.length === 1) {
+          textList.push(..._arr);
+        } else {
+          for (let j = 0; j < _arr.length; j++) {
+            textList.push(_arr[j], imgList[j]);
+          }
+        }
+      } else {
+        textList.push(text);
       }
-      return createTextImg(text, opts);
-    });
+
+      imgFileInfoList.push(createTextImg(textList, i.opts));
+    }
+
+    return imgFileInfoList;
   }
 
   function createTextFont(opts: ITextOption) {
@@ -278,17 +339,76 @@
     return font;
   }
 
-  function createTextImg(text: string, opts: ITextOption): IImgFileInfo {
-    const can = createCanvas(1, 1);
+  function createTextImg(textList: (string | HTMLImageElement)[], opts: ITextOption): IImgFileInfo {
+    textList = textList.filter(Boolean);
+    const font = createTextFont(opts);
+    const can = createCanvas(0, 0);
     const ctx = can.getContext('2d');
-    ctx.font = createTextFont(opts);
-    const textInfo = ctx.measureText(text);
+    const textInfoList: {
+      value: string | HTMLImageElement
+      type: 'text' | 'img'
+      w: number
+      x: number
+      y: number
+      h: number
+    }[] = [];
 
-    can.width = textInfo.width;
-    can.height = opts.height || textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
-    ctx.fillStyle = opts.color || '#000';
-    ctx.font = createTextFont(opts);
-    ctx.fillText(text, 0, textInfo.actualBoundingBoxAscent);
+    const totalText = textList.reduce((t, i) => {
+      if (typeof i === 'string') {
+        t += i;
+      }
+      return t;
+    }, '');
+    ctx.font = font;
+    ctx.textBaseline = 'middle';
+    const testTextInfo = ctx.measureText(totalText as string);
+
+    can.height = opts.height || Math.round(testTextInfo.actualBoundingBoxAscent + testTextInfo.actualBoundingBoxDescent + 50);
+    can.width = textList.reduce((n, i, j) => {
+      if (i === undefined || !i) return n;
+      if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
+      if (typeof i === 'string') {
+        ctx.font = font;
+        ctx.textBaseline = 'middle';
+        const info = ctx.measureText(i);
+        const h = info.actualBoundingBoxAscent + info.actualBoundingBoxDescent;
+        const y = Math.round(h / 2 + (can.height - h) / 2);
+        textInfoList.push({
+          value: i,
+          type: 'text',
+          w: info.actualBoundingBoxLeft + info.actualBoundingBoxRight,
+          x: n,
+          y,
+          h: info.actualBoundingBoxAscent + info.actualBoundingBoxDescent,
+        });
+        n += info.width;
+      } else {
+        const y = can.height * 0.02;
+        const h = can.height - y;
+        const w = Math.round(h * (i.width / i.height));
+        textInfoList.push({
+          value: i,
+          type: 'img',
+          w,
+          x: n,
+          y,
+          h,
+        });
+        n += w;
+      }
+      return n;
+    }, 0);
+
+    for (const info of textInfoList) {
+      if (info.type === 'text') {
+        ctx.font = font;
+        ctx.fillStyle = opts.color || '#000';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(info.value as string, info.x, info.y);
+      } else {
+        ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);
+      }
+    }
 
     return {
       width: can.width,

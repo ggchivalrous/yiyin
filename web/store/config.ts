@@ -42,6 +42,7 @@ export const config = writable<IConfig>({
     PersonalSign: getDefOptionItem(''),
   },
   output: '',
+  staticDir: '',
 });
 
 export async function getConfig() {
@@ -53,6 +54,7 @@ export async function getConfig() {
       v.fontMap = defConf.data.font.map;
       v.fontDir = defConf.data.font.dir;
       v.cameraInfo = defConf.data.cameraInfo;
+      v.staticDir = defConf.data.staticDir;
       return v;
     });
     console.log('配置信息:', defConf.data);
@@ -72,6 +74,7 @@ export async function resetConfig() {
     v.output = res.data.output;
     v.fontMap = res.data.font.map;
     v.fontDir = res.data.font.dir;
+    v.staticDir = res.data.staticDir;
     return v;
   });
   Message.success({ message: '重置成功' });
@@ -99,5 +102,7 @@ function getDefOptionItem<T>(defV: T): ICameraInfoItem<T> {
     use: false,
     value: defV,
     type: 'text',
+    bImg: '',
+    wImg: '',
   };
 }

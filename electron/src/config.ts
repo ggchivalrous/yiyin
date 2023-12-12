@@ -10,6 +10,7 @@ export const DefaultConfig: IConfig = {
   dir: path.join(app.getPath('userData'), 'config.json'),
   output: path.join(app.getPath('pictures'), 'watermark'),
   cacheDir: path.join(app.getPath('temp'), 'yiyin'),
+  staticDir: path.join(app.getPath('userData'), 'static'),
 
   font: {
     path: path.join(app.getPath('userData'), 'font.json'),
@@ -57,6 +58,8 @@ function getDefOptionItem<T>(defV: T): ICameraInfoItem<T> {
     use: false,
     value: defV,
     type: 'text',
+    bImg: '',
+    wImg: '',
   };
 }
 
@@ -92,6 +95,10 @@ export function getConfig(def = false) {
 
   if (!fs.existsSync(config.output)) {
     fs.mkdirSync(config.output, { recursive: true });
+  }
+
+  if (!fs.existsSync(config.staticDir)) {
+    fs.mkdirSync(config.staticDir, { recursive: true });
   }
 
   if (!fs.existsSync(config.font.dir)) {
