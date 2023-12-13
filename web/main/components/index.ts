@@ -1,2 +1,1 @@
-export { default as Setting } from './setting.svelte';
-export { default as ActionItem } from './action-item.svelte';
+export { default as CustomParamSetting } from './custom-param-setting/index.svelte';

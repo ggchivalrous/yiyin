@@ -8,7 +8,7 @@
   import { config, getConfig, resetConfig } from '@web/store/config';
   import { tick } from 'svelte';
 
-  import { Setting } from './components';
+  import { CustomParamSetting } from './components';
   import type { IConfig, IFileInfo, TInputEvent } from './interface';
 
   initializeStores();
@@ -266,7 +266,7 @@
     </p>
   </div>
 
-  <Setting bind:visible={showSetting} />
+  <CustomParamSetting bind:visible={showSetting} />
 </div>
 
 <Modal />

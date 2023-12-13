@@ -354,19 +354,21 @@
     }[] = [];
 
     const totalText = textList.reduce((t, i) => {
-      if (typeof i === 'string') {
-        t += i;
-      }
+      if (typeof i === 'string') t += i;
       return t;
     }, '');
+
     ctx.font = font;
     ctx.textBaseline = 'middle';
-    const testTextInfo = ctx.measureText(totalText as string);
 
-    can.height = opts.height || Math.round(testTextInfo.actualBoundingBoxAscent + testTextInfo.actualBoundingBoxDescent + 50);
+    const textInfo = ctx.measureText(totalText as string);
+
+    can.height = opts.height || Math.round(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, opts.size));
     can.width = textList.reduce((n, i, j) => {
       if (i === undefined || !i) return n;
+
       if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
+
       if (typeof i === 'string') {
         ctx.font = font;
         ctx.textBaseline = 'middle';
@@ -376,10 +378,10 @@
         textInfoList.push({
           value: i,
           type: 'text',
-          w: info.actualBoundingBoxLeft + info.actualBoundingBoxRight,
           x: n,
           y,
-          h: info.actualBoundingBoxAscent + info.actualBoundingBoxDescent,
+          w: info.actualBoundingBoxLeft + info.actualBoundingBoxRight,
+          h,
         });
         n += info.width;
       } else {
@@ -389,9 +391,9 @@
         textInfoList.push({
           value: i,
           type: 'img',
-          w,
           x: n,
           y,
+          w,
           h,
         });
         n += w;

@@ -1,11 +1,8 @@
 <script lang="ts">
   import Popup from '@components/popup';
   import { Switch } from '@ggchivalrous/db-ui';
+  import type { ICameraInfoItem } from '@web/main/interface';
   import { createEventDispatcher } from 'svelte';
-
-  import type { ICameraInfoItem } from '../interface';
-
-  import type { TActionItemData } from './interface';
 
   export let title = '';
   export let showSwitch = true;
@@ -13,23 +10,16 @@
   export let data: ICameraInfoItem<string | number | boolean> = null;
 
   const dispatch = createEventDispatcher();
-  let form: TActionItemData = {
-    use: false,
-    value: '',
-    bImg: '',
-    wImg: '',
-    type: 'text',
-    title: '',
-  };
+  let form: Partial<ICameraInfoItem<string | number | boolean>> = {};
 
-  $: form = { ...form, ...data };
+  $: form = { ...data };
 
   function onEdit() {
-    dispatch('edit', form);
+    dispatch('edit', { ...form, title });
   }
 
-  function onSave() {
-    dispatch('save', form);
+  function onUseChange() {
+    dispatch('use-change', form);
   }
 </script>
 
@@ -42,18 +32,18 @@
   {/if}
 
   {#if showSwitch}
-    <Switch bind:value={form.use} on:change={onSave} />
+    <Switch bind:value={form.use} on:change={onUseChange} />
   {/if}
 
   <span class="config-value">
     {#if data.type === 'text'}
       {form.value}
     {:else if data.type === 'img'}
-      {#if form.wImg}
-        <img src="file://{form.wImg}" alt="图片" />
-      {/if}
       {#if form.bImg}
         <img src="file://{form.bImg}" alt="图片" />
+      {/if}
+      {#if form.wImg}
+        <img src="file://{form.wImg}" alt="图片" />
       {/if}
     {/if}
   </span>
@@ -89,7 +79,7 @@
 
   .config-value img {
     display: inline-block;
-    height: 16px;
+    height: 12px;
   }
 
   .config-value img:last-of-type {
