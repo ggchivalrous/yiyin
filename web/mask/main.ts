@@ -37,3 +37,10 @@ export async function importFont(arr: IFontInfo[]) {
     }
   }
 }
+
+export function createCanvas(w: number, h: number) {
+  const _canvas = document.createElement('canvas');
+  _canvas.width = w;
+  _canvas.height = h;
+  return _canvas;
+}

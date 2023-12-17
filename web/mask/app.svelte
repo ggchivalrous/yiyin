@@ -2,8 +2,12 @@
   import { config } from '@web/store/config';
   import modelMap from '@web-utils/model-map';
 
-  import type { ExifInfo, IBoxShadowMarkOption, IFieldInfoItem, IFontInfo, IFontParam, IImgFileInfo, ITaskInfo, TExifInfo, TTemplateFieldInfo } from './interface';
-  import { calcAverageBrightness, importFont, loadImage } from './main';
+  import type {
+    ICreateTextOption, ISlotInfo, ITextOption, ExifInfo,
+    IBoxShadowMarkOption, IFontInfo, IFontParam, IImgFileInfo,
+    ITaskInfo, TExifInfo, TTemplateFieldInfo,
+  } from './interface';
+  import { calcAverageBrightness, importFont, loadImage, createCanvas } from './main';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
@@ -188,13 +192,6 @@
     return _canvas.toDataURL('image/png');
   }
 
-  function createCanvas(w: number, h: number) {
-    const _canvas = document.createElement('canvas');
-    _canvas.width = w;
-    _canvas.height = h;
-    return _canvas;
-  }
-
   function formatFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
@@ -291,34 +288,6 @@
     }
 
     return exifInfo;
-  }
-
-  interface ITextOption {
-    size: number
-    font: string
-    color: string
-    bold: boolean
-    height?: number
-    width?: number
-    /**
-     * 斜体
-     */
-    italic: boolean
-  }
-
-  interface ITemplateItem {
-    text: string
-    opts: ITextOption
-  }
-
-  interface ISlotInfo {
-    value: string | HTMLImageElement
-    param: IFieldInfoItem['param']
-  }
-
-  interface ICreateTextOption {
-    templateList: ITemplateItem[]
-    templateFieldConf: TTemplateFieldInfo
   }
 
   async function createTextList(exifInfo: ExifInfo, opts: ICreateTextOption): Promise<IImgFileInfo[]> {

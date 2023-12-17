@@ -2,42 +2,6 @@
   -webkit-app-region: no-drag;
 }
 
-.header {
-  display: flex;
-  background-color: var(--bg-color);
-  justify-content: right;
-  -webkit-app-region: drag;
-  padding: 10px;
-  text-align: right;
-
-  .close {
-    -webkit-app-region: no-drag;
-    padding: 4px 12px;
-    cursor: pointer;
-  }
-
-  .show {
-    -webkit-app-region: no-drag;
-    padding: 4px 12px;
-    cursor: pointer;
-  }
-
-  .reset {
-    padding: 4px 6px;
-
-    .icon {
-      display: inline-block;
-    }
-  }
-
-  .button {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-    text-align: center;
-  }
-}
-
 .button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -84,82 +48,15 @@
     display: flex;
   }
 
-  .action-wrap {
-    width: 450px;
-    display: flex;
-    flex-wrap: nowrap;
-    margin-bottom: 20px;
-    flex-shrink: 0;
-  }
-
   .info-wrap {
     width: 100%;
     background-color: aqua;
-  }
-
-  .right-wrap,
-  .left-wrap {
-    flex: 2 0 100px;
-
-    .open-file-line {
-      cursor: pointer;
-
-      &:hover {
-        font-weight: bold;
-        text-decoration: underline;
-      }
-    }
-
-    .size-input {
-      border: none;
-      padding: 0;
-      display: inline-block;
-      width: 50px;
-      outline: none;
-      border: none;
-      background: none;
-      box-sizing: border-box;
-      touch-action: manipulation;
-
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        appearance: none;
-        margin: 0;
-      }
-    }
-
-    .bg-rate-input {
-      background-color: transparent;
-      background-image: none;
-      border-radius: 4px;
-      border: 1px solid #cacdd4;
-      box-sizing: border-box;
-      display: inline-block;
-      font-size: inherit;
-      height: 20px;
-      width: 90px;
-      outline: none;
-      padding: 0 4px;
-      text-align: center;
-    }
   }
 
   .button-wrap {
     margin-top: 20px;
     text-align: center;
     user-select: none;
-  }
-
-  .foot {
-    flex-shrink: 0;
-    width: 100%;
-    padding: 20px 0;
-    color: #8f9094;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
   }
 }
 

@@ -1,5 +1,5 @@
 import type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
-import type { IFieldInfoItem } from '@src/interface';
+import type { IFieldInfoItem, TTemplateFieldInfo } from '@src/interface';
 
 export type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
 export type * from '@src/interface';
@@ -44,4 +44,32 @@ export interface IBoxShadowMarkOption {
   }
   radius?: number
   option: OutputSetting
+}
+
+export interface ITextOption {
+  size: number
+  font: string
+  color: string
+  bold: boolean
+  height?: number
+  width?: number
+  /**
+   * 斜体
+   */
+  italic: boolean
+}
+
+export interface ITemplateItem {
+  text: string
+  opts: ITextOption
+}
+
+export interface ISlotInfo {
+  value: string | HTMLImageElement
+  param: IFieldInfoItem['param']
+}
+
+export interface ICreateTextOption {
+  templateList: ITemplateItem[]
+  templateFieldConf: TTemplateFieldInfo
 }

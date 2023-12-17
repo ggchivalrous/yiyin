@@ -1,0 +1,37 @@
+.app-header {
+  display: flex;
+  background-color: var(--bg-color);
+  justify-content: right;
+  -webkit-app-region: drag;
+  padding: 10px;
+  text-align: right;
+
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  .app-header-close {
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .app-header-show {
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .app-header-reset {
+    padding: 4px 6px;
+
+    .icon {
+      display: inline-block;
+    }
+  }
+
+  .button {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
+  }
+}
