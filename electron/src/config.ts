@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import type { ICameraInfoItem, IConfig } from '@src/interface';
+import type { IFieldInfoItem, IConfig } from '@src/interface';
 import { app } from 'electron';
 
 import { tryCatch } from './utils';
@@ -37,8 +37,8 @@ export const DefaultConfig: IConfig = {
     font: 'PingFang SC',
   },
 
-  cameraInfo: {
-    Force: getDefOptionItem(true),
+  templateFieldInfo: {
+    Force: getDefOptionItem(''),
     Make: getDefOptionItem(''),
     Model: getDefOptionItem(''),
     ExposureTime: getDefOptionItem(''),
@@ -53,13 +53,14 @@ export const DefaultConfig: IConfig = {
   },
 };
 
-function getDefOptionItem<T>(defV: T): ICameraInfoItem<T> {
+function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
   return {
     use: false,
     value: defV,
     type: 'text',
     bImg: '',
     wImg: '',
+    param: undefined,
   };
 }
 
@@ -77,7 +78,7 @@ export function getConfig(def = false) {
       output: fileConfig.output || config.output,
       cacheDir: fileConfig.cacheDir || config.cacheDir,
       options: Object.assign(config.options, fileConfig.options),
-      cameraInfo: Object.assign(config.cameraInfo, fileConfig.cameraInfo),
+      templateFieldInfo: Object.assign(config.templateFieldInfo, fileConfig.templateFieldInfo),
     } as Partial<IConfig>);
   }
 

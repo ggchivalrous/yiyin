@@ -1,16 +1,16 @@
 <script lang="ts">
   import Popup from '@components/popup';
   import { Switch } from '@ggchivalrous/db-ui';
-  import type { ICameraInfoItem } from '@web/main/interface';
+  import type { IFieldInfoItem } from '@web/main/interface';
   import { createEventDispatcher } from 'svelte';
 
   export let title = '';
   export let showSwitch = true;
   export let showEdit = true;
-  export let data: ICameraInfoItem<string | number | boolean> = null;
+  export let data: IFieldInfoItem<string | number | boolean> = null;
 
   const dispatch = createEventDispatcher();
-  let form: Partial<ICameraInfoItem<string | number | boolean>> = {};
+  let form: Partial<IFieldInfoItem<string | number | boolean>> = {};
 
   $: form = { ...data };
 
@@ -36,20 +36,21 @@
   {/if}
 
   <span class="config-value">
-    {#if data.type === 'text'}
+    {#if form.value}
       {form.value}
-    {:else if data.type === 'img'}
-      {#if form.bImg}
-        <img src="file://{form.bImg}" alt="图片" />
-      {/if}
-      {#if form.wImg}
-        <img src="file://{form.wImg}" alt="图片" />
-      {/if}
+    {/if}
+
+    {#if form.bImg}
+      <img src="file://{form.bImg}" alt="图片" />
+    {/if}
+
+    {#if form.wImg}
+      <img src="file://{form.wImg}" alt="图片" />
     {/if}
   </span>
 
   {#if showEdit}
-    <i class="db-icon-edit icon" on:click={onEdit} on:keypress></i>
+    <i class="db-icon-edit icon" on:click={onEdit} on:keypress role="button" tabindex="-1"></i>
   {/if}
 </p>
 
@@ -75,6 +76,9 @@
     font-size: 13px;
     padding: 0 6px;
     box-sizing: border-box;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 
   .config-value img {

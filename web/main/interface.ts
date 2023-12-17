@@ -12,7 +12,7 @@ export interface IConfig {
   output: string
   fontMap: Record<string, string>
   fontDir: string
-  cameraInfo: Config['cameraInfo']
+  templateFieldInfo: Config['templateFieldInfo']
   staticDir: Config['staticDir']
 }
 

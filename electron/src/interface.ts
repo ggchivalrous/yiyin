@@ -38,13 +38,23 @@ export interface IConfig {
   options: OutputSetting
 
   /**
-   * 相机参数信息
+   * 模板字段信息
    */
-  cameraInfo: ICameraInfo
+  templateFieldInfo: TTemplateFieldInfo
 }
 
-export interface ICameraInfoItem<T = string> {
+export type TTemplateFieldInfo = Record<string, IFieldInfoItem<any>>
+
+export interface IFontParam {
   use: boolean
+  bold: boolean
+  italic: boolean
+  size: number
+  font: string
+}
+
+export interface IFieldInfoItem<T = string> {
+  use?: boolean
 
   /**
    * 文本
@@ -60,20 +70,29 @@ export interface ICameraInfoItem<T = string> {
    * 亮色背景使用
    */
   bImg: string
+
+  /**
+   * 类型
+   */
   type: 'text' | 'img'
+
+  /**
+   * 显示参数
+   */
+  param: IFontParam
 }
 
 export interface ICameraInfo {
-  Force: ICameraInfoItem<boolean>
-  Make: ICameraInfoItem
-  Model: ICameraInfoItem
-  ExposureTime: ICameraInfoItem
-  FNumber: ICameraInfoItem
-  ISO: ICameraInfoItem
-  FocalLength: ICameraInfoItem
-  ExposureProgram: ICameraInfoItem
-  DateTimeOriginal: ICameraInfoItem<number>
-  LensModel: ICameraInfoItem
-  LensMake: ICameraInfoItem
-  PersonalSign: ICameraInfoItem
+  Force: IFieldInfoItem<boolean>
+  Make: IFieldInfoItem
+  Model: IFieldInfoItem
+  ExposureTime: IFieldInfoItem
+  FNumber: IFieldInfoItem
+  ISO: IFieldInfoItem
+  FocalLength: IFieldInfoItem
+  ExposureProgram: IFieldInfoItem
+  DateTimeOriginal: IFieldInfoItem<number>
+  LensModel: IFieldInfoItem
+  LensMake: IFieldInfoItem
+  PersonalSign: IFieldInfoItem
 }

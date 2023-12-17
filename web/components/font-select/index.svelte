@@ -1,34 +1,19 @@
 <script lang="ts">
-  import FontDialog from '@components/font-dialog';
-  import { Message } from '@ggchivalrous/db-ui';
-  import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
+  import { Message, Option, Select } from '@ggchivalrous/db-ui';
   import { createEventDispatcher } from 'svelte';
   import './index.scss';
 
   export let fontMap: Record<string, string> = {};
-  export let value = 'PingFang SC';
+  export let value = '';
 
-  const modalStore = getModalStore();
+  const defFont = { name: 'PingFang SC', fileName: '' };
   const dispatch = createEventDispatcher();
-  let fontList = [{ name: 'PingFang SC', fileName: '' }];
+  let fontList = [defFont];
 
   $: listenFontMapChange(fontMap);
 
-  const popupCombobox: any = {
-    event: 'click',
-    target: 'popupCombobox',
-    placement: 'bottom',
-    closeQuery: '.font-name',
-  };
-
   function addFont() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: FontDialog },
-      response() {
-        dispatch('update');
-      },
-    });
+    dispatch('update');
   }
 
   async function delFont(i: string) {
@@ -46,42 +31,35 @@
     Message.error(res.message);
   }
 
-  function listenFontMapChange(arr: typeof fontMap) {
-    if (arr) {
+  function listenFontMapChange(_fontMap: typeof fontMap) {
+    if (Object.keys(_fontMap).length) {
       const list = [];
 
-      for (const key in fontMap) {
+      for (const key in _fontMap) {
         list.push({
           name: key,
-          fileName: fontMap[key],
+          fileName: _fontMap[key],
         });
       }
 
-      fontList = [{ name: 'PingFang SC', fileName: '' }, ...list];
-
-      if (!fontMap[value]) {
-        value = fontList[0].name;
+      fontList = [defFont, ...list];
+      if ((!_fontMap[value] && value !== defFont.name) || !value) {
+        value = defFont.name;
       }
     }
   }
 </script>
 
-<div class="font-select-wrap">
-  <div class="show grass button font-select" use:popup={popupCombobox}>
-    {value}
-  </div>
-
-  <div class="font-list w-48 shadow-xl py-2 grass" data-popup="popupCombobox">
-    <div class="button add-font" on:click={addFont} on:keypress>+</div>
-    <ListBox rounded="rounded-none">
-      {#each fontList as i}
-        <ListBoxItem bind:group={value} name="medium" value={i.name}>
-          <span class="font-name">{i.name}</span>
-          {#if i.fileName}
-            <span class="font-del" on:click|preventDefault|capture={() => delFont(i.name)} on:keypress>x</span>
-          {/if}
-        </ListBoxItem>
-      {/each}
-    </ListBox>
-  </div>
-</div>
+<Select size="mini" bind:value class="no-drag grass font-select">
+  <div class="button add-font" on:click={addFont} on:keypress role="button" tabindex="-1">+</div>
+  {#each fontList as i}
+    {#key i.name}
+      <Option value={i.name}>
+        <span class="font-name">{i.name}</span>
+        {#if i.fileName}
+          <span class="font-del" on:click|preventDefault|capture={() => delFont(i.name)} on:keypress role="button" tabindex="-1">x</span>
+        {/if}
+      </Option>
+    {/key}
+  {/each}
+</Select>

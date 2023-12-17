@@ -1,25 +1,46 @@
 <script lang="ts">
   import { Dialog, Input, Message, Switch } from '@ggchivalrous/db-ui';
-  import type { ICameraInfo, ICameraInfoItem } from '@web/main/interface';
+  import type { ICameraInfo, IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
+
   import './index.scss';
+  import ParamFontInfo from '../param-font-info/index.svelte';
 
   export let title = '';
   export let showImg = false;
   export let showType = false;
   export let visible = false;
   export let field: keyof ICameraInfo = 'Model';
-  export let data: ICameraInfoItem<string | number | boolean> = null;
+  export let data: IFieldInfoItem<string | number | boolean> = null;
 
-  let form: ICameraInfoItem<string | number | boolean> = {
+  const model: IFieldInfoItem<string | number | boolean> = {
     use: false,
     value: '',
     bImg: '',
     wImg: '',
     type: 'text',
+    param: {
+      use: false,
+      bold: false,
+      italic: false,
+      size: 0,
+      font: '',
+    },
   };
+  const form: IFieldInfoItem<string | number | boolean> = { ...model };
 
-  $: if (data) form = { ...form, ...data };
+  $: listenData(data);
+
+  function listenData(d: IFieldInfoItem<string | number | boolean>) {
+    if (data) {
+      form.bImg = d.bImg || model.bImg;
+      form.value = d.value || model.value;
+      form.wImg = d.wImg || model.wImg;
+      form.use = d.use || model.use;
+      form.type = d.type || model.type;
+      form.param = { ...model.param, ...d.param };
+    }
+  }
 
   async function onDialogSave() {
     if (form.type === 'img') {
@@ -45,7 +66,7 @@
     }
 
     config.update((v) => {
-      v.cameraInfo[field] = { ...v.cameraInfo[field], ...data as any };
+      v.templateFieldInfo[field] = { ...v.templateFieldInfo[field], ...form as any };
       return v;
     });
   }
@@ -63,7 +84,7 @@
   }
 </script>
 
-<Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="450px" top="8vh">
+<Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="500px" top="8vh">
   {#if showType}
     <div class="form-item">
       <div class="form-item-label">生效类型</div>
@@ -111,10 +132,13 @@
     </div>
   {/if}
 
+  <div class="form-item">
+    <div class="form-item-label">字体参数</div>
+    <ParamFontInfo bind:conf={form.param} />
+  </div>
+
   <footer>
-    <div class="button grass" on:click={() => (visible = false)} on:keypress>
-      取 消
-    </div>
-    <div class="button grass" on:click={() => onDialogSave()} on:keypress>保 存</div>
+    <div class="button grass" on:click={() => (visible = false)} on:keypress role="button" tabindex="-1">取 消</div>
+    <div class="button grass" on:click={() => onDialogSave()} on:keypress role="button" tabindex="-1">保 存</div>
   </footer>
 </Dialog>

@@ -73,6 +73,38 @@ body {
   .grass-unset {
     box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
   }
+
+  .db-popper[data-popper-placement^=top] .popper__arrow {
+    border-top-color: var(--bg-color) !important;
+    
+    &::after {
+      border-top-color: var(--bg-color) !important;
+    }
+  }
+
+  .db-popper[data-popper-placement^=bottom] .popper__arrow {
+    border-bottom-color: var(--bg-color) !important;
+    
+    &::after {
+      border-bottom-color: var(--bg-color) !important;
+    }
+  }
+
+  .db-popper[data-popper-placement^=left] .popper__arrow {
+    border-left-color: var(--bg-color) !important;
+    
+    &::after {
+      border-left-color: var(--bg-color) !important;
+    }
+  }
+
+  .db-popper[data-popper-placement^=right] .popper__arrow {
+    border-right-color: var(--bg-color) !important;
+    
+    &::after {
+      border-right-color: var(--bg-color) !important;
+    }
+  }
 }
 
 .normal-input {

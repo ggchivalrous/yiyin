@@ -1,5 +1,5 @@
 import type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
-import type { ICameraInfoItem } from '@src/interface';
+import type { IFieldInfoItem } from '@src/interface';
 
 export type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
 export type * from '@src/interface';
@@ -31,7 +31,7 @@ export interface ITextImgOption {
   background?: string
 }
 
-export type TExifInfo = Record<keyof ExifInfo, Omit<ICameraInfoItem, 'use'>>
+export type TExifInfo = Record<keyof ExifInfo, Omit<IFieldInfoItem, 'use'>>
 
 export interface IBoxShadowMarkOption {
   img: HTMLImageElement

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Drawer } from '@ggchivalrous/db-ui';
-  import type { ICameraInfo, ICameraInfoItem } from '@web/main/interface';
+  import type { ICameraInfo, IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
   import { tick } from 'svelte';
 
@@ -12,15 +12,16 @@
   export let beforeClose: any = null;
 
   let option: ICameraInfo;
-  const form: ICameraInfoItem = {
+  const form: IFieldInfoItem = {
     use: false,
     value: '',
     bImg: '',
     wImg: '',
     type: 'text',
+    param: undefined,
   };
   const dialog: {
-    form: ICameraInfoItem<string | number | boolean>
+    form: IFieldInfoItem<string | number | boolean>
     title: string
     showImg: boolean
     showType: boolean
@@ -38,6 +39,7 @@
       bImg: '',
       wImg: '',
       type: 'text',
+      param: undefined,
     },
   };
   const fieldMap: Record<keyof ICameraInfo, {
@@ -94,25 +96,25 @@
     },
   };
 
-  $: onCameraInfoChange($config.cameraInfo);
+  $: onTemplateFieldInfoChange($config.templateFieldInfo);
 
-  async function onCameraInfoChange(cameraInfo: typeof $config.cameraInfo) {
+  async function onTemplateFieldInfoChange(templateFieldInfo: typeof $config.templateFieldInfo) {
     await tick();
-    option = JSON.parse(JSON.stringify(cameraInfo));
+    option = JSON.parse(JSON.stringify(templateFieldInfo));
   }
 
   function onUseChange(field: keyof ICameraInfo) {
     return async (e: CustomEvent<any>) => {
-      const data: ICameraInfoItem = e.detail;
+      const data: IFieldInfoItem = e.detail;
       config.update((v) => {
-        v.cameraInfo[field].use = data.use;
+        v.templateFieldInfo[field].use = data.use;
         return v;
       });
     };
   }
 
   function onEdit(field: keyof ICameraInfo) {
-    return async (e: CustomEvent<ICameraInfoItem & { title: string }>) => {
+    return async (e: CustomEvent<IFieldInfoItem & { title: string }>) => {
       dialog.field = field;
       dialog.form = { ...form, ...e.detail };
       if (fieldMap[field]) {
@@ -132,9 +134,13 @@
   direction="rtl"
   {beforeClose}
 >
-  <ActionItem title="模式" showSwitch showEdit={false} data={option.Force} on:use-change={onUseChange('Force')}>
+  <ActionItem title="强制使用" showSwitch showEdit={false} data={option.Force} on:use-change={onUseChange('Force')}>
     <svelte:fragment slot="popup">
-      是否强制使用自定义参数作为最终输出，默认参数识别失败将使用自定义参数作为最终输出，开启将强制使用自定义参数
+      是否强制使用自定义参数作为最终输出
+      <br>
+      <b>开启:</b> 将强制使用自定义参数覆盖原始参数
+      <br>
+      <b>关闭:</b> 当对应的参数无法识别将使用自定义参数
     </svelte:fragment>
   </ActionItem>
   <ActionItem title="个性签名" showSwitch data={option.PersonalSign} on:use-change={onUseChange('PersonalSign')} on:edit={onEdit('PersonalSign')} />

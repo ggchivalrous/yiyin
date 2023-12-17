@@ -2,7 +2,7 @@
 import { Message } from '@ggchivalrous/db-ui';
 import { writable } from 'svelte/store';
 
-import type { IConfig, ICameraInfoItem } from '../main/interface';
+import type { IConfig, IFieldInfoItem } from '../main/interface';
 
 let initConfig = false;
 
@@ -19,7 +19,7 @@ export const config = writable<IConfig>({
     shadow: 6,
     shadow_show: true,
     bg_rate_show: true,
-    font: 'PingFang SC',
+    font: '',
     bg_rate: {
       w: 0,
       h: 0,
@@ -27,7 +27,7 @@ export const config = writable<IConfig>({
   },
   fontMap: {},
   fontDir: '',
-  cameraInfo: {
+  templateFieldInfo: {
     Force: getDefOptionItem(true),
     Make: getDefOptionItem(''),
     Model: getDefOptionItem(''),
@@ -53,7 +53,7 @@ export async function getConfig() {
       v.output = defConf.data.output;
       v.fontMap = defConf.data.font.map;
       v.fontDir = defConf.data.font.dir;
-      v.cameraInfo = defConf.data.cameraInfo;
+      v.templateFieldInfo = defConf.data.templateFieldInfo;
       v.staticDir = defConf.data.staticDir;
       return v;
     });
@@ -97,12 +97,19 @@ config.subscribe(async (v) => {
 
 getConfig().then(() => { initConfig = true; });
 
-function getDefOptionItem<T>(defV: T): ICameraInfoItem<T> {
+function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
   return {
     use: false,
     value: defV,
     type: 'text',
     bImg: '',
     wImg: '',
+    param: {
+      use: false,
+      bold: false,
+      italic: false,
+      size: 0,
+      font: '',
+    },
   };
 }

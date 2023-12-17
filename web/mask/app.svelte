@@ -2,7 +2,7 @@
   import { config } from '@web/store/config';
   import modelMap from '@web-utils/model-map';
 
-  import type { TExifInfo, ExifInfo, IBoxShadowMarkOption, IFontInfo, IImgFileInfo, ITaskInfo } from './interface';
+  import type { ExifInfo, IBoxShadowMarkOption, IFieldInfoItem, IFontInfo, IFontParam, IImgFileInfo, ITaskInfo, TExifInfo, TTemplateFieldInfo } from './interface';
   import { calcAverageBrightness, importFont, loadImage } from './main';
 
   let canvas: HTMLCanvasElement;
@@ -30,30 +30,37 @@
       try {
         const blurImg = await loadImage(task.blur);
         const scaleImg = await loadImage(task.scale);
-        const textImgList = await createTextList(task.exifInfo, [
-          {
-            text: '{Make} {Model}',
-            opts: {
-              width: blurImg.width,
-              size: task.blur.height * 0.03,
-              // size: task.scale.height * 0.04,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
+        const templateFieldInfoConf = getTemplateFieldInfoConf($config.templateFieldInfo, {
+          bgHeight: task.blur.height,
+        });
+
+        const textImgList = await createTextList(task.exifInfo, {
+          templateList: [
+            {
+              text: '{Make} {Model}',
+              opts: {
+                width: blurImg.width,
+                size: task.blur.height * 0.03,
+                color: task.option.solid_bg ? '#000' : '#fff',
+                font: task.option.font,
+                bold: true,
+                italic: false,
+              },
             },
-          },
-          {
-            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} by {PersonalSign}',
-            opts: {
-              width: blurImg.width,
-              size: task.blur.height * 0.02,
-              // size: task.scale.height * 0.025,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
+            {
+              text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+              opts: {
+                width: blurImg.width,
+                size: task.blur.height * 0.02,
+                color: task.option.solid_bg ? '#000' : '#fff',
+                font: task.option.font,
+                bold: true,
+                italic: false,
+              },
             },
-          },
-        ]);
+          ],
+          templateFieldConf: templateFieldInfoConf,
+        });
 
         const maskUrl = await createBoxShadowMark(canvas, {
           img: blurImg,
@@ -81,6 +88,27 @@
     }
     taskList = [];
     processing = false;
+  }
+
+  interface IGetTemplateFieldInfoConfOption {
+    bgHeight: number
+  }
+
+  function getTemplateFieldInfoConf(fieldInfo: TTemplateFieldInfo, opts: IGetTemplateFieldInfoConfOption) {
+    const templateFieldInfo: TTemplateFieldInfo = {};
+
+    for (const field in fieldInfo) {
+      const info = fieldInfo[field];
+      templateFieldInfo[field] = {
+        ...info,
+        param: info.param && {
+          ...info.param,
+          size: Math.round(opts.bgHeight * (info.param.size / 100)),
+        },
+      };
+    }
+
+    return templateFieldInfo;
   }
 
   function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption) {
@@ -183,16 +211,16 @@
 
   function formatExifInfo(exifInfo: ExifInfo) {
     const exif: TExifInfo = {
-      Make: { type: 'text', value: '', bImg: '', wImg: '' },
-      Model: { type: 'text', value: '', bImg: '', wImg: '' },
-      DateTimeOriginal: { type: 'text', value: '', bImg: '', wImg: '' },
-      ExposureTime: { type: 'text', value: '', bImg: '', wImg: '' },
-      FNumber: { type: 'text', value: '', bImg: '', wImg: '' },
-      FocalLength: { type: 'text', value: '', bImg: '', wImg: '' },
-      ISO: { type: 'text', value: '', bImg: '', wImg: '' },
-      ExposureProgram: { type: 'text', value: '', bImg: '', wImg: '' },
-      LensModel: { type: 'text', value: '', bImg: '', wImg: '' },
-      LensMake: { type: 'text', value: '', bImg: '', wImg: '' },
+      Make: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      Model: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      DateTimeOriginal: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      ExposureTime: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      FNumber: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      FocalLength: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      ISO: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      ExposureProgram: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      LensModel: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
+      LensMake: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
     };
 
     exif.Make.value = modelMap.INIT.make_filter(exifInfo.Make).trim();
@@ -228,82 +256,106 @@
       exif.ISO.value = `ISO${exifInfo.ISO}`;
     }
 
-    // 强制使用自定义参数
-    if ($config.cameraInfo.Force.use) {
-      for (const field in $config.cameraInfo) {
-        const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
-        if (info.use) {
-          exif[field as keyof ExifInfo] = exif[field as keyof ExifInfo] || { type: 'text', value: '', bImg: '', wImg: '' };
-          exif[field as keyof ExifInfo].type = info.type;
-          exif[field as keyof ExifInfo].value = `${info.value}`;
-          exif[field as keyof ExifInfo].bImg = `${info.bImg}`;
-          exif[field as keyof ExifInfo].wImg = `${info.wImg}`;
-        }
+    return exif;
+  }
+
+  function fillTemplateFieldInfo(templateFieldConf: TTemplateFieldInfo, exifInfo?: TTemplateFieldInfo) {
+    exifInfo = exifInfo || {};
+
+    for (const field in templateFieldConf) {
+      const info = templateFieldConf[field];
+      if (!exifInfo[field]) {
+        exifInfo[field] = {
+          use: info.use,
+          type: 'text',
+          value: '',
+          bImg: '',
+          wImg: '',
+          param: {
+            use: false,
+            bold: false,
+            italic: false,
+            size: 0,
+            font: '',
+          },
+        };
       }
-    } else { // 非强制使用，则使用自定义参数补空
-      for (const field in $config.cameraInfo) {
-        const info = $config.cameraInfo[field as keyof typeof $config.cameraInfo];
-        if (info.use && !exif[field as keyof ExifInfo]?.value) {
-          exif[field as keyof ExifInfo] = exif[field as keyof ExifInfo] || { type: 'text', value: '', bImg: '', wImg: '' };
-          exif[field as keyof ExifInfo].type = info.type;
-          exif[field as keyof ExifInfo].value = `${info.value}`;
-          exif[field as keyof ExifInfo].bImg = `${info.bImg}`;
-          exif[field as keyof ExifInfo].wImg = `${info.wImg}`;
-        }
+
+      if ((templateFieldConf?.Force?.use && info.use) || (info.use && !exifInfo[field].value)) {
+        exifInfo[field].type = info.type;
+        exifInfo[field].value = `${info.value}`;
+        exifInfo[field].bImg = `${info.bImg}`;
+        exifInfo[field].wImg = `${info.wImg}`;
+        exifInfo[field].param = info.param || exifInfo[field].param;
       }
     }
 
-    return exif;
+    return exifInfo;
   }
 
   interface ITextOption {
     size: number
-    font?: string
-    color?: string
-    bold?: boolean
+    font: string
+    color: string
+    bold: boolean
     height?: number
     width?: number
     /**
      * 斜体
      */
-    italic?: boolean
+    italic: boolean
   }
 
-  interface ITextItem {
+  interface ITemplateItem {
     text: string
     opts: ITextOption
   }
 
-  async function createTextList(exifInfo: ExifInfo, arr: ITextItem[]): Promise<IImgFileInfo[]> {
-    const _exifInfo = formatExifInfo(exifInfo);
-    const imgFileInfoList: IImgFileInfo[] = [];
-    console.log('设备信息', _exifInfo);
+  interface ISlotInfo {
+    value: string | HTMLImageElement
+    param: IFieldInfoItem['param']
+  }
 
-    for (const i of arr) {
+  interface ICreateTextOption {
+    templateList: ITemplateItem[]
+    templateFieldConf: TTemplateFieldInfo
+  }
+
+  async function createTextList(exifInfo: ExifInfo, opts: ICreateTextOption): Promise<IImgFileInfo[]> {
+    const templateFields = fillTemplateFieldInfo(opts.templateFieldConf, formatExifInfo(exifInfo));
+
+    const imgFileInfoList: IImgFileInfo[] = [];
+    console.log('模版字段信息', templateFields);
+
+    for (const i of opts.templateList) {
       let text = i.text.trim();
       const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
       const textList = [];
-      const imgList = [];
+      const slotInfoList = [];
 
       if (tempList?.length) {
         for (const temp of tempList) {
           const [field] = temp.match(/[A-Za-z0-9]+/);
-          const info = _exifInfo[field as keyof typeof _exifInfo];
+          const info = templateFields[field];
+
+          text = text.replace(temp, '{---}');
+          const slotInfo: ISlotInfo = {
+            value: '',
+            param: info.param,
+          };
+
           if (info.type === 'text') {
-            text = text.replace(temp, info.value);
+            slotInfo.value = info.value;
           } else {
-            imgList.push(await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg }));
-            text = text.replace(temp, '{\\-/}');
+            slotInfo.value = await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg });
           }
+
+          slotInfoList.push(slotInfo);
         }
 
-        const _arr = text.split('{\\-/}');
-        if (_arr.length === 1) {
-          textList.push(..._arr);
-        } else {
-          for (let j = 0; j < _arr.length; j++) {
-            textList.push(_arr[j], imgList[j]);
-          }
+        const _arr = text.split('{---}');
+        for (let j = 0; j < _arr.length; j++) {
+          textList.push(_arr[j], slotInfoList[j]);
         }
       } else {
         textList.push(text);
@@ -315,23 +367,32 @@
     return imgFileInfoList;
   }
 
-  function createTextFont(opts: ITextOption) {
+  function createTextFont(opts: Omit<IFontParam, 'use'>, extraOpts?: IFontParam) {
+    const _opts = { ...opts };
+
+    if (extraOpts?.use) {
+      Object.assign(_opts, extraOpts);
+      if (!opts.size) {
+        _opts.size = opts.size;
+      }
+    }
+
     let font = '';
 
-    if (opts.bold) {
+    if (_opts.bold) {
       font += 'bold ';
     }
 
-    if (opts.italic) {
+    if (_opts.italic) {
       font += 'italic ';
     }
 
-    if (opts.size) {
-      font += `${opts.size}px `;
+    if (_opts.size) {
+      font += `${_opts.size}px `;
     }
 
-    if (opts.font) {
-      font += `${opts.font},`;
+    if (_opts.font) {
+      font += `${_opts.font},`;
     }
 
     font += '"PingFang SC"';
@@ -339,12 +400,13 @@
     return font;
   }
 
-  function createTextImg(textList: (string | HTMLImageElement)[], opts: ITextOption): IImgFileInfo {
+  function createTextImg(textList: (ISlotInfo | string)[], opts: ITextOption): IImgFileInfo {
     textList = textList.filter(Boolean);
-    const font = createTextFont(opts);
     const can = createCanvas(0, 0);
     const ctx = can.getContext('2d');
+    const defFont = createTextFont(opts);
     const textInfoList: {
+      font: string
       value: string | HTMLImageElement
       type: 'text' | 'img'
       w: number
@@ -353,30 +415,61 @@
       h: number
     }[] = [];
 
-    const totalText = textList.reduce((t, i) => {
-      if (typeof i === 'string') t += i;
-      return t;
-    }, '');
+    let totalText = '';
+    const maxFontOpt: ITextOption = { ...opts };
 
-    ctx.font = font;
+    for (const text of textList) {
+      if (typeof text === 'string') {
+        totalText += text;
+        continue;
+      }
+
+      if (typeof text.value === 'string') {
+        totalText += text.value;
+      }
+
+      if (text.param) {
+        // 加粗
+        if (!maxFontOpt.bold && text.param.bold) {
+          maxFontOpt.bold = true;
+        }
+
+        // 使用最大的字体
+        if (maxFontOpt.size < text.param.size) {
+          maxFontOpt.size = text.param.size;
+        }
+      }
+    }
+
+    ctx.font = createTextFont(maxFontOpt);
     ctx.textBaseline = 'middle';
+    const textInfo = ctx.measureText(totalText);
+    can.height = opts.height || Math.round(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
 
-    const textInfo = ctx.measureText(totalText as string);
-
-    can.height = opts.height || Math.round(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, opts.size));
     can.width = textList.reduce((n, i, j) => {
       if (i === undefined || !i) return n;
-
       if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
 
-      if (typeof i === 'string') {
+      if (typeof i === 'string' || typeof i.value === 'string') {
+        let font = '';
+        let value = '';
+
+        if (typeof i === 'string') {
+          font = defFont;
+          value = i;
+        } else if (typeof i.value === 'string') {
+          font = createTextFont(opts, i.param);
+          value = i.value;
+        }
+
         ctx.font = font;
         ctx.textBaseline = 'middle';
-        const info = ctx.measureText(i);
+        const info = ctx.measureText(value);
         const h = info.actualBoundingBoxAscent + info.actualBoundingBoxDescent;
         const y = Math.round(h / 2 + (can.height - h) / 2);
         textInfoList.push({
-          value: i,
+          font,
+          value,
           type: 'text',
           x: n,
           y,
@@ -385,11 +478,13 @@
         });
         n += info.width;
       } else {
-        const y = can.height * 0.02;
-        const h = can.height - y;
-        const w = Math.round(h * (i.width / i.height));
+        const canHeight = i.param?.size || can.height;
+        const h = canHeight * 0.98;
+        const y = (can.height - h) / 2;
+        const w = Math.round(h * (i.value.width / i.value.height));
         textInfoList.push({
-          value: i,
+          font: defFont,
+          value: i.value,
           type: 'img',
           x: n,
           y,
@@ -403,7 +498,7 @@
 
     for (const info of textInfoList) {
       if (info.type === 'text') {
-        ctx.font = font;
+        ctx.font = info.font;
         ctx.fillStyle = opts.color || '#000';
         ctx.textBaseline = 'middle';
         ctx.fillText(info.value as string, info.x, info.y);

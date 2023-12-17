@@ -15,7 +15,7 @@ r.listen(routerConfig.getConfig, async () => config);
 r.listen(routerConfig.setConfig, async (data: any) => {
   storeConfig({
     options: Object.assign(config.options, data.options),
-    cameraInfo: Object.assign(config.cameraInfo, data.cameraInfo),
+    templateFieldInfo: Object.assign(config.templateFieldInfo, data.templateFieldInfo),
   });
   return config;
 });

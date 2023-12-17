@@ -21,6 +21,8 @@
   let imgExif = '';
   let showSetting = false;
 
+  const labelWidth = '80px';
+
   $: getPathName($config.output);
 
   async function onFileChange(ev: TInputEvent) {
@@ -141,6 +143,16 @@
     const arr = path.split('/');
     outputDirName = arr[arr.length - 1] || '/';
   }
+
+  function onBGRateChange(e: CustomEvent<boolean>) {
+    if (e.detail) {
+      config.update((d) => {
+        d.options.landscape = false;
+        d.options.origin_wh_output = false;
+        return d;
+      });
+    }
+  }
 </script>
 
 <div class="header">
@@ -151,8 +163,8 @@
     <p slot="message">重置回默认选项</p>
   </Popup>
 
-  <div class="show grass button" on:click={miniSizeWindow} on:keypress>-</div>
-  <div class="close grass button" on:click={closeApp} on:keypress>x</div>
+  <div class="show grass button" on:click={miniSizeWindow} on:keypress role="button" tabindex="-1">-</div>
+  <div class="close grass button" on:click={closeApp} on:keypress role="button" tabindex="-1">x</div>
 </div>
 
 <div id="root">
@@ -169,56 +181,88 @@
     <div class="content">
       <div class="action-wrap">
         <div class="left-wrap">
-          <ActionItem title="横屏输出">
-            <svelte:fragment slot="popup">软件自己判断宽高比，将图片进行背景横向输出，适合竖图生成横屏图片</svelte:fragment>
-            <Switch bind:value={$config.options.landscape} />
+          <ActionItem {labelWidth} title="选中数量">{fileUrlList.length}</ActionItem>
+
+          <ActionItem {labelWidth} title="输出目录">
+            <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
+            <span class="db-icon-setting output-setting" on:click|stopPropagation={changeOutputPath} on:keypress role="button" tabindex="-1"></span>
+            <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress role="button" tabindex="-1">{outputDirName}</span>
           </ActionItem>
 
-          <ActionItem title="参数显示">
+          <ActionItem {labelWidth} title="厂商显示">
+            <svelte:fragment slot="popup">是否显示厂商，如:Nikon、Sony...</svelte:fragment>
+            <Switch bind:value={$config.options.brand_show} />
+          </ActionItem>
+
+          <ActionItem {labelWidth} title="型号显示">
+            <svelte:fragment slot="popup">是否显示机型，如:Z30、A7M4...</svelte:fragment>
+            <Switch bind:value={$config.options.model_show} />
+          </ActionItem>
+
+          <ActionItem {labelWidth} title="参数显示">
             <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
             <Switch bind:value={$config.options.ext_show} />
           </ActionItem>
 
-          <ActionItem title="机型显示">
-            <svelte:fragment slot="popup">是否显示机型</svelte:fragment>
-            <Switch bind:value={$config.options.brand_show} />
-          </ActionItem>
-
-          <ActionItem title="型号显示">
-            <svelte:fragment slot="popup">是否显示机子型号</svelte:fragment>
-            <Switch bind:value={$config.options.model_show} />
-          </ActionItem>
-
-          <ActionItem title="纯色背景">
+          <ActionItem {labelWidth} title="纯色背景">
             <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
             <Switch bind:value={$config.options.solid_bg} />
-          </ActionItem>
-
-          <ActionItem title="原宽高输出">
-            <svelte:fragment slot="popup">输出图片是否按照原始宽高，开启将缩放原图</svelte:fragment>
-            <Switch bind:value={$config.options.origin_wh_output} />
           </ActionItem>
         </div>
 
         <div class="right-wrap">
-          <ActionItem title="选中数量">{fileUrlList.length}</ActionItem>
-
-          <ActionItem title="输出目录">
-            <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
-            <span class="db-icon-setting output-setting" on:click|stopPropagation={changeOutputPath} on:keypress></span>
-            <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress>{outputDirName}</span>
+          <ActionItem {labelWidth} title="横屏输出">
+            <svelte:fragment slot="popup">
+              软件自己判断图片宽高那一边更长
+              <br>
+              将背景横向处理
+              <br>
+              适合竖图生成横屏图片
+            </svelte:fragment>
+            <Switch bind:value={$config.options.landscape} disabled={$config.options.bg_rate_show} />
           </ActionItem>
 
-          <ActionItem title="背景比例">
-            <svelte:fragment slot="popup">指定图片背景的宽高比例，默认按照原始比例</svelte:fragment>
-            <Switch bind:value={$config.options.bg_rate_show} />
+          <ActionItem {labelWidth} title="原宽高输出">
+            <svelte:fragment slot="popup">
+              开启将控制输出的宽高为输入的图片宽高
+              <br>
+              主图将等比缩放放置在背景中
+              <br>
+              例如：
+              <br>
+              原图宽高1080x1920
+              <br>
+              输出则为1080x1920
+              <br>
+              如果开启<b>【横屏输出】</b>则为 1920x1080
+            </svelte:fragment>
+            <Switch bind:value={$config.options.origin_wh_output} disabled={$config.options.bg_rate_show} />
+          </ActionItem>
+
+          <ActionItem {labelWidth} title="输出宽高比">
+            <svelte:fragment slot="popup">
+              指定输出的图片的宽高比(该比例只生效于背景，对原图不生效)
+              <br>
+              该选项生效后影响以下选项效果：
+              <br>
+              <b>原宽高输出：</b>失效
+              <br>
+              <b>横屏输出：</b>失效
+            </svelte:fragment>
+            <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
             <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.w}/>
             :
             <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.h}/>
           </ActionItem>
 
-          <ActionItem title="圆角大小">
-            <svelte:fragment slot="popup">指定圆角的大小，不指定则为直角(默认使用高度的 0.021%)</svelte:fragment>
+          <ActionItem {labelWidth} title="圆角大小">
+            <svelte:fragment slot="popup">
+              指定圆角的大小，不指定则为直角
+              <br>
+              设置的值为图片高度的百分比，例如: 1，则为0.01%
+              <br>
+              (默认使用图片高度的 0.021%)
+            </svelte:fragment>
             <Switch bind:value={$config.options.radius_show} />
             <input
               class="bg-rate-input"
@@ -229,8 +273,14 @@
             />
           </ActionItem>
 
-          <ActionItem title="阴影大小">
-            <svelte:fragment slot="popup">指定阴影的大小，不指定则无阴影(默认使用高度的 0.06%)</svelte:fragment>
+          <ActionItem {labelWidth} title="阴影大小">
+            <svelte:fragment slot="popup">
+              指定阴影的大小，不指定则无阴影
+              <br>
+              设置的值为图片高度的百分比，例如: 1，则为0.01%
+              <br>
+              (默认使用图片高度的 0.06%)
+            </svelte:fragment>
             <Switch bind:value={$config.options.shadow_show} />
             <input
               class="bg-rate-input"
@@ -247,10 +297,10 @@
     <div class="button-wrap">
       {#if !processing}
         <label for="path" class="button grass">选择图片</label>
-        <div class="button grass" on:click={generatePictureFrames} on:keypress>生成印框</div>
-        <div class="button grass" on:click={getExitInfo} on:keypress>相机信息</div>
+        <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
+        <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
         <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
-        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress>自定义参数</div>
+        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">自定义参数</div>
       {:else}
         印框生成中...
       {/if}

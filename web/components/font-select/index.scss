@@ -1,9 +1,11 @@
-.font-select-wrap {
-  .font-select {
-    width: 150px !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.font-select{
+  width: 150px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .db-input__inner {
+    height: 32px !important;
   }
   
   .font-list {
@@ -11,37 +13,41 @@
     border-radius: 4px;
     z-index: 2;
   }
-  
-  .button.add-font {
+
+  .variant-filled {
+    background-color: var(--active-color);
+    color: white;
+  }
+}
+
+.db-select-dropdown__list {
+  .add-font {
     width: 100%;
     padding: 4px 0;
     margin-bottom: 4px;
     border-bottom: 2px solid var(--active-color);
     cursor: pointer;
+    text-align: center;
   }
-  
-  .listbox {
-    max-height: 250px;
-    overflow-y: auto;
-    padding: 0 4px;
-  }
-  
-  .listbox-item {
+}
+
+.db-select-dropdown {
+  background-color: var(--bg-color);
+
+  .db-select-dropdown__item {
+    padding: 0 10px;
     font-size: 14px;
     width: 100%;
+    display: flex;
+    justify-content: space-between;
 
-    .listbox-label {
-      width: 100%;
-    }
-  
     &:hover {
       background-color: var(--active-color);
       color: white;
     }
 
-    .listbox-label-content {
-      display: flex;
-      justify-content: space-between;
+    &.selected {
+      color: var(--active-color);
     }
 
     .font-name {
@@ -55,10 +61,5 @@
       text-align: center;
       cursor: pointer;
     }
-  }
-  
-  .variant-filled {
-    background-color: var(--active-color);
-    color: white;
   }
 }
