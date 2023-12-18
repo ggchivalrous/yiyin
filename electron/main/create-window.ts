@@ -2,8 +2,8 @@ import { join } from 'node:path';
 
 import { BrowserWindow, app, shell } from 'electron';
 
-export const preload = join(process.env.DIST_ELECTRON || app.getAppPath(), 'preload/index.js');
-export const webDir = join(process.env.VITE_WEB || app.getAppPath(), 'web');
+export const preload = join(import.meta.env.VITE_DIST_ELECTRON || app.getAppPath(), 'preload/index.js');
+export const webDir = join(import.meta.env.VITE_WEB || app.getAppPath(), 'web');
 
 export const createWindow = async (path: string, opts: Electron.BrowserWindowConstructorOptions) => {
   const win = new BrowserWindow({
@@ -15,8 +15,8 @@ export const createWindow = async (path: string, opts: Electron.BrowserWindowCon
     },
   });
 
-  if (process.env.URL) {
-    win.loadURL(join(process.env.URL, path, 'index.html'));
+  if (import.meta.env.DEV) {
+    win.loadURL(join(import.meta.env.VITE_URL, path, 'index.html'));
     if (opts.show !== false) {
       win.webContents.openDevTools();
     }

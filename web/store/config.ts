@@ -74,6 +74,7 @@ export async function resetConfig() {
     v.output = res.data.output;
     v.fontMap = res.data.font.map;
     v.fontDir = res.data.font.dir;
+    v.templateFieldInfo = res.data.templateFieldInfo;
     v.staticDir = res.data.staticDir;
     return v;
   });
@@ -86,6 +87,7 @@ config.subscribe(async (v) => {
 
     const _conf = await window.api.setConfig(v);
     if (_conf.code !== 0) {
+      console.log('持久化配置信息失败:', _conf.message);
       Message.error(`配置持久化失败!!${_conf.message}`);
       return;
     }

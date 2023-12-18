@@ -19,20 +19,36 @@ const electronAlias = {
   '@router': resolve(__dirname, 'electron/src/router'),
 };
 
+function objToEnvStr(obj: Record<string, any>) {
+  const arr: string[] = [];
+
+  for (const k in obj) {
+    arr.push(`VITE_${k}=${obj[k]}`);
+  }
+
+  return arr.join('\n');
+}
+
 export default defineConfig(({ command }) => {
   const port = 5173;
   const isServe = command === 'serve';
   const isBuild = command === 'build';
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
-  process.env.DIST_ELECTRON = electronOutDir;
-  process.env.VITE_WEB = join(electronOutDir, 'web');
-  process.env.PUBLIC = isServe ? join(__dirname, 'public') : process.env.VITE_WEB;
-  process.env.URL = isServe ? `http://localhost:${port}` : '';
+  const env: Record<string, any> = {
+    VERSION: pkg.version,
+    DIST_ELECTRON: electronOutDir,
+    WEB: join(electronOutDir, 'web'),
+    URL: isServe ? `http://localhost:${port}` : '',
+  };
+
+  env.PUBLIC = isServe ? join(__dirname, 'public') : env.WEB;
+  fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
 
   if (!fs.existsSync(electronOutDir)) {
     fs.mkdirSync(electronOutDir);
   }
+
   fs.writeFileSync(electronPkg, JSON.stringify({
     ...pkg,
     main: 'main/index.js',
@@ -41,6 +57,7 @@ export default defineConfig(({ command }) => {
 
   return {
     root: 'web',
+    envDir: join(__dirname, './'),
     plugins: [
       electron([
         {
@@ -101,7 +118,7 @@ export default defineConfig(({ command }) => {
       port,
     },
     build: {
-      outDir: process.env.VITE_WEB,
+      outDir: env.WEB,
       rollupOptions: {
         input: {
           main: join(__dirname, './web/main/index.html'),

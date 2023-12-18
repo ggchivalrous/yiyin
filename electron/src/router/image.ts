@@ -17,7 +17,7 @@ const log = new Logger('ImageR');
 async function createMaskWin() {
   if (!maskGenWin || maskGenWin.isDestroyed()) {
     maskGenWin = await createWindow('/mask', {
-      show: !!process.env.URL,
+      show: import.meta.env.DEV,
       frame: false,
       webPreferences: {
         webSecurity: false,

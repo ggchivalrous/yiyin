@@ -20,13 +20,16 @@ let win: BrowserWindow | null = null;
 
 async function createDefWin() {
   const opts: BrowserWindowConstructorOptions = {
-    width: 600,
-    height: 400,
+    width: 1000,
+    height: 600,
     title: '壹印',
     frame: false,
+    webPreferences: {
+      webSecurity: false,
+    },
   };
 
-  if (!process.env.URL) {
+  if (import.meta.env.PROD) {
     opts.minWidth = opts.width;
     opts.minHeight = opts.height;
     opts.maxWidth = opts.width;
@@ -43,7 +46,7 @@ app.whenReady().then(async () => {
   image.use(win);
   win.on('closed', () => app.quit());
   win.webContents.on('before-input-event', (event, input) => {
-    if (process.env.URL) {
+    if (import.meta.env.PROD) {
       return;
     }
 

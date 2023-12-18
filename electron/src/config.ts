@@ -24,12 +24,12 @@ export const DefaultConfig: IConfig = {
     model_show: true,
     brand_show: true,
     solid_bg: false,
-    origin_wh_output: true,
+    origin_wh_output: false,
     radius: 2.1,
     radius_show: true,
     shadow: 6,
     shadow_show: true,
-    bg_rate_show: true,
+    bg_rate_show: false,
     bg_rate: {
       w: 0,
       h: 0,
@@ -82,7 +82,7 @@ export function getConfig(def = false) {
     } as Partial<IConfig>);
   }
 
-  if (process.env.URL) {
+  if (import.meta.env.DEV) {
     config.cacheDir = path.join(config.output, '.catch');
   }
 

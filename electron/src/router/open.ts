@@ -18,7 +18,7 @@ r.listen(routerConfig.open.selectPath, async (data, event, win) => {
   if (!res.canceled && res.filePaths.length > 0) {
     config.output = res.filePaths[0];
 
-    if (process.env.URL) {
+    if (import.meta.env.DEV) {
       config.cacheDir = path.join(config.output, '.catch');
 
       if (!fs.existsSync(config.cacheDir)) {
