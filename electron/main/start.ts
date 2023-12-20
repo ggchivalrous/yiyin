@@ -45,15 +45,14 @@ app.whenReady().then(async () => {
   open.use(win);
   image.use(win);
   win.on('closed', () => app.quit());
-  win.webContents.on('before-input-event', (event, input) => {
-    if (import.meta.env.PROD) {
-      return;
-    }
 
-    if ((input.key === 'r' && input.meta) || input.key.toLowerCase() === 'f5') {
-      event.preventDefault();
-    }
-  });
+  if (import.meta.env.DEV) {
+    win.webContents.on('before-input-event', (event, input) => {
+      if ((input.key === 'r' && input.meta) || input.key.toLowerCase() === 'f5') {
+        event.preventDefault();
+      }
+    });
+  }
 });
 
 app.on('window-all-closed', () => {

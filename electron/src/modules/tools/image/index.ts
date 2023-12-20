@@ -92,7 +92,11 @@ export class Image {
 
     // 输出不按照原始大小，则直接复制一份
     if (!this.opts.origin_wh_output) {
-      fs.copyFileSync(this.imgPath, toFilePath);
+      const mainImgInfo = await imgSharp
+        .withMetadata()
+        .toFormat('jpeg', { quality: 100 })
+        .toBuffer({ resolveWithObject: true });
+      fs.writeFileSync(toFilePath, mainImgInfo.data);
       return {
         path: toFilePath,
         width: this.rotateImgInfo.info.w,
@@ -109,7 +113,7 @@ export class Image {
     outHeight = contentHeight;
 
     const mainImgInfo = await imgSharp
-      .withMetadata({ orientation: 1 })
+      .withMetadata()
       .resize({ width: outWidth, height: outHeight, fit: 'inside' })
       .toFormat('jpeg', { quality: 100 })
       .toBuffer({ resolveWithObject: true });
@@ -138,7 +142,7 @@ export class Image {
     const contentOffsetX = Math.round((originWidth - mainImgInfo.width) / 2);
     const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / (!textInfo.length ? 2 : 3));
 
-    const composite: any[] = [
+    const composite: sharp.OverlayOptions[] = [
       { input: mainPath, top: contentOffsetY, left: contentOffsetX },
       { input: bgInfo.data, gravity: sharp.gravity.center },
     ];
@@ -230,13 +234,12 @@ export class Image {
 
   private async getRotateSharp() {
     const mainImgSharp = await sharp(this.imgPath);
-    const mainImgInfoMetaData = await mainImgSharp.metadata();
-    const rotate = (((mainImgInfoMetaData.orientation || 1) - 1) * 90) % 360;
-    return mainImgSharp.rotate(rotate);
+    return mainImgSharp.rotate();
   }
 
   private async rotateImg() {
-    const bufferInfo = await (await this.getRotateSharp()).toBuffer({ resolveWithObject: true });
+    const imgSharp = await this.getRotateSharp();
+    const bufferInfo = await imgSharp.toBuffer({ resolveWithObject: true });
     const imgInfo: ImgInfo = {
       buf: bufferInfo.data,
       info: {
@@ -247,6 +250,7 @@ export class Image {
         w: bufferInfo.info.width,
         h: bufferInfo.info.height,
       },
+      metadata: await imgSharp.metadata(),
     };
 
     // 重置宽高比

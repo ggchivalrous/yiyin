@@ -5,6 +5,7 @@ import { writable } from 'svelte/store';
 import type { IConfig, IFieldInfoItem } from '../main/interface';
 
 let initConfig = false;
+let loadConfig = false;
 
 export const config = writable<IConfig>({
   options: {
@@ -46,6 +47,7 @@ export const config = writable<IConfig>({
 });
 
 export async function getConfig() {
+  loadConfig = true;
   const defConf = await window.api.getConfig();
   if (defConf.code === 0) {
     config.update((v) => {
@@ -60,6 +62,7 @@ export async function getConfig() {
     console.log('配置信息:', defConf.data);
     config.subscribe((v) => console.log('使用配置信息:', v))();
   }
+  loadConfig = false;
 }
 
 export async function resetConfig() {
@@ -82,7 +85,7 @@ export async function resetConfig() {
 }
 
 config.subscribe(async (v) => {
-  if (initConfig) {
+  if (initConfig && !loadConfig) {
     console.log('持久化配置信息');
 
     const _conf = await window.api.setConfig(v);

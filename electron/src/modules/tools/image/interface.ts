@@ -1,3 +1,5 @@
+import type sharp from 'sharp';
+
 export interface OutputSetting {
   /**
    * 是否横屏显示
@@ -71,6 +73,7 @@ export interface ImgInfo {
     w: number
     h: number
   }
+  metadata: Partial<sharp.Metadata>
 }
 
 export interface ExifInfo {
