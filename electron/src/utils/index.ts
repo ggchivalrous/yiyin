@@ -70,3 +70,13 @@ export const getFileName = (dir: string, fileName: string) => {
 
   return `${fileNameParse.name}-${parseList[0].index + 1}.jpg`;
 };
+
+export const sleep = (ms: number) => new Promise((e) => { setTimeout(e, ms); });
+
+export const pollSleep = async (fn: () => boolean, ms = 500, timeout = 60e3) => {
+  let totalMs = 0;
+  while (!fn() && totalMs < timeout) {
+    await sleep(ms);
+    totalMs += ms;
+  }
+};

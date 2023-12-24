@@ -1,9 +1,11 @@
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
 
+import { config } from '@config';
 import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 import { Logger } from '@modules/logger';
 import { getConfig } from '@src/config';
-import { tryCatch, usePromise } from '@utils';
+import { tryCatch, usePromise, md5, getFileName } from '@utils';
 import ExifParser from 'exif-parser';
 import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
@@ -27,8 +29,20 @@ export class Image {
 
   private isInit: boolean;
 
-  constructor(imgPath: string, options?: OutputSetting) {
+  private mainImgInfo: {
+    w: number
+    h: number
+  };
+
+  name: string;
+
+  fileNames: Record<string, string> = {};
+
+  md5: string;
+
+  constructor(imgPath: string, name: string, options?: OutputSetting) {
     this.imgPath = imgPath;
+    this.name = name;
     this.opts = {
       ...getConfig(true),
       ...options,
@@ -38,6 +52,12 @@ export class Image {
         h: (options?.bg_rate?.h ? +options.bg_rate.h : 0) || 0,
       },
     };
+
+    this.md5 = md5(`${md5(imgPath)}${Math.random()}${Date.now()}`);
+    const imgPathBase = path.resolve(config.cacheDir, this.md5);
+    this.fileNames.bg = path.resolve(`${imgPathBase}_bg.jpg`);
+    this.fileNames.main = path.resolve(`${imgPathBase}_main.jpg`);
+    this.fileNames.output = path.resolve(config.output, getFileName(config.output, name));
   }
 
   async init() {
@@ -47,35 +67,45 @@ export class Image {
     await this.rotateImg();
   }
 
-  async createBgImg(toFilePath: string): Promise<IImgFileInfo> {
+  clacBgImgSize(height?: number) {
     if (!this.isInit) { throw NotInit; }
-
     let resetHeight = this.rotateImgInfo.reset_info.h;
     let resetWidth = this.rotateImgInfo.reset_info.w;
 
-    // 不按图片原始宽高输出，则对背景宽高做调整
-    if (!this.opts.origin_wh_output) {
-      const whRate = resetWidth / resetHeight;
-      const heightRate = this.getMainImgHeightRate();
+    const whRate = resetWidth / resetHeight;
 
+    if (height) {
+      resetHeight = height;
+      resetWidth = Math.ceil(resetHeight * whRate);
+    } else {
       // 主图高度比重置后的高度高，需要使用主图高度作为最终高度
       const validHeight = this.rotateImgInfo.info.h > resetHeight ? this.rotateImgInfo.info.h : resetHeight;
-      resetHeight = Math.ceil(validHeight / heightRate);
+      resetHeight = validHeight;
       resetWidth = Math.ceil(resetHeight * whRate);
-
-      // 如果重置后，宽度太窄，则等比扩大宽高
-      if (this.rotateImgInfo.info.w / resetWidth > 0.9) {
-        resetWidth = Math.ceil(resetWidth / 0.9);
-        resetHeight = Math.ceil(resetWidth / whRate);
-      }
     }
+
+    // 如果重置后，宽度太窄，则等比扩大宽高
+    if (this.rotateImgInfo.info.w / resetWidth > 0.9) {
+      resetWidth = Math.ceil(this.rotateImgInfo.info.w / 0.9);
+      resetHeight = Math.ceil(resetWidth / whRate);
+    }
+
+    return {
+      w: resetWidth,
+      h: resetHeight,
+    };
+  }
+
+  async createBgImg(height: number, toFilePath?: string): Promise<IImgFileInfo> {
+    const { w, h } = this.clacBgImgSize(height);
+    toFilePath = toFilePath || this.fileNames.bg;
 
     let bgInfo;
     // 生成纯色背景
     if (this.opts.solid_bg) {
-      bgInfo = await this.createSolidImg(resetWidth, resetHeight, toFilePath);
+      bgInfo = await this.createSolidImg(w, h, toFilePath);
     } else {
-      bgInfo = await this.createBlurImg(resetWidth, resetHeight, toFilePath);
+      bgInfo = await this.createBlurImg(w, h, toFilePath);
     }
 
     return {
@@ -85,9 +115,9 @@ export class Image {
     };
   }
 
-  async createMainImg(toFilePath: string): Promise<IImgFileInfo> {
+  async createMainImg(toFilePath?: string): Promise<IImgFileInfo> {
     if (!this.isInit) { throw NotInit; }
-
+    toFilePath = toFilePath || this.fileNames.main;
     const imgSharp = await this.getRotateSharp();
 
     // 输出不按照原始大小，则直接复制一份
@@ -97,6 +127,11 @@ export class Image {
         .toFormat('jpeg', { quality: 100 })
         .toBuffer({ resolveWithObject: true });
       fs.writeFileSync(toFilePath, mainImgInfo.data);
+
+      this.mainImgInfo = {
+        w: mainImgInfo.info.width,
+        h: mainImgInfo.info.height,
+      };
       return {
         path: toFilePath,
         width: this.rotateImgInfo.info.w,
@@ -119,6 +154,10 @@ export class Image {
       .toBuffer({ resolveWithObject: true });
     fs.writeFileSync(toFilePath, mainImgInfo.data);
 
+    this.mainImgInfo = {
+      w: mainImgInfo.info.width,
+      h: mainImgInfo.info.height,
+    };
     return {
       path: toFilePath,
       width: mainImgInfo.info.width,
@@ -126,29 +165,21 @@ export class Image {
     };
   }
 
-  static async imgComposite(bgPath: string | Buffer, mainPath: string, toFilePath: string, textInfo: IImgFileInfo[]) {
-    const bgInfo = await sharp(bgPath)
-      .toFormat('png')
-      .toBuffer({ resolveWithObject: true });
+  async imgComposite(bgImgInfo: IImgFileInfo, textInfo: IImgFileInfo[], opts: any) {
+    if (!bgImgInfo) return undefined;
 
-    if (!bgInfo) return undefined;
-
-    const originWidth = bgInfo.info.width;
-    const originHeight = bgInfo.info.height;
-    const mainImgInfo = await sharp(mainPath).metadata();
+    const originWidth = bgImgInfo.width;
+    const originHeight = bgImgInfo.height;
+    const mainImgInfo = await sharp(this.fileNames.main).metadata();
     if (!mainImgInfo) return undefined;
 
-    const rem = originHeight / 3712;
-    const contentOffsetX = Math.round((originWidth - mainImgInfo.width) / 2);
-    const contentOffsetY = Math.round((originHeight - mainImgInfo.height) / (!textInfo.length ? 2 : 3));
-
     const composite: sharp.OverlayOptions[] = [
-      { input: mainPath, top: contentOffsetY, left: contentOffsetX },
-      { input: bgInfo.data, gravity: sharp.gravity.center },
+      { input: this.fileNames.main, top: opts.contentTop, left: opts.contentLeft },
+      { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
     if (textInfo[0]?.data) {
-      const top = originHeight - Math.round((textInfo[0]?.height || 0) + 250 * rem);
+      const top = Math.round(this.mainImgInfo.h + opts.contentTop * 1.5);
       composite.push({
         input: textInfo[0].data,
         top,
@@ -157,7 +188,7 @@ export class Image {
     }
 
     if (textInfo[1]?.data) {
-      const top = originHeight - Math.round(200 * rem);
+      const top = Math.round(this.mainImgInfo.h + opts.contentTop * 1.5 + 50 + (textInfo[0]?.height || 0));
       const infoPosition = {
         input: textInfo[1].data,
         top,
@@ -183,14 +214,9 @@ export class Image {
       .withMetadata()
       .toFormat('jpeg', { quality: 100 })
       .composite(composite)
-      .toFile(toFilePath, (err) => {
-        if (err) {
-          log.error(err);
-          rej(err);
-        } else {
-          res(true);
-          log.info('水印已添加并保存为 ', toFilePath);
-        }
+      .toFile(this.fileNames.output, (err) => {
+        if (err) rej(err);
+        else res(true);
       });
 
     return result;
@@ -291,9 +317,9 @@ export class Image {
   }
 
   private async createBlurImg(width: number, height: number, toFilePath: string) {
-    const path = ffmpegPath.path.includes('app.asar') ? ffmpegPath.path.replace('app.asar', 'app.asar.unpacked') : ffmpegPath.path;
+    const _path = ffmpegPath.path.includes('app.asar') ? ffmpegPath.path.replace('app.asar', 'app.asar.unpacked') : ffmpegPath.path;
     const ffmpeg = fluentFfmpeg();
-    fluentFfmpeg.setFfmpegPath(path);
+    fluentFfmpeg.setFfmpegPath(_path);
 
     const bgInfo = await sharp(this.rotateImgInfo.buf)
       .resize({ width, height, fit: 'fill' })
@@ -335,5 +361,15 @@ export class Image {
 
     fs.writeFileSync(toFilePath, bgInfo.data);
     return bgInfo;
+  }
+
+  clearCache() {
+    if (fs.existsSync(this.fileNames.bg)) {
+      fs.rmSync(this.fileNames.bg);
+    }
+
+    if (fs.existsSync(this.fileNames.main)) {
+      fs.rmSync(this.fileNames.main);
+    }
   }
 }

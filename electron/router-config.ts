@@ -1,6 +1,8 @@
 export default {
   startTask: 'startTask',
   composite: 'composite',
+  compositeFail: 'compositeFail',
+  createBgImg: 'createBgImg',
   getConfig: 'getConfig',
   setConfig: 'setConfig',
   resetConfig: 'resetConfig',
@@ -17,5 +19,8 @@ export default {
   },
   on: {
     createMask: 'on:createMask',
+    taskStart: 'on:taskStart',
+    progress: 'on:progress',
+    composite: 'on:composite',
   },
 };

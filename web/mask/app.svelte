@@ -32,10 +32,9 @@
       const task = taskList[i];
 
       try {
-        const blurImg = await loadImage(task.blur);
-        const scaleImg = await loadImage(task.scale);
+        const scaleImg = await loadImage(task.mainImgInfo);
         const templateFieldInfoConf = getTemplateFieldInfoConf($config.templateFieldInfo, {
-          bgHeight: task.blur.height,
+          bgHeight: task.bgImgSize.h,
         });
 
         const textImgList = await createTextList(task.exifInfo, {
@@ -43,8 +42,8 @@
             {
               text: '{Make} {Model}',
               opts: {
-                width: blurImg.width,
-                size: task.blur.height * 0.03,
+                width: task.bgImgSize.w,
+                size: task.bgImgSize.h * 0.04,
                 color: task.option.solid_bg ? '#000' : '#fff',
                 font: task.option.font,
                 bold: true,
@@ -54,8 +53,8 @@
             {
               text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
               opts: {
-                width: blurImg.width,
-                size: task.blur.height * 0.02,
+                width: task.bgImgSize.w,
+                size: task.bgImgSize.h * 0.025,
                 color: task.option.solid_bg ? '#000' : '#fff',
                 font: task.option.font,
                 bold: true,
@@ -66,28 +65,58 @@
           templateFieldConf: templateFieldInfoConf,
         });
 
-        const maskUrl = await createBoxShadowMark(canvas, {
-          img: blurImg,
+        // 生成背景图片
+        const bgImgInfo = await window.api.createBgImg({
+          md5: task.md5,
+          height: Math.ceil(textImgList.reduce(
+            (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
+            scaleImg.height
+            + (task.option.shadow_show ? Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100) * 2) : 0),
+          )),
+        });
+
+        if (bgImgInfo.code !== 0 || !bgImgInfo.data) {
+          await window.api.compositeFail({
+            name: task.name,
+            md5: task.md5,
+            msg: bgImgInfo.message,
+          });
+          continue;
+        }
+
+        const bgImg = await loadImage(bgImgInfo.data);
+        const _bgImgInfo = await createBoxShadowMark(canvas, {
+          img: bgImg,
           contentImg: scaleImg,
           textImgList,
           shadow: {
-            blur: task.option.shadow_show ? task.blur.height * ((task.option.shadow || 6) / 100) : 0,
+            blur: task.option.shadow_show ? task.mainImgInfo.height * ((task.option.shadow || 6) / 100) : 0,
             offsetX: 0,
             offsetY: 0,
           },
-          radius: task.option.radius_show ? task.blur.height * ((task.option.radius || 2.1) / 100) : 0,
+          radius: task.option.radius_show ? task.mainImgInfo.height * ((task.option.radius || 2.1) / 100) : 0,
           option: task.option,
         });
 
         await window.api.composite({
           name: task.name,
           md5: task.md5,
-          mask: maskUrl,
+          bgImgInfo: _bgImgInfo,
+          mainImgOffset: {
+            top: _bgImgInfo.contentTop,
+            left: _bgImgInfo.contentLeft,
+          },
           text: textImgList,
           option: task.option,
         });
       } catch (e) {
         console.log(e);
+
+        await window.api.compositeFail({
+          name: task.name,
+          md5: task.md5,
+          msg: e,
+        });
       }
     }
     taskList = [];
@@ -115,7 +144,13 @@
     return templateFieldInfo;
   }
 
-  function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption) {
+  function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption): {
+    data: string
+    width: number
+    height: number
+    contentTop: number
+    contentLeft: number
+  } {
     _canvas.width = option.img.width;
     _canvas.height = option.img.height;
     const ctx = _canvas.getContext('2d');
@@ -141,13 +176,8 @@
       }
     }
 
-    let heightPosition = 3;
-    if ((!option.option.ext_show && !option.option.brand_show) || !option.textImgList.length) {
-      heightPosition = 2;
-    }
-
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
-    const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
+    const contentOffsetY = Math.round(option.shadow.blur);
 
     if (option.shadow.blur) {
       ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
@@ -189,7 +219,13 @@
     ctx.clip();
     ctx.clearRect(rectX, rectY, rectWidth, rectHeight);
 
-    return _canvas.toDataURL('image/png');
+    return {
+      data: _canvas.toDataURL('image/png', 100),
+      width: _canvas.width,
+      height: _canvas.height,
+      contentTop: contentOffsetY,
+      contentLeft: contentOffsetX,
+    };
   }
 
   function formatFontMap(fontMap: Record<string, string>) {

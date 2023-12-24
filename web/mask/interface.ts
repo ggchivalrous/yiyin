@@ -8,8 +8,11 @@ export interface ITaskInfo {
   name: string
   md5: string
   exifInfo: ExifInfo
-  blur: IImgFileInfo,
-  scale: IImgFileInfo,
+  bgImgSize: {
+    w: number
+    h: number
+  },
+  mainImgInfo: IImgFileInfo,
   option: OutputSetting,
 }
 
