@@ -3,7 +3,7 @@ import { Router } from '@modules/router';
 import { IImgFileInfo, Image, OutputSetting } from '@modules/tools/image';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
-import { pollSleep, tryAsyncCatch } from '@utils';
+import { pollSleep, tryAsyncCatch, usePromise } from '@utils';
 import { BrowserWindow } from 'electron';
 
 let maskGenWin: BrowserWindow = null;
@@ -16,6 +16,8 @@ const queue: {
 };
 
 async function createMaskWin() {
+  const [promise, res] = usePromise();
+
   if (!maskGenWin || maskGenWin.isDestroyed()) {
     maskGenWin = await createWindow('/mask', {
       show: import.meta.env.DEV,
@@ -26,7 +28,13 @@ async function createMaskWin() {
         offscreen: true,
       },
     });
+
+    maskGenWin.addListener('ready-to-show', () => {
+      res(maskGenWin);
+    });
   }
+
+  return promise;
 }
 
 interface StartTaskData {

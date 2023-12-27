@@ -40,6 +40,8 @@ export interface IBoxShadowMarkOption {
   img: HTMLImageElement
   contentImg: HTMLImageElement
   textImgList: IImgFileInfo[]
+  contentHeight: number
+  contentTop: number
   shadow: {
     blur?: number
     offsetX?: number

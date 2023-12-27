@@ -32,7 +32,7 @@
       const task = taskList[i];
 
       try {
-        const scaleImg = await loadImage(task.mainImgInfo);
+        const mainImg = await loadImage(task.mainImgInfo);
         const templateFieldInfoConf = getTemplateFieldInfoConf($config.templateFieldInfo, {
           bgHeight: task.bgImgSize.h,
         });
@@ -43,7 +43,7 @@
               text: '{Make} {Model}',
               opts: {
                 width: task.bgImgSize.w,
-                size: task.bgImgSize.h * 0.04,
+                size: task.bgImgSize.h * 0.038,
                 color: task.option.solid_bg ? '#000' : '#fff',
                 font: task.option.font,
                 bold: true,
@@ -54,7 +54,7 @@
               text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
               opts: {
                 width: task.bgImgSize.w,
-                size: task.bgImgSize.h * 0.025,
+                size: task.bgImgSize.h * 0.022,
                 color: task.option.solid_bg ? '#000' : '#fff',
                 font: task.option.font,
                 bold: true,
@@ -65,14 +65,26 @@
           templateFieldConf: templateFieldInfoConf,
         });
 
+        let mainImgOffset = 460;
+
+        if (task.option.shadow_show) {
+          const mainImgOffsetTop = Math.max(200, Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100)));
+          mainImgOffset = mainImgOffsetTop * 2;
+
+          if (mainImgOffsetTop / 2 < 230) {
+            mainImgOffset += 230 - mainImgOffsetTop / 2;
+          }
+        }
+
         // 生成背景图片
+        const contentHeight = Math.ceil(textImgList.reduce(
+          (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
+          mainImg.height + Math.round(mainImgOffset),
+        ));
+
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
-          height: Math.ceil(textImgList.reduce(
-            (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
-            scaleImg.height
-            + (task.option.shadow_show ? Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100) * 2) : 0),
-          )),
+          height: contentHeight,
         });
 
         if (bgImgInfo.code !== 0 || !bgImgInfo.data) {
@@ -87,7 +99,9 @@
         const bgImg = await loadImage(bgImgInfo.data);
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
-          contentImg: scaleImg,
+          contentImg: mainImg,
+          contentHeight,
+          contentTop: Math.round((bgImg.height - contentHeight) / 2),
           textImgList,
           shadow: {
             blur: task.option.shadow_show ? task.mainImgInfo.height * ((task.option.shadow || 6) / 100) : 0,
@@ -136,7 +150,7 @@
         ...info,
         param: info.param && {
           ...info.param,
-          size: Math.round(opts.bgHeight * (info.param.size / 100)),
+          size: info.param.size ? Math.round(opts.bgHeight * (info.param.size / 100)) : 0,
         },
       };
     }
@@ -177,7 +191,7 @@
     }
 
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
-    const contentOffsetY = Math.round(option.shadow.blur);
+    const contentOffsetY = Math.round(Math.max(200, option.contentTop + option.shadow.blur));
 
     if (option.shadow.blur) {
       ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
@@ -360,7 +374,9 @@
 
         const _arr = text.split('{---}');
         for (let j = 0; j < _arr.length; j++) {
-          textList.push(_arr[j], slotInfoList[j]);
+          if (slotInfoList[j]?.value) {
+            textList.push(_arr[j], slotInfoList[j]);
+          }
         }
       } else {
         textList.push(text);
@@ -463,7 +479,7 @@
           font = defFont;
           value = i;
         } else if (typeof i.value === 'string') {
-          font = createTextFont(opts, i.param);
+          font = createTextFont(opts, mergeFontOpt(opts, i.param));
           value = i.value;
         }
 
@@ -517,6 +533,16 @@
       height: can.height,
       path: can.toDataURL(),
     };
+  }
+
+  function mergeFontOpt(def: ITextOption, target: IFontParam): IFontParam {
+    const cpDef = { ...target };
+
+    for (const key in def) {
+      (cpDef[key as keyof IFontParam] as any) = target[key as keyof IFontParam] || def[key as keyof ITextOption];
+    }
+
+    return cpDef;
   }
 </script>
 

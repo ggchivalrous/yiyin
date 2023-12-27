@@ -178,23 +178,24 @@ export class Image {
       { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
-    if (textInfo[0]?.data) {
-      const top = Math.round(this.mainImgInfo.h + opts.contentTop * 1.5);
-      composite.push({
-        input: textInfo[0].data,
-        top,
-        left: Math.round((originWidth - textInfo[0].width) / 2),
-      });
-    }
-
+    const bottomMargin = 230;
     if (textInfo[1]?.data) {
-      const top = Math.round(this.mainImgInfo.h + opts.contentTop * 1.5 + 50 + (textInfo[0]?.height || 0));
+      const top = Math.round(originHeight - textInfo[1].height - bottomMargin);
       const infoPosition = {
         input: textInfo[1].data,
         top,
         left: Math.round((originWidth - textInfo[1].width) / 2),
       };
       composite.push(infoPosition);
+    }
+
+    if (textInfo[0]?.data) {
+      const top = Math.round(originHeight - textInfo[0].height - bottomMargin - (textInfo[1]?.height || 0) - 50);
+      composite.push({
+        input: textInfo[0].data,
+        top,
+        left: Math.round((originWidth - textInfo[0].width) / 2),
+      });
     }
 
     const [result, res, rej] = usePromise();
@@ -321,24 +322,35 @@ export class Image {
     const ffmpeg = fluentFfmpeg();
     fluentFfmpeg.setFfmpegPath(_path);
 
-    const bgInfo = await sharp(this.rotateImgInfo.buf)
-      .resize({ width, height, fit: 'fill' })
-      .toFormat('jpeg', { quality: 50 })
+    let bgInfo = await sharp(this.rotateImgInfo.buf)
+      .resize({ width: 3025, height: 3025, fit: 'fill' })
+      .toFormat('jpeg', { quality: 100 })
       .toBuffer({ resolveWithObject: true });
     fs.writeFileSync(toFilePath, bgInfo.data);
 
-    const diagonal = Math.round(Math.sqrt(this.rotateImgInfo.info.w ** 2 + this.rotateImgInfo.info.h ** 2) / 10);
-    const blur = diagonal < 100 ? diagonal : diagonal - 65;
-
+    const blur = 200;
+    const [promise, res] = usePromise();
     // 生成模糊背景;
-    await new Promise((r) => {
-      ffmpeg
-        .input(toFilePath)
-        .outputOptions('-vf', `boxblur=${blur}:2`)
-        .saveToFile(toFilePath || this.imgPath)
-        .on('end', r)
-        .on('error', (e) => log.error('Ffmpeg异常', e));
-    });
+    ffmpeg
+      .input(toFilePath)
+      .outputOptions('-vf', `boxblur=${blur}:2`)
+      .saveToFile(toFilePath)
+      .on('end', () => res(true))
+      .on('error', (e) => {
+        log.error('Ffmpeg异常', e);
+        res(false);
+      });
+
+    if (!await promise) {
+      return null;
+    }
+
+    bgInfo = await sharp(toFilePath)
+      .resize({ width, height, fit: 'fill' })
+      .toFormat('jpeg', { quality: 100 })
+      .toBuffer({ resolveWithObject: true });
+    fs.writeFileSync(toFilePath, bgInfo.data);
+
     return bgInfo;
   }
 
