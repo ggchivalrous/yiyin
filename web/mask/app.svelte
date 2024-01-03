@@ -1,13 +1,13 @@
 <script lang="ts">
   import { config } from '@web/store/config';
-  import modelMap from '@web-utils/model-map';
 
   import type {
-    ICreateTextOption, ISlotInfo, ITextOption, ExifInfo,
-    IBoxShadowMarkOption, IFontInfo, IFontParam, IImgFileInfo,
-    ITaskInfo, TExifInfo, TTemplateFieldInfo,
+    IBoxShadowMarkOption, ITemplateItem, ITextOption,
+    IFontInfo, IFontParam, IImgFileInfo,
+    ISlotInfo, ITaskInfo,
   } from './interface';
-  import { calcAverageBrightness, importFont, loadImage, createCanvas } from './main';
+  import { calcAverageBrightness, createCanvas, importFont, loadImage } from './main';
+  import * as utils from './utils';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
@@ -33,37 +33,34 @@
 
       try {
         const mainImg = await loadImage(task.mainImgInfo);
-        const templateFieldInfoConf = getTemplateFieldInfoConf($config.templateFieldInfo, {
+        const templateFieldsConf = utils.getTemplateFieldsConf(task.exifInfo, {
           bgHeight: task.bgImgSize.h,
         });
 
-        const textImgList = await createTextList(task.exifInfo, {
-          templateList: [
-            {
-              text: '{Make} {Model}',
-              opts: {
-                width: task.bgImgSize.w,
-                size: task.bgImgSize.h * 0.038,
-                color: task.option.solid_bg ? '#000' : '#fff',
-                font: task.option.font,
-                bold: true,
-                italic: false,
-              },
+        const textImgList = await createTextList([
+          {
+            text: '{Make} {Model}',
+            opts: {
+              width: task.bgImgSize.w,
+              size: task.bgImgSize.h * 0.038,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
             },
-            {
-              text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
-              opts: {
-                width: task.bgImgSize.w,
-                size: task.bgImgSize.h * 0.022,
-                color: task.option.solid_bg ? '#000' : '#fff',
-                font: task.option.font,
-                bold: true,
-                italic: false,
-              },
+          },
+          {
+            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+            opts: {
+              width: task.bgImgSize.w,
+              size: task.bgImgSize.h * 0.024,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
             },
-          ],
-          templateFieldConf: templateFieldInfoConf,
-        });
+          },
+        ], templateFieldsConf);
 
         let mainImgOffset = 460;
 
@@ -135,27 +132,6 @@
     }
     taskList = [];
     processing = false;
-  }
-
-  interface IGetTemplateFieldInfoConfOption {
-    bgHeight: number
-  }
-
-  function getTemplateFieldInfoConf(fieldInfo: TTemplateFieldInfo, opts: IGetTemplateFieldInfoConfOption) {
-    const templateFieldInfo: TTemplateFieldInfo = {};
-
-    for (const field in fieldInfo) {
-      const info = fieldInfo[field];
-      templateFieldInfo[field] = {
-        ...info,
-        param: info.param && {
-          ...info.param,
-          size: info.param.size ? Math.round(opts.bgHeight * (info.param.size / 100)) : 0,
-        },
-      };
-    }
-
-    return templateFieldInfo;
   }
 
   function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption): {
@@ -256,97 +232,11 @@
     }
   }
 
-  function formatExifInfo(exifInfo: ExifInfo) {
-    const exif: TExifInfo = {
-      Make: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      Model: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      DateTimeOriginal: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      ExposureTime: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      FNumber: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      FocalLength: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      ISO: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      ExposureProgram: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      LensModel: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-      LensMake: { type: 'text', value: '', bImg: '', wImg: '', param: undefined },
-    };
-
-    exif.Make.value = modelMap.INIT.make_filter(exifInfo.Make).trim();
-    const _modelMap = Object.assign(modelMap.DEF, modelMap[exif.Make.value]);
-
-    if ($config.options.model_show) {
-      exif.Model.value = _modelMap.model_filter(exifInfo.Model.replace(exif.Make.value, ''))?.trim() || '';
-    }
-
-    if ($config.options.brand_show) {
-      exif.Make.value = _modelMap.make_filter(exif.Make.value)?.trim() || '';
-    } else {
-      exif.Make.value = '';
-    }
-
-    if (exifInfo.FocalLength) {
-      exif.FocalLength.value = `${Math.round(exifInfo.FocalLength)}mm`;
-    }
-
-    if (exifInfo.FNumber) {
-      exif.FNumber.value = `f/${exifInfo.FNumber}`;
-    }
-
-    if (exifInfo.ExposureTime) {
-      if (exifInfo.ExposureTime < 1) {
-        exif.ExposureTime.value = `1/${Math.round(1 / exifInfo.ExposureTime)}s`;
-      } else {
-        exif.ExposureTime.value = `${exifInfo.ExposureTime}s`;
-      }
-    }
-
-    if (exifInfo.ISO) {
-      exif.ISO.value = `ISO${exifInfo.ISO}`;
-    }
-
-    return exif;
-  }
-
-  function fillTemplateFieldInfo(templateFieldConf: TTemplateFieldInfo, exifInfo?: TTemplateFieldInfo) {
-    exifInfo = exifInfo || {};
-
-    for (const field in templateFieldConf) {
-      const info = templateFieldConf[field];
-      if (!exifInfo[field]) {
-        exifInfo[field] = {
-          use: info.use,
-          type: 'text',
-          value: '',
-          bImg: '',
-          wImg: '',
-          param: {
-            use: false,
-            bold: false,
-            italic: false,
-            size: 0,
-            font: '',
-          },
-        };
-      }
-
-      if ((templateFieldConf?.Force?.use && info.use) || (info.use && !exifInfo[field].value)) {
-        exifInfo[field].type = info.type;
-        exifInfo[field].value = `${info.value}`;
-        exifInfo[field].bImg = `${info.bImg}`;
-        exifInfo[field].wImg = `${info.wImg}`;
-        exifInfo[field].param = info.param || exifInfo[field].param;
-      }
-    }
-
-    return exifInfo;
-  }
-
-  async function createTextList(exifInfo: ExifInfo, opts: ICreateTextOption): Promise<IImgFileInfo[]> {
-    const templateFields = fillTemplateFieldInfo(opts.templateFieldConf, formatExifInfo(exifInfo));
-
+  async function createTextList(templateList: ITemplateItem[], templateFieldsConf: ReturnType<typeof utils.getTemplateFieldsConf>): Promise<IImgFileInfo[]> {
     const imgFileInfoList: IImgFileInfo[] = [];
-    console.log('模版字段信息', templateFields);
+    console.log('模版字段信息', templateFieldsConf);
 
-    for (const i of opts.templateList) {
+    for (const i of templateList) {
       let text = i.text.trim();
       const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
       const textList = [];
@@ -355,7 +245,7 @@
       if (tempList?.length) {
         for (const temp of tempList) {
           const [field] = temp.match(/[A-Za-z0-9]+/);
-          const info = templateFields[field];
+          const info = templateFieldsConf[field];
 
           text = text.replace(temp, '{---}');
           const slotInfo: ISlotInfo = {
@@ -385,7 +275,7 @@
       imgFileInfoList.push(createTextImg(textList, i.opts));
     }
 
-    return imgFileInfoList;
+    return imgFileInfoList.filter(Boolean);
   }
 
   function createTextFont(opts: Omit<IFontParam, 'use'>, extraOpts?: IFontParam) {
@@ -423,6 +313,10 @@
 
   function createTextImg(textList: (ISlotInfo | string)[], opts: ITextOption): IImgFileInfo {
     textList = textList.filter(Boolean);
+    if (!textList.length) {
+      return null;
+    }
+
     const can = createCanvas(0, 0);
     const ctx = can.getContext('2d');
     const defFont = createTextFont(opts);
@@ -539,7 +433,11 @@
     const cpDef = { ...target };
 
     for (const key in def) {
-      (cpDef[key as keyof IFontParam] as any) = target[key as keyof IFontParam] || def[key as keyof ITextOption];
+      if (target && target[key as keyof IFontParam]) {
+        (cpDef[key as keyof IFontParam] as any) = target[key as keyof IFontParam];
+      } else {
+        (cpDef[key as keyof IFontParam] as any) = def[key as keyof ITextOption];
+      }
     }
 
     return cpDef;
