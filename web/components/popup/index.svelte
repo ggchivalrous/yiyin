@@ -23,7 +23,7 @@
   <slot></slot>
 </div>
 
-<div class="popup grass" data-popup={popupHover.target}>
+<div class="popup" data-popup={popupHover.target}>
   <slot name="message"></slot>
   <div class="arrow variant-filled-secondary" />
 </div>
@@ -39,6 +39,7 @@
   border-radius: 4px;
   font-size: 14px;
   z-index: 2;
+  box-shadow: var(--blackShadow), var(--blackShadow);
 }
 
 .arrow {

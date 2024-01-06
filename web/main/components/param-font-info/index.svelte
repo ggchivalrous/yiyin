@@ -17,6 +17,7 @@
 
 <div class="param-font-info">
   <ActionItem title="生效">
+    <svelte:fragment slot="popup">是否启用自定义字体参数</svelte:fragment>
     <Switch bind:value={conf.use} />
   </ActionItem>
   <div class="param-font-item">

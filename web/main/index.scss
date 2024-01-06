@@ -12,11 +12,11 @@
   margin-left: 10px;
 
   &:hover {
-    box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
+    box-shadow: inset var(--whiteShadow), inset var(--blackShadow);
   }
 
   &:active {
-    box-shadow: var(--blackShadow), var(--whiteShadow);
+    box-shadow: var(--whiteShadow), var(--blackShadow);
   }
 
   &:first-child {

@@ -357,7 +357,7 @@
         totalText += text.value;
       }
 
-      if (text.param) {
+      if (text.param && text.param.use) {
         // 加粗
         if (!maxFontOpt.bold && text.param.bold) {
           maxFontOpt.bold = true;
@@ -407,7 +407,7 @@
         });
         n += info.width;
       } else {
-        const canHeight = i.param?.size || can.height;
+        const canHeight = i.param?.use ? i.param?.size || can.height : can.height;
         const h = canHeight * 0.98;
         const y = (can.height - h) / 2;
         const w = Math.round(h * (i.value.width / i.value.height));
@@ -444,6 +444,10 @@
   }
 
   function mergeFontOpt(def: ITextOption, target: IFontParam): IFontParam {
+    if (!target || !target.use) {
+      return { ...def, use: false };
+    }
+
     const cpDef = { ...target };
 
     for (const key in def) {

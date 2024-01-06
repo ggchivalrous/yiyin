@@ -3,8 +3,8 @@
   --text-color-1: rgba(16, 33, 55, 0.75);
   --active-border-color: #13325eca;
   --active-color: #13325eba;
-  --whiteShadow: 4px 4px 8px rgba(196, 199, 207, .8);
-  --blackShadow: -4px -4px 8px rgba(255, 255, 255, .8);
+  --blackShadow: 4px 4px 8px rgba(196, 199, 207, .8);
+  --whiteShadow: -4px -4px 8px rgba(255, 255, 255, .8);
   --bg-color: #E7EAF3;
 }
 
@@ -47,12 +47,12 @@ body {
   .db-input{
     &.text-input {
       .db-input__inner {
-        box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
+        box-shadow: inset var(--whiteShadow), inset var(--blackShadow);
       }
     }
 
     .db-input__inner {
-      box-shadow: var(--blackShadow), var(--whiteShadow);
+      box-shadow: var(--whiteShadow), var(--blackShadow);
       background-color: var(--bg-color);
       color: var(--text-color-1);
       border: none;
@@ -73,11 +73,11 @@ body {
   }
 
   .grass {
-    box-shadow: var(--blackShadow), var(--whiteShadow);
+    box-shadow: var(--whiteShadow), var(--blackShadow);
   }
   
   .grass-unset {
-    box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
+    box-shadow: unset var(--whiteShadow), unset var(--blackShadow);
   }
 
   .db-popover {
