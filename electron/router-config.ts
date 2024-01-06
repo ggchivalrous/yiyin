@@ -22,5 +22,6 @@ export default {
     taskStart: 'on:taskStart',
     progress: 'on:progress',
     composite: 'on:composite',
+    assetsUpdate: 'on:assetsUpdate',
   },
 };

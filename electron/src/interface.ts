@@ -41,6 +41,12 @@ export interface IConfig {
    * 模板字段信息
    */
   templateFieldInfo: TTemplateFieldInfo
+
+  versionUpdateInfo: {
+    checkDate: number
+    version: string
+    downloadLink: string
+  }
 }
 
 export type TTemplateFieldInfo = Record<string, IFieldInfoItem<any>>
@@ -95,4 +101,30 @@ export interface ICameraInfo {
   LensModel: IFieldInfoItem
   LensMake: IFieldInfoItem
   PersonalSign: IFieldInfoItem
+}
+
+export interface IReleaseData {
+  id: number
+  tag_name: string
+  name: string
+  created_at: string
+
+  assets: {
+    url: string
+    id: number
+    name: string
+    download_count: string
+    browser_download_url: string
+  }[]
+
+  /**
+   * Relase 更新内容
+   */
+  body: string
+}
+
+export interface INewVersionRes {
+  update: boolean
+  version: string
+  downloadLink?: string
 }

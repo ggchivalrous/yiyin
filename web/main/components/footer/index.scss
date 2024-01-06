@@ -7,4 +7,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  .version-update {
+    position: relative;
+
+    &::after {
+      content: '*';
+      color: #F56C6C;
+    }
+  }
 }

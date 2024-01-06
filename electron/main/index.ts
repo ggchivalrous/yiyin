@@ -16,5 +16,8 @@ import('@src/config').then(async ({ config }) => {
 
   app.addListener('quit', closeAllLogger);
 
-  await import('./start');
+  const { default: Application } = await import('./app');
+  const _app = new Application();
+  await _app.init();
+  await _app.start();
 });

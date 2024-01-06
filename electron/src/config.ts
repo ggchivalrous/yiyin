@@ -51,6 +51,12 @@ export const DefaultConfig: IConfig = {
     LensMake: getDefOptionItem(''),
     PersonalSign: getDefOptionItem(''),
   },
+
+  versionUpdateInfo: {
+    version: import.meta.env.VITE_VERSION,
+    downloadLink: '',
+    checkDate: 0,
+  },
 };
 
 function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
@@ -79,6 +85,7 @@ export function getConfig(def = false) {
       cacheDir: fileConfig.cacheDir || config.cacheDir,
       options: Object.assign(config.options, fileConfig.options),
       templateFieldInfo: Object.assign(config.templateFieldInfo, fileConfig.templateFieldInfo),
+      versionUpdateInfo: Object.assign(config.versionUpdateInfo, fileConfig.versionUpdateInfo),
     } as Partial<IConfig>);
   }
 
