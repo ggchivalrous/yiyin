@@ -48,3 +48,12 @@ export const charToNumberChar = (originStr: string, mathematicalFontStart = 0x1d
 
   return str; // 将 Unicode 码点转换成字符
 };
+
+export const loadImage = (url: string) => {
+  const img = new Image();
+  img.src = url;
+  return new Promise<HTMLImageElement>((r, j) => {
+    img.onload = () => r(img);
+    img.onerror = j;
+  });
+};

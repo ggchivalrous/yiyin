@@ -1,13 +1,19 @@
 .app-header {
   display: flex;
   background-color: var(--bg-color);
-  justify-content: right;
+  justify-content: space-between;
   -webkit-app-region: drag;
   padding: 10px;
+  padding-bottom: 20px;
   text-align: right;
 
   .no-drag {
     -webkit-app-region: no-drag;
+  }
+
+  .app-header-right {
+    display: flex;
+    align-items: center;
   }
 
   .app-header-close {
@@ -33,5 +39,39 @@
     width: 32px;
     height: 32px;
     text-align: center;
+  }
+
+  .app-header-star {
+    padding: 0 0;
+    line-height: 32px;
+  }
+}
+
+.star-popover {
+  left: 10px !important;
+
+  .popper__arrow {
+    left: 8px !important;
+  }
+}
+
+.app-header-star-content {
+  .star-item {
+    padding: 10px 0;
+    text-align: center;
+    display: block;
+    margin-left: 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:nth-child(n) {
+      margin-top: 10px;
+    }
+
+    .zanshang {
+      width: 250px;
+    }
   }
 }

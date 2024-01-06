@@ -45,6 +45,12 @@ body {
   }
 
   .db-input{
+    &.text-input {
+      .db-input__inner {
+        box-shadow: inset var(--blackShadow), inset var(--whiteShadow);
+      }
+    }
+
     .db-input__inner {
       box-shadow: var(--blackShadow), var(--whiteShadow);
       background-color: var(--bg-color);
@@ -72,6 +78,10 @@ body {
   
   .grass-unset {
     box-shadow: unset var(--blackShadow), unset var(--whiteShadow);
+  }
+
+  .db-popover {
+    background: var(--bg-color);
   }
 
   .db-popper[data-popper-placement^=top] .popper__arrow {

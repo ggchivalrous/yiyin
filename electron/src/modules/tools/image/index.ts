@@ -247,7 +247,7 @@ export class Image {
         const buffer = Buffer.alloc(200 * 1024);
         const openImg = fs.openSync(this.imgPath, 'r');
 
-        fs.readSync(fs.openSync(this.imgPath, 'r'), buffer, 0, buffer.length, 0);
+        fs.readSync(openImg, buffer, 0, buffer.length, 0);
         fs.closeSync(openImg);
 
         imgBuffer = buffer;

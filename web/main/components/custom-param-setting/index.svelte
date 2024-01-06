@@ -133,6 +133,7 @@
   bind:visible
   direction="rtl"
   {beforeClose}
+  modal={false}
 >
   <ActionItem title="强制使用" showSwitch showEdit={false} data={option.Force} on:use-change={onUseChange('Force')}>
     <svelte:fragment slot="popup">

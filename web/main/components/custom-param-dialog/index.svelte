@@ -100,7 +100,7 @@
 
   <div class="form-item">
     <div class="form-item-label">文本</div>
-    <Input type="text" bind:value={form.value} />
+    <Input class="text-input" type="text" bind:value={form.value} />
   </div>
 
   {#if showImg}
