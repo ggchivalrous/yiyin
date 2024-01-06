@@ -12,6 +12,7 @@
   export let beforeClose: any = null;
 
   let option: ICameraInfo;
+  let flag = Date.now();
   const form: IFieldInfoItem = {
     use: false,
     value: '',
@@ -144,15 +145,15 @@
       <b>关闭:</b> 当对应的参数无法识别将使用自定义参数
     </svelte:fragment>
   </ActionItem>
-  <ActionItem title="个性签名" showSwitch data={option.PersonalSign} on:use-change={onUseChange('PersonalSign')} on:edit={onEdit('PersonalSign')} />
-  <ActionItem title="厂商" showSwitch data={option.Make} on:use-change={onUseChange('Make')} on:edit={onEdit('Make')} />
-  <ActionItem title="机型" showSwitch data={option.Model} on:use-change={onUseChange('Model')} on:edit={onEdit('Model')} />
-  <ActionItem title="镜头厂商" showSwitch data={option.LensMake} on:use-change={onUseChange('LensMake')} on:edit={onEdit('LensMake')} />
-  <ActionItem title="镜头型号" showSwitch data={option.LensModel} on:use-change={onUseChange('LensModel')} on:edit={onEdit('LensModel')} />
-  <ActionItem title="光圈" showSwitch data={option.FNumber} on:use-change={onUseChange('FNumber')} on:edit={onEdit('FNumber')} />
-  <ActionItem title="焦距" showSwitch data={option.FocalLength} on:use-change={onUseChange('FocalLength')} on:edit={onEdit('FocalLength')} />
-  <ActionItem title="快门" showSwitch data={option.ExposureTime} on:use-change={onUseChange('ExposureTime')} on:edit={onEdit('ExposureTime')} />
-  <ActionItem title="ISO" showSwitch data={option.ISO} on:use-change={onUseChange('ISO')} on:edit={onEdit('ISO')} />
+  <ActionItem imgFlag={flag} title="个性签名" showSwitch data={option.PersonalSign} on:use-change={onUseChange('PersonalSign')} on:edit={onEdit('PersonalSign')} />
+  <ActionItem imgFlag={flag} title="厂商" showSwitch data={option.Make} on:use-change={onUseChange('Make')} on:edit={onEdit('Make')} />
+  <ActionItem imgFlag={flag} title="机型" showSwitch data={option.Model} on:use-change={onUseChange('Model')} on:edit={onEdit('Model')} />
+  <ActionItem imgFlag={flag} title="镜头厂商" showSwitch data={option.LensMake} on:use-change={onUseChange('LensMake')} on:edit={onEdit('LensMake')} />
+  <ActionItem imgFlag={flag} title="镜头型号" showSwitch data={option.LensModel} on:use-change={onUseChange('LensModel')} on:edit={onEdit('LensModel')} />
+  <ActionItem imgFlag={flag} title="光圈" showSwitch data={option.FNumber} on:use-change={onUseChange('FNumber')} on:edit={onEdit('FNumber')} />
+  <ActionItem imgFlag={flag} title="焦距" showSwitch data={option.FocalLength} on:use-change={onUseChange('FocalLength')} on:edit={onEdit('FocalLength')} />
+  <ActionItem imgFlag={flag} title="快门" showSwitch data={option.ExposureTime} on:use-change={onUseChange('ExposureTime')} on:edit={onEdit('ExposureTime')} />
+  <ActionItem imgFlag={flag} title="ISO" showSwitch data={option.ISO} on:use-change={onUseChange('ISO')} on:edit={onEdit('ISO')} />
 </Drawer>
 
 <CustomParamDialog
@@ -162,4 +163,5 @@
   title={dialog.title}
   field={dialog.field}
   data={dialog.form}
+  on:update={() => flag = Date.now()}
 />

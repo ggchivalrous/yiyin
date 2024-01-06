@@ -1,7 +1,9 @@
 <script lang="ts">
+  import Popup from '@components/popup';
   import { Dialog, Input, Message, Switch } from '@ggchivalrous/db-ui';
   import type { ICameraInfo, IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
+  import { createEventDispatcher } from 'svelte';
 
   import './index.scss';
   import ParamFontInfo from '../param-font-info/index.svelte';
@@ -13,6 +15,7 @@
   export let field: keyof ICameraInfo = 'Model';
   export let data: IFieldInfoItem<string | number | boolean> = null;
 
+  const dispatch = createEventDispatcher();
   const model: IFieldInfoItem<string | number | boolean> = {
     use: false,
     value: '',
@@ -69,6 +72,8 @@
       v.templateFieldInfo[field] = { ...v.templateFieldInfo[field], ...form as any };
       return v;
     });
+    visible = false;
+    dispatch('update', form);
   }
 
   function onFileChange(t: string) {
@@ -112,7 +117,10 @@
         </div>
         <div class="form-item-value">
           {#if form.wImg}
-            <img class="form-item-img" src="file://{form.wImg}" alt="">
+            <Popup>
+              <img class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
+              <img slot="message" style="width: 200px; height: auto;" class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
+            </Popup>
           {/if}
         </div>
         <input id="wImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('white')} />
@@ -124,7 +132,10 @@
         </div>
         <div class="form-item-value">
           {#if form.bImg}
-            <img class="form-item-img" src="file://{form.bImg}" alt="">
+            <Popup>
+              <img class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
+              <img slot="message" style="width: 200px; height: auto;" class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
+            </Popup>
           {/if}
         </div>
         <input id="bImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('black')} />

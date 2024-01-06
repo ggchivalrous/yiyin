@@ -8,6 +8,7 @@
   export let showSwitch = true;
   export let showEdit = true;
   export let data: IFieldInfoItem<string | number | boolean> = null;
+  export let imgFlag = Date.now();
 
   const dispatch = createEventDispatcher();
   let form: Partial<IFieldInfoItem<string | number | boolean>> = {};
@@ -41,11 +42,17 @@
     {/if}
 
     {#if form.bImg}
-      <img src="file://{form.bImg}" alt="图片" />
+      <Popup>
+        <img src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+        <img slot="message" style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+      </Popup>
     {/if}
 
     {#if form.wImg}
-      <img src="file://{form.wImg}" alt="图片" />
+      <Popup>
+        <img src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+        <img slot="message" style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+      </Popup>
     {/if}
   </span>
 
