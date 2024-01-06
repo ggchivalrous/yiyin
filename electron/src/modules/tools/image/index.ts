@@ -178,23 +178,25 @@ export class Image {
       { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
-    const bottomMargin = 230;
-    if (textInfo[1]?.data) {
-      const top = Math.round(originHeight - textInfo[1].height - bottomMargin);
-      const infoPosition = {
-        input: textInfo[1].data,
-        top,
-        left: Math.round((originWidth - textInfo[1].width) / 2),
-      };
-      composite.push(infoPosition);
-    }
+    const bottomMargin = 150;
+    const textMargin = 50;
+    for (let i = textInfo.length - 1; i >= 0; i--) {
+      if (!textInfo[i].data) {
+        continue;
+      }
 
-    if (textInfo[0]?.data) {
-      const top = Math.round(originHeight - textInfo[0].height - bottomMargin - (textInfo[1]?.height || 0) - 50);
+      let otherTextHeight = 0;
+      for (let j = i + 1; j < textInfo.length; j++) {
+        if (textInfo[j].data) {
+          otherTextHeight += textInfo[j].height;
+        }
+      }
+
+      const top = Math.round(originHeight - (textInfo[i].height + otherTextHeight + bottomMargin + (i === textInfo.length - 1 ? 0 : textMargin)));
       composite.push({
-        input: textInfo[0].data,
+        input: textInfo[i].data,
         top,
-        left: Math.round((originWidth - textInfo[0].width) / 2),
+        left: Math.round((originWidth - textInfo[i].width) / 2),
       });
     }
 
@@ -213,6 +215,7 @@ export class Image {
       },
     })
       .withMetadata()
+      // .toFormat('png', { compressionLevel: 9 })
       .toFormat('jpeg', { quality: 100 })
       .composite(composite)
       .toFile(this.fileNames.output, (err) => {

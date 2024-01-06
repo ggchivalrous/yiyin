@@ -62,23 +62,7 @@
           },
         ], templateFieldsConf);
 
-        let mainImgOffset = 460;
-
-        if (task.option.shadow_show) {
-          const mainImgOffsetTop = Math.max(200, Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100)));
-          mainImgOffset = mainImgOffsetTop * 2;
-
-          if (mainImgOffsetTop / 2 < 230) {
-            mainImgOffset += 230 - mainImgOffsetTop / 2;
-          }
-        }
-
-        // 生成背景图片
-        const contentHeight = Math.ceil(textImgList.reduce(
-          (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
-          mainImg.height + Math.round(mainImgOffset),
-        ));
-
+        const contentHeight = calcContentMaxHeight(task, textImgList);
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
           height: contentHeight,
@@ -132,6 +116,28 @@
     }
     taskList = [];
     processing = false;
+  }
+
+  function calcContentMaxHeight(task: ITaskInfo, textImgList: IImgFileInfo[]) {
+    // 主图上下间隔最小间隔
+    let mainImgOffset = 400;
+    if (textImgList.length) {
+      mainImgOffset += 150;
+    }
+
+    if (task.option.shadow_show) {
+      const shadowHeight = Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100));
+      const mainImgOffsetTop = Math.max(mainImgOffset / 2, shadowHeight);
+      mainImgOffset = mainImgOffsetTop * 2;
+    }
+
+    // 生成背景图片
+    const contentHeight = Math.ceil(textImgList.reduce(
+      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
+      task.mainImgInfo.height + Math.round(mainImgOffset),
+    ));
+
+    return contentHeight;
   }
 
   function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption): {
@@ -256,6 +262,14 @@
           if (info.type === 'text') {
             slotInfo.value = info.value;
           } else {
+            if ($config.options.solid_bg) {
+              if (!info.bImg || info.bImg === 'false') {
+                continue;
+              }
+            } else if (!info.wImg || info.wImg === 'false') {
+              continue;
+            }
+
             slotInfo.value = await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg });
           }
 
