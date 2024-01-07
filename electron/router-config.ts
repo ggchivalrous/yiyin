@@ -13,6 +13,7 @@ export default {
   closeApp: 'closeApp',
   getExitInfo: 'getExitInfo',
   uploadExifImg: 'uploadExifImg',
+  staticInfo: 'staticInfo',
   open: {
     selectPath: 'open:selectPath',
     dir: 'open:dir',

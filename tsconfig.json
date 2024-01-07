@@ -22,7 +22,6 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["*"],
       "@web/*": ["web/*"],
       "@components/*": ["web/components/*"],
       "@web-utils/*": ["web/util/*"],
@@ -34,6 +33,7 @@
       "@config": ["electron/src/config.ts"],
       "@router": ["electron/src/router"],
       "@root/*": ["electron/*"],
+      "@/*": ["*"],
     },
     "strictNullChecks": false,
     "types": [

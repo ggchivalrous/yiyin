@@ -37,12 +37,12 @@
           bgHeight: task.bgImgSize.h,
         });
 
-        const textImgList = await createTextList([
+        let textImgList = await createTextList([
           {
             text: '{Make} {Model}',
             opts: {
               width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.038,
+              size: task.bgImgSize.h * 0.035,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -53,7 +53,7 @@
             text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
             opts: {
               width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.024,
+              size: task.bgImgSize.h * 0.02,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -62,7 +62,12 @@
           },
         ], templateFieldsConf);
 
-        const { contentHeight, contentTop } = calcContentMaxHeight(task, textImgList);
+        const {
+          contentHeight,
+          contentTop,
+          textButtomOffset,
+          textOffset,
+        } = calcContentOffsetInfo(task, textImgList);
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
           height: contentHeight,
@@ -76,8 +81,32 @@
           });
           continue;
         }
-
         const bgImg = await loadImage(bgImgInfo.data);
+        textImgList = await createTextList([
+          {
+            text: '{Make} {Model}',
+            opts: {
+              width: bgImg.width,
+              size: bgImg.height * 0.035,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
+          },
+          {
+            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+            opts: {
+              width: bgImg.width,
+              size: bgImg.height * 0.02,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
+          },
+        ], templateFieldsConf);
+
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
           contentImg: mainImg,
@@ -101,6 +130,11 @@
             top: _bgImgInfo.contentTop,
             left: _bgImgInfo.contentLeft,
           },
+          offsetInfo: {
+            contentTop,
+            textButtomOffset,
+            textOffset,
+          },
           text: textImgList,
           option: task.option,
         });
@@ -118,31 +152,37 @@
     processing = false;
   }
 
-  function calcContentMaxHeight(task: ITaskInfo, textImgList: IImgFileInfo[]) {
+  function calcContentOffsetInfo(task: ITaskInfo, textImgList: IImgFileInfo[]) {
+    const textOffset = task.bgImgSize.h * 0.009;
+    const mainImgTopOffset = task.bgImgSize.h * 0.036;
+    const textButtomOffset = task.bgImgSize.h * 0.027;
+
     // 主图上下间隔最小间隔
-    let mainImgOffset = task.mainImgInfo.height * 0.072;
-    let contentTop = Math.ceil(mainImgOffset / 2);
+    let mainImgOffset = mainImgTopOffset * 2;
+    let contentTop = Math.ceil(mainImgTopOffset);
 
     if (task.option.shadow_show) {
       const shadowHeight = Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100));
-      const mainImgOffsetTop = Math.max(mainImgOffset / 2, shadowHeight);
+      const mainImgOffsetTop = Math.max(mainImgTopOffset, shadowHeight);
       mainImgOffset = mainImgOffsetTop * 2;
       contentTop = Math.ceil(mainImgOffsetTop);
     }
 
     if (textImgList.length) {
-      mainImgOffset += task.mainImgInfo.height * 0.027;
+      mainImgOffset += textButtomOffset;
     }
 
     // 生成背景图片
     const contentHeight = Math.ceil(textImgList.reduce(
-      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : task.mainImgInfo.height * 0.009),
+      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : textOffset),
       task.mainImgInfo.height + Math.round(mainImgOffset),
     ));
 
     return {
       contentHeight,
       contentTop,
+      textOffset,
+      textButtomOffset,
     };
   }
 

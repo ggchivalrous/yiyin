@@ -124,6 +124,8 @@ r.listen<any, any>(routerConfig.composite, async (data, ev, win) => {
     const compositeState = await imgTool.imgComposite(data.bgImgInfo, textList, {
       contentTop: data.mainImgOffset.top,
       contentLeft: data.mainImgOffset.left,
+      textButtomOffset: data.offsetInfo.textButtomOffset,
+      textOffset: data.offsetInfo.textOffset,
     }).catch((e) => {
       log.error('【%s】图片合成失败', imgTool.md5, e);
     });

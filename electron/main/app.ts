@@ -90,7 +90,18 @@ export default class Application {
     });
 
     log.info('版本信息获取成功', versionInfo);
-    if (!versionInfo || !versionInfo.update) {
+    if (!versionInfo) {
+      return;
+    }
+
+    if (!versionInfo.update) {
+      storeConfig({
+        versionUpdateInfo: {
+          checkDate: dayTs,
+          version: config.versionUpdateInfo.version.replace('v', ''),
+          downloadLink: config.versionUpdateInfo.downloadLink,
+        },
+      });
       return;
     }
 

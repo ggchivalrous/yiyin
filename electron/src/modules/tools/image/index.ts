@@ -178,8 +178,6 @@ export class Image {
       { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
-    const bottomMargin = this.mainImgInfo.h * 0.027;
-    const textMargin = this.mainImgInfo.h * 0.009;
     for (let i = textInfo.length - 1; i >= 0; i--) {
       if (!textInfo[i].data) {
         continue;
@@ -192,7 +190,7 @@ export class Image {
         }
       }
 
-      const top = Math.round(originHeight - (textInfo[i].height + otherTextHeight + bottomMargin + (i === textInfo.length - 1 ? 0 : textMargin)));
+      const top = Math.round(originHeight - (textInfo[i].height + otherTextHeight + opts.textButtomOffset + (i === textInfo.length - 1 ? 0 : opts.textOffset)));
       composite.push({
         input: textInfo[i].data,
         top,

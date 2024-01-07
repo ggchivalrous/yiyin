@@ -8,6 +8,8 @@ import routerConfig from '@root/router-config';
 import { md5 } from '@utils';
 import { BrowserWindow, app } from 'electron';
 
+import { webDir } from '@/electron/main/create-window';
+
 const r = new Router();
 
 r.listen(routerConfig.getConfig, async () => config);
@@ -83,5 +85,9 @@ r.listen(routerConfig.uploadExifImg, async (data: any) => {
 
   return false;
 });
+
+r.listen(routerConfig.staticInfo, async () => ({
+  webDir,
+}));
 
 export default r;

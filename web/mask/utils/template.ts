@@ -1,4 +1,4 @@
-import { config } from '@web/store/config';
+import { config, staticInfo } from '@web/store/config';
 import { loadImage } from '@web/util/util';
 import modelMap from '@web-utils/model-map';
 import { get } from 'svelte/store';
@@ -6,6 +6,7 @@ import { get } from 'svelte/store';
 import type { ExifInfo, TExifInfo, TTemplateFieldInfo } from '../interface';
 
 const cameraParamFields = ['ExposureTime', 'FNumber', 'FocalLength', 'ISO'];
+const isDev = import.meta.env.DEV;
 
 interface IGetTemplateFieldInfoConfOption {
   bgHeight: number
@@ -68,8 +69,8 @@ export async function formatExifInfo(exifInfo: ExifInfo) {
     }
 
     if (exifInfo.Make) {
-      const whiteLogoImgName = `/logo/${exif.Make.value.toLowerCase()}-w.svg`;
-      const blackLogoImgName = `/logo/${exif.Make.value.toLowerCase()}-b.svg`;
+      const whiteLogoImgName = `${isDev ? '' : `file://${get(staticInfo).webDir}`}/logo/${exif.Make.value.toLowerCase()}-w.svg`;
+      const blackLogoImgName = `${isDev ? '' : `file://${get(staticInfo).webDir}`}/logo/${exif.Make.value.toLowerCase()}-b.svg`;
 
       if (await loadImage(whiteLogoImgName).catch(() => null)) {
         exif.Make.wImg = whiteLogoImgName;
