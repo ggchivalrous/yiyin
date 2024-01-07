@@ -22,6 +22,7 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "paths": {
+      "@/*": ["*"],
       "@web/*": ["web/*"],
       "@components/*": ["web/components/*"],
       "@web-utils/*": ["web/util/*"],

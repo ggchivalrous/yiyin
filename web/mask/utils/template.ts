@@ -1,4 +1,5 @@
 import { config } from '@web/store/config';
+import { loadImage } from '@web/util/util';
 import modelMap from '@web-utils/model-map';
 import { get } from 'svelte/store';
 
@@ -14,9 +15,9 @@ interface IGetTemplateFieldInfoConfOption {
  * 获取模版参数信息配置
  * @param exifInfo - 读取到的相机信息
  */
-export function getTemplateFieldsConf(exifInfo: ExifInfo, opts: IGetTemplateFieldInfoConfOption) {
+export async function getTemplateFieldsConf(exifInfo: ExifInfo, opts: IGetTemplateFieldInfoConfOption) {
   const configTemplateFields = getConfigTemplateFields(opts);
-  return fillTemplateFieldInfo(configTemplateFields, formatExifInfo(exifInfo));
+  return fillTemplateFieldInfo(configTemplateFields, await formatExifInfo(exifInfo));
 }
 
 /**
@@ -44,7 +45,7 @@ export function getConfigTemplateFields(opts: IGetTemplateFieldInfoConfOption) {
  * 规范化相机参数，将相机信息转成模板 Field 对象
  * @param exifInfo 读取到的相机信息
  */
-export function formatExifInfo(exifInfo: ExifInfo) {
+export async function formatExifInfo(exifInfo: ExifInfo) {
   const exif: TExifInfo = {
     Make: { type: 'text', value: '', bImg: '', wImg: '', param: null },
     Model: { type: 'text', value: '', bImg: '', wImg: '', param: null },
@@ -67,6 +68,19 @@ export function formatExifInfo(exifInfo: ExifInfo) {
     }
 
     if (exifInfo.Make) {
+      const whiteLogoImgName = `/logo/${exif.Make.value.toLowerCase()}-w.svg`;
+      const blackLogoImgName = `/logo/${exif.Make.value.toLowerCase()}-b.svg`;
+
+      if (await loadImage(whiteLogoImgName).catch(() => null)) {
+        exif.Make.wImg = whiteLogoImgName;
+        exif.Make.type = 'img';
+      }
+
+      if (await loadImage(blackLogoImgName).catch(() => null)) {
+        exif.Make.bImg = blackLogoImgName;
+        exif.Make.type = 'img';
+      }
+
       exif.Make.value = _modelMap.make_filter(exif.Make.value)?.trim() || '';
     }
   }

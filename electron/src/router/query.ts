@@ -30,7 +30,7 @@ r.listen(routerConfig.miniSize, async () => BrowserWindow.getFocusedWindow().min
 r.listen(routerConfig.closeApp, async () => app.quit());
 
 r.listen(routerConfig.getExitInfo, async (imgPath: string) => {
-  const img = new Image(imgPath);
+  const img = new Image(imgPath, '');
   const info = img.getOriginExifInfo();
   return info || false;
 });
@@ -75,7 +75,8 @@ r.listen(routerConfig.delFont, async (name: string) => {
 
 r.listen(routerConfig.uploadExifImg, async (data: any) => {
   if (data && data.path) {
-    const filePath = path.resolve(config.staticDir, `${data.name}.png`);
+    const pathInfo = path.parse(data.path);
+    const filePath = path.resolve(config.staticDir, `${data.name}.${pathInfo.ext}`);
     fs.copyFileSync(data.path, filePath);
     return filePath;
   }

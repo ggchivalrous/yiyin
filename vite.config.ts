@@ -11,6 +11,7 @@ import pkg from './package.json';
 const electronOutDir = join(__dirname, 'dist-electron');
 const electronPkg = join(electronOutDir, 'package.json');
 const electronAlias = {
+  '@': __dirname,
   '@root': resolve(__dirname, 'electron'),
   '@src': resolve(__dirname, 'electron/src'),
   '@config': resolve(__dirname, 'electron/src/config.ts'),

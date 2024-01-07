@@ -178,8 +178,8 @@ export class Image {
       { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
-    const bottomMargin = 150;
-    const textMargin = 50;
+    const bottomMargin = this.mainImgInfo.h * 0.027;
+    const textMargin = this.mainImgInfo.h * 0.009;
     for (let i = textInfo.length - 1; i >= 0; i--) {
       if (!textInfo[i].data) {
         continue;

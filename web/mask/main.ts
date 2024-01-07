@@ -1,5 +1,7 @@
 import type { IFontInfo, IImgFileInfo } from './interface';
 
+import { tryAsyncCatch, usePromise } from '@/common/utils';
+
 // 计算图片整体亮度
 export function calcAverageBrightness(ctx: CanvasRenderingContext2D, width: number, height: number) {
   const imageData = ctx.getImageData(0, 0, width, height);
@@ -15,16 +17,27 @@ export function calcAverageBrightness(ctx: CanvasRenderingContext2D, width: numb
 }
 
 // 加载图片
-export function loadImage(info: IImgFileInfo): Promise<HTMLImageElement> {
+export async function loadImage(info: IImgFileInfo): Promise<HTMLImageElement> {
   const img = new Image();
   if (info.width) img.width = info.width;
   if (info.height) img.height = info.height;
   img.src = `file://${info.path}`;
 
-  return new Promise<HTMLImageElement>((r, j) => {
-    img.onload = () => r(img);
-    img.onerror = j;
-  });
+  const [promise, r, j] = usePromise<HTMLImageElement>();
+  img.onload = () => r(img);
+  img.onerror = j;
+
+  const d = await tryAsyncCatch(promise);
+  if (d) {
+    return d;
+  }
+
+  img.src = info.path;
+  const [promise1, r1, j1] = usePromise<HTMLImageElement>();
+  img.onload = () => r1(img);
+  img.onerror = j1;
+
+  return promise1;
 }
 
 // 导入字体

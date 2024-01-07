@@ -33,7 +33,7 @@
 
       try {
         const mainImg = await loadImage(task.mainImgInfo);
-        const templateFieldsConf = utils.getTemplateFieldsConf(task.exifInfo, {
+        const templateFieldsConf = await utils.getTemplateFieldsConf(task.exifInfo, {
           bgHeight: task.bgImgSize.h,
         });
 
@@ -62,7 +62,7 @@
           },
         ], templateFieldsConf);
 
-        const contentHeight = calcContentMaxHeight(task, textImgList);
+        const { contentHeight, contentTop } = calcContentMaxHeight(task, textImgList);
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
           height: contentHeight,
@@ -82,7 +82,7 @@
           img: bgImg,
           contentImg: mainImg,
           contentHeight,
-          contentTop: Math.round((bgImg.height - contentHeight) / 2),
+          contentTop: Math.round((bgImg.height - contentHeight) / 2) + contentTop,
           textImgList,
           shadow: {
             blur: task.option.shadow_show ? task.mainImgInfo.height * ((task.option.shadow || 6) / 100) : 0,
@@ -120,24 +120,30 @@
 
   function calcContentMaxHeight(task: ITaskInfo, textImgList: IImgFileInfo[]) {
     // 主图上下间隔最小间隔
-    let mainImgOffset = 400;
-    if (textImgList.length) {
-      mainImgOffset += 150;
-    }
+    let mainImgOffset = task.mainImgInfo.height * 0.072;
+    let contentTop = Math.ceil(mainImgOffset / 2);
 
     if (task.option.shadow_show) {
       const shadowHeight = Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100));
       const mainImgOffsetTop = Math.max(mainImgOffset / 2, shadowHeight);
       mainImgOffset = mainImgOffsetTop * 2;
+      contentTop = Math.ceil(mainImgOffsetTop);
+    }
+
+    if (textImgList.length) {
+      mainImgOffset += task.mainImgInfo.height * 0.027;
     }
 
     // 生成背景图片
     const contentHeight = Math.ceil(textImgList.reduce(
-      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : 50),
+      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : task.mainImgInfo.height * 0.009),
       task.mainImgInfo.height + Math.round(mainImgOffset),
     ));
 
-    return contentHeight;
+    return {
+      contentHeight,
+      contentTop,
+    };
   }
 
   function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption): {
@@ -173,7 +179,7 @@
     }
 
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
-    const contentOffsetY = Math.round(Math.max(200, option.contentTop + option.shadow.blur));
+    const contentOffsetY = option.contentTop;
 
     if (option.shadow.blur) {
       ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
@@ -238,7 +244,7 @@
     }
   }
 
-  async function createTextList(templateList: ITemplateItem[], templateFieldsConf: ReturnType<typeof utils.getTemplateFieldsConf>): Promise<IImgFileInfo[]> {
+  async function createTextList(templateList: ITemplateItem[], templateFieldsConf: Awaited<ReturnType<typeof utils.getTemplateFieldsConf>>): Promise<IImgFileInfo[]> {
     const imgFileInfoList: IImgFileInfo[] = [];
     console.log('模版字段信息', templateFieldsConf);
 
