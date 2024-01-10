@@ -3,7 +3,7 @@
   import Popup from '@components/popup';
   import { Popover } from '@ggchivalrous/db-ui';
   import { initializeStores } from '@skeletonlabs/skeleton';
-  import { config, getConfig, resetConfig } from '@web/store/config';
+  import { config, getConfig, resetConfig, staticInfo } from '@web/store/config';
   import './index.scss';
 
   initializeStores();
@@ -32,7 +32,7 @@
         </div>
         <div class="star-item">
           如果值得，可以请我喝杯雪王吗？？
-          <img class="zanshang" src="/zan.jpg" alt="赞赏码">
+          <img class="zanshang" src="file://{$staticInfo.webDir}/zan.jpg" alt="赞赏码">
         </div>
       </div>
     </Popover>
