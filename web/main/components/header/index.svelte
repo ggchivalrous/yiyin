@@ -4,10 +4,7 @@
   import { Popover } from '@ggchivalrous/db-ui';
   import { initializeStores } from '@skeletonlabs/skeleton';
   import { config, getConfig, resetConfig } from '@web/store/config';
-  import { loadImage } from '@web/util/util';
   import './index.scss';
-
-  const zsLink = 'https://user-images.githubusercontent.com/76425888/294640893-5fa193fb-af0c-4d60-84c0-2d82980e332f.JPG';
 
   initializeStores();
 
@@ -35,13 +32,7 @@
         </div>
         <div class="star-item">
           如果值得，可以请我喝杯雪王吗？？
-          {#await loadImage(zsLink)}
-            加载中呀(´･ω･`)...
-          {:then}
-            <img class="zanshang" src={zsLink} alt={zsLink}>
-          {:catch}
-            <img class="zanshang" src="/zan.jpg" alt="赞赏码">
-          {/await}
+          <img class="zanshang" src="/zan.jpg" alt="赞赏码">
         </div>
       </div>
     </Popover>
