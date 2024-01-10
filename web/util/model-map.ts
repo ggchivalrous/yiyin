@@ -10,15 +10,15 @@ interface IFilter {
 
 export default {
   INIT: {
-    make_filter: (e) => e = e.replace('CORPORATION', '').trim(),
+    make_filter: (e) => e?.replace('CORPORATION', ''),
   },
   DEF: {
-    make_filter: (s) =>  charToNumberChar(s[0] + s.slice(1).toLowerCase()),
+    make_filter: (s) => charToNumberChar(s[0] + s.slice(1).toLowerCase()),
     model_filter: (e) => charToNumberChar(e.toLowerCase()),
   },
   NIKON: {
     model_filter: (str) => {
-      str = str.replace('Z', 'ℤ');
+      str = str.replace(/[Zz]/g, 'ℤ');
 
       const arr = str.split('_');
       if (arr.length > 1) {

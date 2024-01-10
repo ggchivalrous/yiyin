@@ -1,0 +1,19 @@
+.app-footer {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 20px 0;
+  color: #8f9094;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .version-update {
+    position: relative;
+
+    &::after {
+      content: '*';
+      color: #F56C6C;
+    }
+  }
+}

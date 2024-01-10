@@ -1,0 +1,77 @@
+.app-header {
+  display: flex;
+  background-color: var(--bg-color);
+  justify-content: space-between;
+  -webkit-app-region: drag;
+  padding: 10px;
+  padding-bottom: 20px;
+  text-align: right;
+
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  .app-header-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .app-header-close {
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .app-header-show {
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .app-header-reset {
+    padding: 4px 6px;
+
+    .icon {
+      display: inline-block;
+    }
+  }
+
+  .app-header-button {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
+  }
+
+  .app-header-star {
+    padding: 0 0;
+    line-height: 32px;
+  }
+}
+
+.star-popover {
+  left: 10px !important;
+
+  .popper__arrow {
+    left: 8px !important;
+  }
+}
+
+.app-header-star-content {
+  .star-item {
+    padding: 10px 0;
+    text-align: center;
+    display: block;
+    margin-left: 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:nth-child(n) {
+      margin-top: 10px;
+    }
+
+    .zanshang {
+      width: 250px;
+    }
+  }
+}

@@ -6,9 +6,11 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "lib": [
-      "ESNext"
+      "ESNext",
+      "DOM"
     ],
     "esModuleInterop": true,
+    "noImplicitThis": false,
     "allowJs": true,
     "sourceMap": true,
     "strict": true,
@@ -20,8 +22,18 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "paths": {
-      "@db-ui/*": ["web/db-ui/*"],
+      "@web/*": ["web/*"],
       "@components/*": ["web/components/*"],
+      "@web-utils/*": ["web/util/*"],
+      "@modules": ["electron/src/modules"],
+      "@modules/*": ["electron/src/modules/*"],
+      "@utils": ["electron/src/utils"],
+      "@utils/*": ["electron/src/utils/*"],
+      "@src/*": ["electron/src/*"],
+      "@config": ["electron/src/config.ts"],
+      "@router": ["electron/src/router"],
+      "@root/*": ["electron/*"],
+      "@/*": ["*"],
     },
     "strictNullChecks": false,
     "types": [
@@ -31,7 +43,10 @@
     ]
   },
   "include": [
-    "electron/**/*.ts",
+    "*.ts",
+    "**/*.ts",
+    "**/*.svelte",
+    "*.svelte",
   ],
   "exclude": [
     "node_modules",

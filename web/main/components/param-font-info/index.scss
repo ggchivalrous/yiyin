@@ -1,0 +1,12 @@
+.param-font-info {
+  .param-font-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .action-item {
+      width: 50%;
+      flex-shrink: 0;
+    }
+  }
+}

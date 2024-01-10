@@ -1,14 +1,34 @@
-import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import fs from 'fs';
 import { join, resolve } from 'path';
+
+import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
-// import { purgeCss } from 'vite-plugin-tailwind-purgecss';
+
 import pkg from './package.json';
 
 const electronOutDir = join(__dirname, 'dist-electron');
 const electronPkg = join(electronOutDir, 'package.json');
+const electronAlias = {
+  '@': __dirname,
+  '@root': resolve(__dirname, 'electron'),
+  '@src': resolve(__dirname, 'electron/src'),
+  '@config': resolve(__dirname, 'electron/src/config.ts'),
+  '@modules': resolve(__dirname, 'electron/src/modules'),
+  '@utils': resolve(__dirname, 'electron/src/utils'),
+  '@router': resolve(__dirname, 'electron/src/router'),
+};
+
+function objToEnvStr(obj: Record<string, any>) {
+  const arr: string[] = [];
+
+  for (const k in obj) {
+    arr.push(`VITE_${k}=${obj[k]}`);
+  }
+
+  return arr.join('\n');
+}
 
 export default defineConfig(({ command }) => {
   const port = 5173;
@@ -16,14 +36,20 @@ export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
-  process.env.DIST_ELECTRON = electronOutDir;
-  process.env.VITE_WEB = join(electronOutDir, 'web');
-  process.env.PUBLIC = isServe ? join(__dirname, 'public') : process.env.VITE_WEB;
-  process.env.URL = isServe ? `http://localhost:${port}` : '';
+  const env: Record<string, any> = {
+    VERSION: pkg.version,
+    DIST_ELECTRON: electronOutDir,
+    WEB: join(electronOutDir, 'web'),
+    URL: isServe ? `http://localhost:${port}` : '',
+  };
+
+  env.PUBLIC = isServe ? join(__dirname, 'public') : env.WEB;
+  fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
 
   if (!fs.existsSync(electronOutDir)) {
     fs.mkdirSync(electronOutDir);
   }
+
   fs.writeFileSync(electronPkg, JSON.stringify({
     ...pkg,
     main: 'main/index.js',
@@ -32,6 +58,7 @@ export default defineConfig(({ command }) => {
 
   return {
     root: 'web',
+    envDir: join(__dirname, './'),
     plugins: [
       electron([
         {
@@ -44,6 +71,10 @@ export default defineConfig(({ command }) => {
             }
           },
           vite: {
+            resolve: {
+              alias: electronAlias,
+              extensions: ['.ts', '.js', '.mjs'],
+            },
             build: {
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
@@ -60,6 +91,10 @@ export default defineConfig(({ command }) => {
             options.reload();
           },
           vite: {
+            resolve: {
+              alias: electronAlias,
+              extensions: ['.ts', '.js', '.mjs'],
+            },
             build: {
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
@@ -76,7 +111,6 @@ export default defineConfig(({ command }) => {
       svelte({
         preprocess: vitePreprocess(),
       }),
-      // purgeCss(),
     ],
     clearScreen: false,
     server: {
@@ -85,7 +119,7 @@ export default defineConfig(({ command }) => {
       port,
     },
     build: {
-      outDir: process.env.VITE_WEB,
+      outDir: env.WEB,
       rollupOptions: {
         input: {
           main: join(__dirname, './web/main/index.html'),
@@ -96,10 +130,9 @@ export default defineConfig(({ command }) => {
     resolve: {
       alias: {
         '@web': resolve(__dirname, 'web'),
-        '@page': resolve(__dirname, 'web/page'),
-        '@pages': resolve(__dirname, 'web/pages'),
         '@components': resolve(__dirname, 'web/components'),
-        '@db-ui': resolve(__dirname, 'web/db-ui'),
+        '@web-utils': resolve(__dirname, 'web/util'),
+        ...electronAlias,
       },
       extensions: ['.js', '.mjs', '.svelte', '.ts'],
     },

@@ -1,18 +1,19 @@
 <script>
-  // eslint-disable-next-line import/first
-  import { getModalStore } from '@skeletonlabs/skeleton';
-  // eslint-disable-next-line import/first
-  import Message from '@db-ui/message';
+  import { Message, Dialog, Input, Form, FormItem } from '@ggchivalrous/db-ui';
+  import './index.scss';
+  import { createEventDispatcher } from 'svelte';
 
+  export let visible = false;
+
+  const dispatch = createEventDispatcher();
   const fontForm = {
     name: '',
     path: '',
     isAutoName: false,
   };
-  const modalStore = getModalStore();
 
   function close() {
-    modalStore.close();
+    visible = false;
   }
 
   async function onFormSubmit() {
@@ -37,9 +38,8 @@
           break;
       }
     }
-
-    if ($modalStore[0].response) $modalStore[0].response(res);
-    modalStore.close();
+    dispatch('update');
+    close();
   }
 
   function onFileChange(ev) {
@@ -66,33 +66,23 @@
   }
 </script>
 
-{#if $modalStore[0]}
-  <div class="card p-4 space-y-4 grass">
-    <form class="modal-form">
-      <label class="label">
-        <span>字体名称</span>
-        <input class="input" type="text" bind:value={fontForm.name} placeholder="Enter name..." on:change={onNameChange} />
-      </label>
-      <label class="label">
-        <span>字体文件</span>
-        <input class="input" type="file" on:change={onFileChange} />
-      </label>
-    </form>
+<Dialog bind:visible width="400px" class="font-dialog">
+  <Form>
+    <FormItem label="字体名称">
+      <Input
+        type="text"
+        bind:value={fontForm.name}
+        placeholder="Enter name..."
+        on:change={onNameChange}
+      />
+    </FormItem>
+    <FormItem label="字体文件">
+      <input class="font-input-file grass" type="file" on:change={onFileChange} />
+    </FormItem>
+  </Form>
 
-    <footer class="modal-footer">
-      <button class="grass button" on:click={close}>取消</button>
-      <button class="grass button" on:click={onFormSubmit}>添加</button>
-    </footer>
-  </div>
-{/if}
-
-<style scoped>
-  .card {
-    background-color: var(--bg-color);
-    border-radius: 6px;
-  }
-
-  .modal-footer {
-    text-align: right;
-  }
-</style>
+  <footer class="modal-footer">
+    <button class="grass button" on:click={close}>取消</button>
+    <button class="grass button" on:click={onFormSubmit}>添加</button>
+  </footer>
+</Dialog>

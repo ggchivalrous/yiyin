@@ -1,93 +1,200 @@
-<script>
-  import modelMap from '../util/model-map';
+<script lang="ts">
+  import { config } from '@web/store/config';
 
-  let canvas;
-  let taskList = [];
+  import type {
+    IBoxShadowMarkOption, ITemplateItem, ITextOption,
+    IFontInfo, IFontParam, IImgFileInfo,
+    ISlotInfo, ITaskInfo,
+  } from './interface';
+  import { calcAverageBrightness, createCanvas, importFont, loadImage } from './main';
+  import * as utils from './utils';
+
+  let canvas: HTMLCanvasElement;
+  let taskList: ITaskInfo[] = [];
   let processing = false;
-  let config = {};
-  let fontList = [];
-  const defFont = 'PingFang SC';
-  const ORIGIN_H = 3712;
-
-  getConfig();
+  let fontList: IFontInfo[] = [];
 
   $: startCreateTask(taskList);
-  $: formatFontMap(config?.font?.map);
+  $: formatFontMap($config.fontMap);
   $: importFont(fontList);
 
-  window.api['on:createMask']((info) => {
+  window.api['on:createMask']((info: ITaskInfo) => {
     console.log(info);
     taskList.push(info);
     taskList = taskList;
   });
 
-  async function startCreateTask() {
+  async function startCreateTask(list: ITaskInfo[]) {
     if (processing) return;
 
     processing = true;
-    for (let i = 0; i < taskList.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       const task = taskList[i];
 
       try {
-        const blurImg = await loadImage(task.blur);
-        const scaleImg = await loadImage(task.scale);
-        const textImgInfo = createExifImg(task.exifInfo, task.blur.height, task.option);
+        const mainImg = await loadImage(task.mainImgInfo);
+        const templateFieldsConf = await utils.getTemplateFieldsConf(task.exifInfo, {
+          bgHeight: task.bgImgSize.h,
+        });
 
-        const maskUrl = await createBoxShadowMark(canvas, {
-          img: blurImg,
-          contentImg: scaleImg,
-          textImgInfo,
-          shadow: {
-            blur: task.blur.height * ((task.option.shadow || 6) / 100),
-            radius: task.blur.height * ((task.option.radius || 2.1) / 100),
+        let textImgList = await createTextList([
+          {
+            text: '{Make} {Model}',
+            opts: {
+              width: task.bgImgSize.w,
+              size: task.bgImgSize.h * 0.035,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
           },
+          {
+            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+            opts: {
+              width: task.bgImgSize.w,
+              size: task.bgImgSize.h * 0.02,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
+          },
+        ], templateFieldsConf);
+
+        const {
+          contentHeight,
+          contentTop,
+          textButtomOffset,
+          textOffset,
+        } = calcContentOffsetInfo(task, textImgList);
+        const bgImgInfo = await window.api.createBgImg({
+          md5: task.md5,
+          height: contentHeight,
+        });
+
+        if (bgImgInfo.code !== 0 || !bgImgInfo.data) {
+          await window.api.compositeFail({
+            name: task.name,
+            md5: task.md5,
+            msg: bgImgInfo.message,
+          });
+          continue;
+        }
+        const bgImg = await loadImage(bgImgInfo.data);
+        textImgList = await createTextList([
+          {
+            text: '{Make} {Model}',
+            opts: {
+              width: bgImg.width,
+              size: bgImg.height * 0.035,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
+          },
+          {
+            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+            opts: {
+              width: bgImg.width,
+              size: bgImg.height * 0.02,
+              color: task.option.solid_bg ? '#000' : '#fff',
+              font: task.option.font,
+              bold: true,
+              italic: false,
+            },
+          },
+        ], templateFieldsConf);
+
+        const _bgImgInfo = await createBoxShadowMark(canvas, {
+          img: bgImg,
+          contentImg: mainImg,
+          contentHeight,
+          contentTop: Math.round((bgImg.height - contentHeight) / 2) + contentTop,
+          textImgList,
+          shadow: {
+            blur: task.option.shadow_show ? task.mainImgInfo.height * ((task.option.shadow || 6) / 100) : 0,
+            offsetX: 0,
+            offsetY: 0,
+          },
+          radius: task.option.radius_show ? task.mainImgInfo.height * ((task.option.radius || 2.1) / 100) : 0,
           option: task.option,
         });
 
         await window.api.composite({
           name: task.name,
           md5: task.md5,
-          mask: maskUrl,
-          text: textImgInfo,
+          bgImgInfo: _bgImgInfo,
+          mainImgOffset: {
+            top: _bgImgInfo.contentTop,
+            left: _bgImgInfo.contentLeft,
+          },
+          offsetInfo: {
+            contentTop,
+            textButtomOffset,
+            textOffset,
+          },
+          text: textImgList,
           option: task.option,
         });
       } catch (e) {
         console.log(e);
+
+        await window.api.compositeFail({
+          name: task.name,
+          md5: task.md5,
+          msg: e,
+        });
       }
     }
     taskList = [];
     processing = false;
   }
 
-  function loadImage(info) {
-    const img = new Image();
-    img.width = info.width;
-    img.height = info.height;
-    img.src = `file://${info.path}`;
+  function calcContentOffsetInfo(task: ITaskInfo, textImgList: IImgFileInfo[]) {
+    const textOffset = task.bgImgSize.h * 0.009;
+    const mainImgTopOffset = task.bgImgSize.h * 0.036;
+    const textButtomOffset = task.bgImgSize.h * 0.027;
 
-    return new Promise((r, j) => {
-      img.onload = () => r(img);
-      img.onerror = j;
-    });
-  }
+    // 主图上下间隔最小间隔
+    let mainImgOffset = mainImgTopOffset * 2;
+    let contentTop = Math.ceil(mainImgTopOffset);
 
-  // 获取图片整体亮度
-  function getAverageBrightness(ctx, width, height) {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
-    let totalBrightness = 0;
-
-    for (let i = 0; i < data.length; i += 4) {
-    // 简单的亮度计算方法
-      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      totalBrightness += brightness;
+    if (task.option.shadow_show) {
+      const shadowHeight = Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100));
+      const mainImgOffsetTop = Math.max(mainImgTopOffset, shadowHeight);
+      mainImgOffset = mainImgOffsetTop * 2;
+      contentTop = Math.ceil(mainImgOffsetTop);
     }
-    return totalBrightness / (width * height);
+
+    if (textImgList.length) {
+      mainImgOffset += textButtomOffset;
+    }
+
+    // 生成背景图片
+    const contentHeight = Math.ceil(textImgList.reduce(
+      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : textOffset),
+      task.mainImgInfo.height + Math.round(mainImgOffset),
+    ));
+
+    return {
+      contentHeight,
+      contentTop,
+      textOffset,
+      textButtomOffset,
+    };
   }
 
-  function createBoxShadowMark(_canvas, option) {
-    _canvas.width = option.w || option.img.width;
-    _canvas.height = option.h || option.img.height;
+  function createBoxShadowMark(_canvas: HTMLCanvasElement, option: IBoxShadowMarkOption): {
+    data: string
+    width: number
+    height: number
+    contentTop: number
+    contentLeft: number
+  } {
+    _canvas.width = option.img.width;
+    _canvas.height = option.img.height;
     const ctx = _canvas.getContext('2d');
 
     if (option.img) {
@@ -95,7 +202,7 @@
 
       // 添加黑色蒙层，突出主体图片
       if (!option.option.solid_bg) {
-        const averageBrightness = getAverageBrightness(ctx, _canvas.width, _canvas.height);
+        const averageBrightness = calcAverageBrightness(ctx, _canvas.width, _canvas.height);
         if (averageBrightness < 15) {
           ctx.fillStyle = 'rgba(180, 180, 180, 0.2)'; // 灰色半透明覆盖层
         } else if (averageBrightness < 20) {
@@ -111,26 +218,21 @@
       }
     }
 
-    let heightPosition = 3;
-    if ((!option.option.ext_show && !option.option.brand_show) || (!option.textImgInfo.title && !option.textImgInfo.info)) {
-      heightPosition = 2;
-    }
-
     const contentOffsetX = Math.round((_canvas.width - option.contentImg.width) / 2);
-    const contentOffsetY = Math.round((_canvas.height - option.contentImg.height) / heightPosition);
+    const contentOffsetY = option.contentTop;
 
-    if (option.option.shadow) {
-      ctx.shadowOffsetX = option.shadow.offsetX; // 阴影水平偏移
-      ctx.shadowOffsetY = option.shadow.offsetY; // 阴影垂直偏移
+    if (option.shadow.blur) {
+      ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
+      ctx.shadowOffsetY = option.shadow.offsetY || 0; // 阴影垂直偏移
       ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
-      ctx.shadowColor = option.shadow.color || '#000'; // 阴影颜色
+      ctx.shadowColor = '#000'; // 阴影颜色
     }
 
     const rectX = contentOffsetX || ctx.shadowBlur;
     const rectY = contentOffsetY || ctx.shadowBlur;
     const rectWidth = option.contentImg.width;
     const rectHeight = option.contentImg.height;
-    const cornerRadius = option.option.radius ? option.shadow.radius : 0;
+    const cornerRadius = option.radius;
 
     ctx.beginPath();
     ctx.moveTo(rectX + cornerRadius, rectY);
@@ -159,167 +261,250 @@
     ctx.clip();
     ctx.clearRect(rectX, rectY, rectWidth, rectHeight);
 
-    return _canvas.toDataURL('image/png');
-  }
-
-  function createTextImg(option) {
-    const can = createCanvas(1, option.fontSize);
-    const ctx = can.getContext('2d');
-    const font = `bold ${option.fontSize}px ${option.font},'PingFang SC'`;
-    ctx.font = font;
-    const textInfo = ctx.measureText(option.text);
-    can.width = textInfo.width;
-    can.height = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
-
-    if (option.background) {
-      ctx.fillStyle = option.background;
-      ctx.fillRect(0, 0, can.width, can.height);
-    }
-
-    ctx.fillStyle = option.color || '#000000';
-    ctx.font = font;
-    ctx.fillText(option.text, 0, 0 + textInfo.actualBoundingBoxAscent);
-
     return {
-      width: can.width,
-      height: can.height,
-      data: can.toDataURL(),
+      data: _canvas.toDataURL('image/png', 100),
+      width: _canvas.width,
+      height: _canvas.height,
+      contentTop: contentOffsetY,
+      contentLeft: contentOffsetX,
     };
   }
 
-  function createExifImg(exifInfo, maxHeight, option) {
-    const exif = {
-      title: null,
-      info: null,
-    };
-
-    // 移除厂商和型号有重复内容
-    let title = '';
-    if (exifInfo.Make) {
-      // 先走一层默认的过滤
-      exifInfo.Make = modelMap.INIT.make_filter(exifInfo.Make.trim());
-      const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
-
-      if (option.brand_show) {
-        if (option.font === defFont) {
-          title = _modelMap.make_filter(exifInfo.Make);
-        } else {
-          title = exifInfo.Make[0] + exifInfo.Make.slice(1);
-        }
-      }
-    }
-
-    const _modelMap = Object.assign(modelMap.DEF, modelMap[exifInfo.Make]);
-    if (option.model_show && exifInfo.Model) {
-      exifInfo.Model = _modelMap.model_filter(exifInfo.Model.replace(exifInfo.Make, '').trim());
-      title += ` ${exifInfo.Model}`;
-    }
-
-    if (title) {
-      exif.title = createTextImg({
-        text: title,
-        color: option.solid_bg ? '#000' : '#fff',
-        fontSize: (option.ext_show ? 100 : 120) * (maxHeight / ORIGIN_H),
-        font: option.font,
-      });
-    }
-
-    if (option.ext_show) {
-      const infoTextArr = [];
-  
-      if (exifInfo.FocalLength) {
-        infoTextArr.push(`${exifInfo.FocalLength}mm`);
-      }
-  
-      if (exifInfo.FNumber) {
-        infoTextArr.push(`f/${exifInfo.FNumber}`);
-      }
-  
-      if (exifInfo.ExposureTime) {
-        if (exifInfo.ExposureTime < 1) {
-          infoTextArr.push(`1/${Math.round(1 / exifInfo.ExposureTime)}s`);
-        } else {
-          infoTextArr.push(`${exifInfo.ExposureTime}s`);
-        }
-      }
-  
-      if (exifInfo.ISO) {
-        infoTextArr.push(`ISO${exifInfo.ISO}`);
-      }
-  
-      if (infoTextArr.length) {
-        exif.info = createTextImg({
-          text: infoTextArr.join(' '),
-          color: option.solid_bg ? '#000' : '#fff',
-          fontSize: 80 * (maxHeight / ORIGIN_H),
-          font: option.font,
-        });
-      }
-    }
-
-    return exif;
-  }
-
-  function charToNumberChar(originStr, mathematicalFontStart = 0x1d63c) {
-    let str = '';
-
-    for (let i = 0; i < originStr.length; i++) {
-      const originalChar = originStr[i];
-      const lowercaseOffset = originalChar.charCodeAt(0) - 'a'.charCodeAt(0); // 小写字母的偏移量
-      const uppercaseOffset = originalChar.charCodeAt(0) - 'A'.charCodeAt(0); // 大写字母的偏移量
-
-      if (lowercaseOffset >= 0 && lowercaseOffset <= 25) {
-        const mathematicalCharCode = mathematicalFontStart + 26 + lowercaseOffset;
-        str += String.fromCodePoint(mathematicalCharCode);
-      } else if (uppercaseOffset >= 0 && uppercaseOffset <= 25) {
-        const mathematicalCharCode = mathematicalFontStart + uppercaseOffset;
-        str += String.fromCodePoint(mathematicalCharCode);
-      } else {
-        str += originalChar;
-      }
-    }
-
-    return str; // 将 Unicode 码点转换成字符
-  }
-
-  function createCanvas(w, h) {
-    const _canvas = document.createElement('canvas');
-    _canvas.width = w;
-    _canvas.height = h;
-    return _canvas;
-  }
-
-  async function importFont(arr) {
-    for (const i of arr) {
-      const font = new FontFace(i.name, `url('${i.path}')`);
-      const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
-      if (_font) {
-        document.fonts.add(_font);
-      }
-    }
-  }
-
-  async function getConfig() {
-    const defConf = await window.api.getConfig();
-    if (defConf.code === 0) {
-      config = defConf.data;
-      console.log('配置信息:', config);
-    }
-  }
-
-  function formatFontMap(fontMap) {
+  function formatFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
-      // eslint-disable-next-line guard-for-in
       for (const key in fontMap) {
         list.push({
           name: key,
-          path: `file://${config.font.dir}/${fontMap[key]}`,
+          path: `file://${$config.fontDir}/${fontMap[key]}`,
         });
       }
 
       fontList = list;
     }
+  }
+
+  async function createTextList(templateList: ITemplateItem[], templateFieldsConf: Awaited<ReturnType<typeof utils.getTemplateFieldsConf>>): Promise<IImgFileInfo[]> {
+    const imgFileInfoList: IImgFileInfo[] = [];
+    console.log('模版字段信息', templateFieldsConf);
+
+    for (const i of templateList) {
+      let text = i.text.trim();
+      const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
+      const textList = [];
+      const slotInfoList = [];
+
+      if (tempList?.length) {
+        for (const temp of tempList) {
+          const [field] = temp.match(/[A-Za-z0-9]+/);
+          const info = templateFieldsConf[field];
+
+          text = text.replace(temp, '{---}');
+          const slotInfo: ISlotInfo = {
+            value: '',
+            param: info.param,
+          };
+
+          if (info.type === 'text') {
+            slotInfo.value = info.value;
+          } else {
+            if ($config.options.solid_bg) {
+              if (!info.bImg || info.bImg === 'false') {
+                continue;
+              }
+            } else if (!info.wImg || info.wImg === 'false') {
+              continue;
+            }
+
+            slotInfo.value = await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg });
+          }
+
+          slotInfoList.push(slotInfo);
+        }
+
+        const _arr = text.split('{---}');
+        for (let j = 0; j < _arr.length; j++) {
+          if (slotInfoList[j]?.value) {
+            textList.push(_arr[j], slotInfoList[j]);
+          }
+        }
+      } else {
+        textList.push(text);
+      }
+
+      imgFileInfoList.push(createTextImg(textList, i.opts));
+    }
+
+    return imgFileInfoList.filter(Boolean);
+  }
+
+  function createTextFont(opts: Omit<IFontParam, 'use'>, extraOpts?: IFontParam) {
+    const _opts = { ...opts };
+
+    if (extraOpts?.use) {
+      Object.assign(_opts, extraOpts);
+      if (!opts.size) {
+        _opts.size = opts.size;
+      }
+    }
+
+    let font = '';
+
+    if (_opts.bold) {
+      font += 'bold ';
+    }
+
+    if (_opts.italic) {
+      font += 'italic ';
+    }
+
+    if (_opts.size) {
+      font += `${_opts.size}px `;
+    }
+
+    if (_opts.font) {
+      font += `${_opts.font},`;
+    }
+
+    font += '"PingFang SC"';
+
+    return font;
+  }
+
+  function createTextImg(textList: (ISlotInfo | string)[], opts: ITextOption): IImgFileInfo {
+    textList = textList.filter(Boolean);
+    if (!textList.length) {
+      return null;
+    }
+
+    const can = createCanvas(0, 0);
+    const ctx = can.getContext('2d');
+    const defFont = createTextFont(opts);
+    const textInfoList: {
+      font: string
+      value: string | HTMLImageElement
+      type: 'text' | 'img'
+      w: number
+      x: number
+      y: number
+      h: number
+    }[] = [];
+
+    let totalText = '';
+    const maxFontOpt: ITextOption = { ...opts };
+
+    for (const text of textList) {
+      if (typeof text === 'string') {
+        totalText += text;
+        continue;
+      }
+
+      if (typeof text.value === 'string') {
+        totalText += text.value;
+      }
+
+      if (text.param && text.param.use) {
+        // 加粗
+        if (!maxFontOpt.bold && text.param.bold) {
+          maxFontOpt.bold = true;
+        }
+
+        // 使用最大的字体
+        if (maxFontOpt.size < text.param.size) {
+          maxFontOpt.size = text.param.size;
+        }
+      }
+    }
+
+    ctx.font = createTextFont(maxFontOpt);
+    ctx.textBaseline = 'middle';
+    const textInfo = ctx.measureText(totalText);
+    can.height = opts.height || Math.round(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
+
+    can.width = textList.reduce((n, i, j) => {
+      if (i === undefined || !i) return n;
+      if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
+
+      if (typeof i === 'string' || typeof i.value === 'string') {
+        let font = '';
+        let value = '';
+
+        if (typeof i === 'string') {
+          font = defFont;
+          value = i;
+        } else if (typeof i.value === 'string') {
+          font = createTextFont(opts, mergeFontOpt(opts, i.param));
+          value = i.value;
+        }
+
+        ctx.font = font;
+        ctx.textBaseline = 'middle';
+        const info = ctx.measureText(value);
+        const h = info.actualBoundingBoxAscent + info.actualBoundingBoxDescent;
+        const y = Math.round(h / 2 + (can.height - h) / 2);
+        textInfoList.push({
+          font,
+          value,
+          type: 'text',
+          x: n,
+          y,
+          w: info.actualBoundingBoxLeft + info.actualBoundingBoxRight,
+          h,
+        });
+        n += info.width;
+      } else {
+        const canHeight = i.param?.use ? i.param?.size || can.height : can.height;
+        const h = canHeight * 0.98;
+        const y = (can.height - h) / 2;
+        const w = Math.round(h * (i.value.width / i.value.height));
+        textInfoList.push({
+          font: defFont,
+          value: i.value,
+          type: 'img',
+          x: n,
+          y,
+          w,
+          h,
+        });
+        n += w;
+      }
+      return n;
+    }, 0);
+
+    for (const info of textInfoList) {
+      if (info.type === 'text') {
+        ctx.font = info.font;
+        ctx.fillStyle = opts.color || '#000';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(info.value as string, info.x, info.y);
+      } else {
+        ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);
+      }
+    }
+
+    return {
+      width: can.width,
+      height: can.height,
+      path: can.toDataURL(),
+    };
+  }
+
+  function mergeFontOpt(def: ITextOption, target: IFontParam): IFontParam {
+    if (!target || !target.use) {
+      return { ...def, use: false };
+    }
+
+    const cpDef = { ...target };
+
+    for (const key in def) {
+      if (target && target[key as keyof IFontParam]) {
+        (cpDef[key as keyof IFontParam] as any) = target[key as keyof IFontParam];
+      } else {
+        (cpDef[key as keyof IFontParam] as any) = def[key as keyof ITextOption];
+      }
+    }
+
+    return cpDef;
   }
 </script>
 

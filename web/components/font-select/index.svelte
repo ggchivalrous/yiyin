@@ -1,43 +1,24 @@
-<script>
-  // eslint-disable-next-line import/order
-  import { createEventDispatcher } from 'svelte';
-  // eslint-disable-next-line import/first
-  import { ListBox, ListBoxItem, getModalStore, popup } from '@skeletonlabs/skeleton';
-  // eslint-disable-next-line import/first
+<script lang="ts">
   import FontDialog from '@components/font-dialog';
+  import { Message, Option, Select } from '@ggchivalrous/db-ui';
+  import { createEventDispatcher } from 'svelte';
   import './index.scss';
-  // eslint-disable-next-line import/order
-  import Message from '@db-ui/message';
 
-  // eslint-disable-next-line import/no-mutable-exports
-  export let config = {};
-  // eslint-disable-next-line import/no-mutable-exports
-  export let value = 'PingFang SC';
+  export let fontMap: Record<string, string> = {};
+  export let value = '';
 
-  const modalStore = getModalStore();
+  const defFont = { name: 'PingFang SC', fileName: '' };
   const dispatch = createEventDispatcher();
-  let fontList = [{ name: 'PingFang SC', fileName: '' }];
+  let fontList = [defFont];
+  let visible = false;
 
-  $: listenConfigChange(config);
-
-  const popupCombobox = {
-    event: 'click',
-    target: 'popupCombobox',
-    placement: 'bottom',
-    closeQuery: '.font-name',
-  };
+  $: listenFontMapChange(fontMap);
 
   function addFont() {
-    modalStore.trigger({
-      type: 'component',
-      component: { ref: FontDialog },
-      response() {
-        dispatch('update');
-      },
-    });
+    visible = true;
   }
 
-  async function delFont(i) {
+  async function delFont(i: string) {
     const res = await window.api.delFont(i);
     if (res.code === 0) {
       if (res.data) {
@@ -52,46 +33,35 @@
     Message.error(res.message);
   }
 
-  function listenConfigChange() {
-    if (config?.map) {
+  function listenFontMapChange(_fontMap: typeof fontMap) {
+    if (Object.keys(_fontMap).length) {
       const list = [];
 
-      // eslint-disable-next-line guard-for-in
-      for (const key in config.map) {
+      for (const key in _fontMap) {
         list.push({
           name: key,
-          fileName: config.map[key],
+          fileName: _fontMap[key],
         });
       }
 
-      fontList = [{ name: 'PingFang SC', fileName: '' }, ...list];
-
-      if (!config.map[value]) {
-        value = fontList[0].name;
+      fontList = [defFont, ...list];
+      if ((!_fontMap[value] && value !== defFont.name) || !value) {
+        value = defFont.name;
       }
     }
   }
 </script>
 
-<div class="font-select-wrap">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="show grass button font-select" use:popup={popupCombobox}>
-    {value}
-  </div>
+<Select size="mini" bind:value class="no-drag grass font-select">
+  <div class="button add-font" on:click={addFont} on:keypress role="button" tabindex="-1">+</div>
+  {#each fontList as i}
+    <Option value={i.name}>
+      <span class="font-name">{i.name}</span>
+      {#if i.fileName}
+        <span class="font-del" on:click|preventDefault|capture|stopPropagation={() => delFont(i.name)} on:keypress role="button" tabindex="-1">x</span>
+      {/if}
+    </Option>
+  {/each}
+</Select>
 
-  <div class="font-list w-48 shadow-xl py-2 grass" data-popup="popupCombobox">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="button add-font" on:click={addFont}>+</div>
-    <ListBox rounded="rounded-none">
-      {#each fontList as i}
-        <ListBoxItem bind:group={value} name="medium" value={i.name}>
-          <span class="font-name">{i.name}</span>
-          {#if i.fileName}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <span class="font-del" on:click|preventDefault|capture={() => delFont(i)}>x</span>
-          {/if}
-        </ListBoxItem>
-      {/each}
-    </ListBox>
-  </div>
-</div>
+<FontDialog bind:visible on:update />

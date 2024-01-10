@@ -1,9 +1,10 @@
-import { dialog, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import routerConfig from '../../router-config';
-import { Router } from '../modules/router';
-import { config } from '../config';
+
+import { config } from '@config';
+import { Router } from '@modules/router';
+import routerConfig from '@root/router-config';
+import { dialog, shell } from 'electron';
 
 const r = new Router();
 
@@ -17,7 +18,7 @@ r.listen(routerConfig.open.selectPath, async (data, event, win) => {
   if (!res.canceled && res.filePaths.length > 0) {
     config.output = res.filePaths[0];
 
-    if (process.env.URL) {
+    if (import.meta.env.DEV) {
       config.cacheDir = path.join(config.output, '.catch');
 
       if (!fs.existsSync(config.cacheDir)) {

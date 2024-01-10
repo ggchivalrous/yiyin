@@ -1,19 +1,23 @@
 import path from 'node:path';
-import { app } from 'electron';
-// eslint-disable-next-line import/no-relative-packages
-import { setLoggerConfig, closeAllLogger, Logger } from '../src/modules/logger';
 
-import('../src/config').then(async ({ config }) => {
+import { setLoggerConfig, closeAllLogger } from '@modules/logger';
+import { app } from 'electron';
+
+import('@src/config').then(async ({ config }) => {
+  // eslint-disable-next-line no-console
+  if (import.meta.env.DEV) console.log(import.meta.env);
+
   setLoggerConfig({
     namespace: 'main',
-    exportMode: process.env.URL ? 'CONSOLE_FILE' : 'FILE',
-    path: process.env.URL ? path.join(config.cacheDir, './logs') : path.resolve(app.getPath('userData'), 'logs'),
-    level: 'DEBUG',
+    exportMode: import.meta.env.DEV ? 'CONSOLE_FILE' : 'FILE',
+    path: import.meta.env.DEV ? path.join(config.cacheDir, './logs') : path.resolve(app.getPath('userData'), 'logs'),
+    level: import.meta.env.DEV ? 'DEBUG' : 'INFO',
   });
 
-  const log = new Logger();
-  log.info('当前配置信息: ', JSON.stringify(config, null, 2));
-  app.addListener('quit', closeAllLogger)
+  app.addListener('quit', closeAllLogger);
 
-  await import('./start');
+  const { default: Application } = await import('./app');
+  const _app = new Application();
+  await _app.init();
+  await _app.start();
 });

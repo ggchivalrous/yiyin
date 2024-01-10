@@ -1,5 +1,5 @@
+import routerConfig from '@root/router-config';
 import { contextBridge, ipcRenderer } from 'electron';
-import routerConfig from '../router-config';
 
 function generateRouter(config: any): string[] {
   const list = [];
@@ -16,7 +16,7 @@ function generateRouter(config: any): string[] {
   return list;
 }
 
-if (process.env.URL) {
+if (import.meta.env.DEV) {
   // eslint-disable-next-line no-console
   console.log('页面挂载路由: ', generateRouter(routerConfig).reduce((o, i) => {
     if (i.startsWith('on:')) {

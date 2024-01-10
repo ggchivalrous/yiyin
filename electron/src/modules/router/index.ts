@@ -1,6 +1,8 @@
-import { IpcMainInvokeEvent, ipcMain, BrowserWindow } from 'electron';
 import { format } from 'util';
-import { Logger } from '../logger'
+
+import { IpcMainInvokeEvent, ipcMain, BrowserWindow } from 'electron';
+
+import { Logger } from '../logger';
 
 const log = new Logger('RouterM');
 

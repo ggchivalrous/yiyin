@@ -2,28 +2,49 @@
   "env": {
     "es6": true,
     "node": true,
-    "jest": true,
     "browser": true
   },
   "parser": "@typescript-eslint/parser",
   "extends": [
     "airbnb-base",
-    "plugin:@typescript-eslint/recommended"
-  ],
-  "plugins": [
-    "svelte3",
-    "@typescript-eslint"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:svelte/recommended"
   ],
   "overrides": [{
-    "files": ["*.svelte"],
-    "processor": "svelte3/svelte3"
+    "files": ["*.svelte", "**/*.svelte"],
+    "parser": "svelte-eslint-parser",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2021,
+      "parser": {
+        "ts": "@typescript-eslint/parser",
+        "js": "espree",
+        "typescript": "@typescript-eslint/parser"
+      }
+    },
+    "rules": {
+      "no-return-assign": "off"
+    }
   }],
+  "plugins": [
+    "@typescript-eslint",
+    "import"
+  ],
   "rules": {
     "max-len": "off",
+    "import/no-mutable-exports": "off",
+    "no-unused-expressions": "off",
     "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "off",
     "import/extensions": "off",
     "import/no-unresolved": "off",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc", "caseInsensitive": true }
+      }
+    ],
     "object-curly-newline": ["error", {
       "ImportDeclaration": { "multiline": true },
       "ExportDeclaration": { "multiline": true }
@@ -39,6 +60,9 @@
     "no-use-before-define": "off",
     "prefer-destructuring": "off",
     "no-plusplus": "off",
-    "no-bitwise": "off"
+    "no-bitwise": "off",
+    "import/no-relative-packages": "off",
+    "guard-for-in": "off",
+    "@typescript-eslint/type-annotation-spacing": "error"
   }
 }

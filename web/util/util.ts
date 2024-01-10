@@ -1,3 +1,5 @@
+import { tryAsyncCatch, usePromise } from '@/common/utils';
+
 export const toRoman = (num: number) => {
   const romanNumerals = [
     { value: 1000, numeral: 'M' },
@@ -25,9 +27,9 @@ export const toRoman = (num: number) => {
   }
 
   return roman;
-}
+};
 
-export const charToNumberChar = (originStr, mathematicalFontStart = 0x1d63c) => {
+export const charToNumberChar = (originStr: string, mathematicalFontStart = 0x1d63c) => {
   let str = '';
 
   for (let i = 0; i < originStr.length; i++) {
@@ -47,4 +49,25 @@ export const charToNumberChar = (originStr, mathematicalFontStart = 0x1d63c) => 
   }
 
   return str; // 将 Unicode 码点转换成字符
-}
+};
+
+export const loadImage = async (url: string) => {
+  const img = new Image();
+  img.src = url;
+
+  const [promise, r, j] = usePromise<HTMLImageElement>();
+  img.onload = () => r(img);
+  img.onerror = j;
+
+  const d = await tryAsyncCatch(promise);
+  if (d) {
+    return d;
+  }
+
+  img.src = `file://${url}`;
+  const [promise1, r1, j1] = usePromise<HTMLImageElement>();
+  img.onload = () => r1(img);
+  img.onerror = j1;
+
+  return promise1;
+};
