@@ -39,7 +39,7 @@ export default defineConfig(({ command }) => {
   const env: Record<string, any> = {
     VERSION: pkg.version,
     DIST_ELECTRON: electronOutDir,
-    WEB: join(electronOutDir, 'web'),
+    WEB: electronOutDir,
     URL: isServe ? `http://localhost:${port}` : '',
   };
 

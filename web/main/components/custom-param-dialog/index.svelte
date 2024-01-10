@@ -7,6 +7,7 @@
 
   import './index.scss';
   import ParamFontInfo from '../param-font-info/index.svelte';
+  import StaticDialog from '../static-dialog/index.svelte';
 
   export let title = '';
   export let showImg = false;
@@ -87,6 +88,18 @@
       }
     };
   }
+
+  function onStaticChange(t: string, path: string) {
+    if (!path) {
+      return;
+    }
+
+    if (t === 'white') {
+      form.wImg = path;
+    } else {
+      form.bImg = path;
+    }
+  }
 </script>
 
 <Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="500px" top="8vh">
@@ -114,6 +127,7 @@
         <div class="form-item-label">
           白字图片
           <label for="wImg"><i class="db-icon-upload" /></label>
+          <StaticDialog on:change={(e) => onStaticChange('white', e.detail)} />
         </div>
         <div class="form-item-value">
           {#if form.wImg}
@@ -129,6 +143,7 @@
         <div class="form-item-label">
           黑字图片
           <label for="bImg"><i class="db-icon-upload" /></label>
+          <StaticDialog on:change={(e) => onStaticChange('black', e.detail)} />
         </div>
         <div class="form-item-value">
           {#if form.bImg}
