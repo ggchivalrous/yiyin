@@ -27,10 +27,10 @@ jobs:
 
       - name: 安装依赖
         run: |
-          npm install
+          yarn
       
       - name: 构建 ${{ runner.arch }}
         run: |
-          npm run make
+          yarn make
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
