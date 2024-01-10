@@ -103,8 +103,13 @@
     "win": {
       "icon": "./icon/icon.ico",
       "target": [
-        "msi"
+        "nsis"
       ]
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": false
     },
     "linux": {
       "icon": "./icon/icon.ico",
