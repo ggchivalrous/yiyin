@@ -24,6 +24,9 @@
         <i class="db-icon-star-off"></i>
       </div>
       <div class="app-header-star-content">
+        <div class="star-item group-chat">
+          QQ交流群:718615618
+        </div>
         <div class="star-item button">
           <a href="https://message.bilibili.com/#/whisper/mid94829489" target="_blank">反馈 - 建议(B站私信)</a>
         </div>
@@ -31,7 +34,7 @@
           <a href="https://github.com/ggchivalrous/yiyin/issues" target="_blank">反馈 - 建议(Github Issues)</a>
         </div>
         <div class="star-item">
-          如果值得，可以请我喝杯雪王吗？？
+          ๑乛◡乛๑你不会想白嫖吧
           <img class="zanshang" src="file://{$staticInfo.webDir}/zan.jpg" alt="赞赏码">
         </div>
       </div>

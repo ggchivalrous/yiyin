@@ -79,7 +79,7 @@ export default class Application {
   }
 
   async checkAssetsUpdate() {
-    const dayTs = new Date().setHours(0, 0, 0, 0);
+    const dayTs = new Date().setMinutes(0, 0, 0);
     if (dayTs === config?.versionUpdateInfo?.checkDate) {
       this.win.webContents.send(routerConfig.on.assetsUpdate, config.versionUpdateInfo);
       return;

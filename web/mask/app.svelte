@@ -42,7 +42,7 @@
             text: '{Make} {Model}',
             opts: {
               width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.035,
+              size: task.bgImgSize.h * 0.048,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -87,7 +87,7 @@
             text: '{Make} {Model}',
             opts: {
               width: bgImg.width,
-              size: bgImg.height * 0.035,
+              size: bgImg.height * 0.048,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -440,7 +440,7 @@
         ctx.font = font;
         ctx.textBaseline = 'middle';
         const info = ctx.measureText(value);
-        const h = info.actualBoundingBoxAscent + info.actualBoundingBoxDescent;
+        const h = Math.round(info.actualBoundingBoxAscent + info.actualBoundingBoxDescent);
         const y = Math.round(h / 2 + (can.height - h) / 2);
         textInfoList.push({
           font,
@@ -453,9 +453,9 @@
         });
         n += info.width;
       } else {
-        const canHeight = i.param?.use ? i.param?.size || can.height : can.height;
-        const h = canHeight * 0.98;
-        const y = (can.height - h) / 2;
+        const canHeight = i.param?.use ? i.param?.size || (can.height - 50) : (can.height - 50);
+        const h = Math.round(canHeight);
+        const y = Math.round((can.height - h) / 2);
         const w = Math.round(h * (i.value.width / i.value.height));
         textInfoList.push({
           font: defFont,
