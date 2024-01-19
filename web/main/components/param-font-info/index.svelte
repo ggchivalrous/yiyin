@@ -39,9 +39,9 @@
         <br>
         指定的大小为图片背景的高度的百分比
         <br>
-        机型默认为3.8，即 0.038%
+        机型默认为4.8，即 0.048%
         <br>
-        参数默认为2.4，即 0.024%
+        参数默认为2，即 0.02%
       </svelte:fragment>
       <input class="mini-input" type="number" bind:value={conf.size} />
     </ActionItem>

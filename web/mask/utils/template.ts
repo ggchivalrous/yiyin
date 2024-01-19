@@ -142,18 +142,24 @@ export function fillTemplateFieldInfo(templateFieldConf: TTemplateFieldInfo, exi
     // 不显示型号
     if (field === 'Model' && !_config.options.model_show) {
       exifInfo[field].value = '';
+      exifInfo[field].bImg = '';
+      exifInfo[field].wImg = '';
       continue;
     }
 
     // 不显示厂商
     if (field === 'Make' && !_config.options.brand_show) {
       exifInfo[field].value = '';
+      exifInfo[field].bImg = '';
+      exifInfo[field].wImg = '';
       continue;
     }
 
     // 不显示参数
     if (cameraParamFields.includes(field) && !_config.options.ext_show) {
       exifInfo[field].value = '';
+      exifInfo[field].bImg = '';
+      exifInfo[field].wImg = '';
       continue;
     }
 
