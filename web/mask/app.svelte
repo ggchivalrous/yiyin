@@ -42,7 +42,7 @@
             text: '{Make} {Model}',
             opts: {
               width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.048,
+              size: task.bgImgSize.h * 0.04,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -87,7 +87,7 @@
             text: '{Make} {Model}',
             opts: {
               width: bgImg.width,
-              size: bgImg.height * 0.048,
+              size: bgImg.height * 0.04,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
