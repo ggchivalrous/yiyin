@@ -1,17 +1,24 @@
+/* eslint-disable no-console */
 import path from 'node:path';
 
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
+import paths from '@src/path';
 import { app } from 'electron';
 
+const isDev = import.meta.env.DEV;
+
 import('@src/config').then(async ({ config }) => {
-  // eslint-disable-next-line no-console
-  if (import.meta.env.DEV) console.log(import.meta.env);
+  if (isDev) {
+    paths.logger = path.join(config.cacheDir, './logs');
+    console.log('Env', import.meta.env);
+    console.log('Path', paths);
+  }
 
   setLoggerConfig({
     namespace: 'main',
-    exportMode: import.meta.env.DEV ? 'CONSOLE_FILE' : 'FILE',
-    path: import.meta.env.DEV ? path.join(config.cacheDir, './logs') : path.resolve(app.getPath('userData'), 'logs'),
-    level: import.meta.env.DEV ? 'DEBUG' : 'INFO',
+    exportMode: isDev ? 'CONSOLE_FILE' : 'FILE',
+    path: paths.logger,
+    level: isDev ? 'DEBUG' : 'INFO',
   });
 
   app.addListener('quit', closeAllLogger);

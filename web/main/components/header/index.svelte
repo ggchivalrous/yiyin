@@ -3,7 +3,7 @@
   import Popup from '@components/popup';
   import { Popover } from '@ggchivalrous/db-ui';
   import { initializeStores } from '@skeletonlabs/skeleton';
-  import { config, getConfig, resetConfig, staticInfo } from '@web/store/config';
+  import { config, getConfig, resetConfig, pathInfo } from '@web/store/config';
   import './index.scss';
 
   initializeStores();
@@ -35,7 +35,7 @@
         </div>
         <div class="star-item">
           ๑乛◡乛๑你不会想白嫖吧
-          <img class="zanshang" src="file://{$staticInfo.webDir}/zan.jpg" alt="赞赏码">
+          <img class="zanshang" src="file://{$pathInfo.public}/zan.jpg" alt="赞赏码">
         </div>
       </div>
     </Popover>

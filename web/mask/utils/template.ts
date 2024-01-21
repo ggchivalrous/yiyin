@@ -1,4 +1,4 @@
-import { config, staticInfo } from '@web/store/config';
+import { config, pathInfo } from '@web/store/config';
 import { loadImage } from '@web/util/util';
 import modelMap from '@web-utils/model-map';
 import { get } from 'svelte/store';
@@ -69,8 +69,8 @@ export async function formatExifInfo(exifInfo: ExifInfo) {
     }
 
     if (exifInfo.Make) {
-      const whiteLogoImgName = `${isDev ? '' : `file://${get(staticInfo).webDir}`}/logo/${exif.Make.value.toLowerCase()}-w.svg`;
-      const blackLogoImgName = `${isDev ? '' : `file://${get(staticInfo).webDir}`}/logo/${exif.Make.value.toLowerCase()}-b.svg`;
+      const whiteLogoImgName = `${isDev ? '' : `file://${get(pathInfo).logo}`}${exif.Make.value.toLowerCase()}-w.svg`;
+      const blackLogoImgName = `${isDev ? '' : `file://${get(pathInfo).logo}`}${exif.Make.value.toLowerCase()}-b.svg`;
 
       if (await loadImage(whiteLogoImgName).catch(() => null)) {
         exif.Make.wImg = whiteLogoImgName;

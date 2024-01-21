@@ -43,7 +43,7 @@ export default defineConfig(({ command }) => {
     URL: isServe ? `http://localhost:${port}` : '',
   };
 
-  env.PUBLIC = isServe ? join(__dirname, 'public') : env.WEB;
+  env.PUBLIC = isServe ? join(__dirname, 'web/public') : env.WEB;
   fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
 
   if (!fs.existsSync(electronOutDir)) {

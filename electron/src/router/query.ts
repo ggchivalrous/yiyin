@@ -5,10 +5,9 @@ import { config, getConfig, storeConfig } from '@config';
 import { Router } from '@modules/router';
 import { Image } from '@modules/tools/image';
 import routerConfig from '@root/router-config';
+import paths from '@src/path';
 import { md5 } from '@utils';
 import { BrowserWindow, app } from 'electron';
-
-import { webDir } from '@/electron/main/create-window';
 
 const r = new Router();
 
@@ -86,8 +85,19 @@ r.listen(routerConfig.uploadExifImg, async (data: any) => {
   return false;
 });
 
-r.listen(routerConfig.staticInfo, async () => ({
-  webDir,
+r.listen(routerConfig.pathInfo, async () => ({
+  ...paths,
 }));
+
+r.listen(routerConfig.logoList, async () => {
+  if (fs.existsSync(paths.logo)) {
+    const logoList = fs.readdirSync(paths.logo);
+    return logoList
+      .filter((i) => !i.startsWith('.'))
+      .map((i) => path.join(paths.logo, i));
+  }
+
+  return [];
+});
 
 export default r;

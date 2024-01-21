@@ -84,8 +84,9 @@ export async function resetConfig() {
   Message.success({ message: '重置成功' });
 }
 
-export const staticInfo = writable({
-  webDir: '',
+export const pathInfo = writable({
+  public: '',
+  logo: '',
 });
 
 config.subscribe(async (v) => {
@@ -123,14 +124,11 @@ function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
   };
 }
 
-async function getStaticInfo() {
-  const info = await window.api.staticInfo();
+async function getPathInfo() {
+  const info = await window.api.pathInfo();
   if (info.code === 0) {
-    staticInfo.update((d) => {
-      d.webDir = info.data.webDir;
-      return d;
-    });
+    pathInfo.set(info.data);
   }
 }
 
-getStaticInfo();
+getPathInfo();
