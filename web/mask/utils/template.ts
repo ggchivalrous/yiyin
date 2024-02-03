@@ -69,8 +69,8 @@ export async function formatExifInfo(exifInfo: ExifInfo) {
     }
 
     if (exifInfo.Make) {
-      const whiteLogoImgName = `${isDev ? '' : `file://${get(pathInfo).logo}`}${exif.Make.value.toLowerCase()}-w.svg`;
-      const blackLogoImgName = `${isDev ? '' : `file://${get(pathInfo).logo}`}${exif.Make.value.toLowerCase()}-b.svg`;
+      const whiteLogoImgName = `file://${get(pathInfo).logo}/${exif.Make.value.toLowerCase()}-w.svg`;
+      const blackLogoImgName = `file://${get(pathInfo).logo}/${exif.Make.value.toLowerCase()}-b.svg`;
 
       if (await loadImage(whiteLogoImgName).catch(() => null)) {
         exif.Make.wImg = whiteLogoImgName;

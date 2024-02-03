@@ -1,6 +1,6 @@
 {
   "name": "yiyin",
-  "version": "1.5",
+  "version": "1.5.0",
   "license": "MIT",
   "type": "module",
   "main": "dist-electron/main/index.js",
@@ -31,7 +31,7 @@
     "@typescript-eslint/parser": "^5.57.0",
     "autoprefixer": "^10.4.14",
     "axios": "^1.6.5",
-    "electron": "^24.2.0",
+    "electron": "24.2.0",
     "electron-builder": "^24.6.3",
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
