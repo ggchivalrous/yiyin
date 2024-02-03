@@ -62,7 +62,7 @@ async function start() {
     const filePath = path.join(__dirname, 'dist', file);
     const state = fs.statSync(filePath);
 
-    if (!state.isFile() || file.endsWith('.blockmap') || file.endsWith('.yml')) {
+    if (!state.isFile() || file.endsWith('.blockmap') || file.endsWith('.zip') || file.endsWith('.yml')) {
       continue;
     }
 

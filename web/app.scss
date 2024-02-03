@@ -3,8 +3,8 @@
   --text-color-1: rgba(16, 33, 55, 0.75);
   --active-border-color: #13325eca;
   --active-color: #13325eba;
-  --blackShadow: 4px 4px 8px rgba(196, 199, 207, .8);
-  --whiteShadow: -4px -4px 8px rgba(255, 255, 255, .8);
+  --blackShadow: 3px 3px 6px rgba(191, 202, 219, .8);
+  --whiteShadow: -3px -3px 6px rgba(255, 255, 255, .8);
   --bg-color: #E7EAF3;
 }
 
@@ -14,7 +14,8 @@
   user-select: none;
 }
 
-html, body {
+html,
+body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -26,7 +27,7 @@ body {
   .db-drawer {
     background-color: var(--bg-color);
   }
-  
+
   .db-switch {
     &.is-checked {
       .db-switch__core {
@@ -34,17 +35,17 @@ body {
         border-color: transparent;
       }
     }
-  
+
     .db-switch__label {
       color: var(--active-color);
-  
+
       &.is-active {
         color: var(--text-color);
       }
     }
   }
 
-  .db-input{
+  .db-input {
     &.text-input {
       .db-input__inner {
         box-shadow: inset var(--whiteShadow), inset var(--blackShadow);
@@ -75,7 +76,7 @@ body {
   .grass {
     box-shadow: var(--whiteShadow), var(--blackShadow);
   }
-  
+
   .grass-unset {
     box-shadow: unset var(--whiteShadow), unset var(--blackShadow);
   }
@@ -86,7 +87,7 @@ body {
 
   .db-popper[data-popper-placement^=top] .popper__arrow {
     border-top-color: var(--bg-color) !important;
-    
+
     &::after {
       border-top-color: var(--bg-color) !important;
     }
@@ -94,7 +95,7 @@ body {
 
   .db-popper[data-popper-placement^=bottom] .popper__arrow {
     border-bottom-color: var(--bg-color) !important;
-    
+
     &::after {
       border-bottom-color: var(--bg-color) !important;
     }
@@ -102,7 +103,7 @@ body {
 
   .db-popper[data-popper-placement^=left] .popper__arrow {
     border-left-color: var(--bg-color) !important;
-    
+
     &::after {
       border-left-color: var(--bg-color) !important;
     }
@@ -110,7 +111,7 @@ body {
 
   .db-popper[data-popper-placement^=right] .popper__arrow {
     border-right-color: var(--bg-color) !important;
-    
+
     &::after {
       border-right-color: var(--bg-color) !important;
     }
