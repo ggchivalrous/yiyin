@@ -417,9 +417,9 @@
     }
 
     ctx.font = createTextFont(maxFontOpt);
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = 'hanging';
     const textInfo = ctx.measureText(totalText);
-    can.height = opts.height || Math.round(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
+    can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
 
     can.width = textList.reduce((n, i, j) => {
       if (i === undefined || !i) return n;
@@ -438,10 +438,10 @@
         }
 
         ctx.font = font;
-        ctx.textBaseline = 'middle';
+        ctx.textBaseline = 'hanging';
         const info = ctx.measureText(value);
-        const h = Math.round(info.actualBoundingBoxAscent + info.actualBoundingBoxDescent);
-        const y = Math.round(h / 2 + (can.height - h) / 2);
+        const h = Math.ceil(info.actualBoundingBoxAscent + info.actualBoundingBoxDescent);
+        const y = roundDecimalPlaces((info.actualBoundingBoxAscent + (can.height - h) / 2));
         textInfoList.push({
           font,
           value,
@@ -453,10 +453,11 @@
         });
         n += info.width;
       } else {
-        const canHeight = i.param?.use ? i.param?.size || (can.height - 50) : (can.height - 50);
-        const h = Math.round(canHeight);
-        const y = Math.round((can.height - h) / 2);
-        const w = Math.round(h * (i.value.width / i.value.height));
+        const fontOpt = mergeFontOpt(opts, i.param);
+        const h = Math.ceil(fontOpt.size);
+        const y = roundDecimalPlaces((can.height - h) / 2);
+        const w = Math.ceil(h * (i.value.width / i.value.height));
+
         textInfoList.push({
           font: defFont,
           value: i.value,
@@ -475,7 +476,7 @@
       if (info.type === 'text') {
         ctx.font = info.font;
         ctx.fillStyle = opts.color || '#000';
-        ctx.textBaseline = 'middle';
+        ctx.textBaseline = 'hanging';
         ctx.fillText(info.value as string, info.x, info.y);
       } else {
         ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);
@@ -505,6 +506,13 @@
     }
 
     return cpDef;
+  }
+
+  function roundDecimalPlaces(n: number, place = 2) {
+    const multiplier = 10 ** place;
+    const adjustedNumber = n * multiplier;
+    const roundedNumber = Math.round(adjustedNumber) / multiplier;
+    return roundedNumber;
   }
 </script>
 
