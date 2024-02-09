@@ -94,15 +94,15 @@ export function getConfig(def = false) {
   }
 
   if (!fs.existsSync(config.output)) {
-    fs.mkdirSync(config.output, { recursive: true });
+    tryCatch(() => fs.mkdirSync(config.output, { recursive: true }), null, () => {
+      config.output = DefaultConfig.output;
+      config.cacheDir = path.join(config.output, '.catch');
+      fs.mkdirSync(config.output, { recursive: true });
+    });
   }
 
   if (!fs.existsSync(config.cacheDir)) {
     fs.mkdirSync(config.cacheDir, { recursive: true });
-  }
-
-  if (!fs.existsSync(config.output)) {
-    fs.mkdirSync(config.output, { recursive: true });
   }
 
   if (!fs.existsSync(config.staticDir)) {
