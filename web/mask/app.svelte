@@ -42,7 +42,7 @@
             text: '{Make} {Model}',
             opts: {
               width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.04,
+              size: task.bgImgSize.h * 0.025,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -87,7 +87,7 @@
             text: '{Make} {Model}',
             opts: {
               width: bgImg.width,
-              size: bgImg.height * 0.04,
+              size: bgImg.height * 0.025,
               color: task.option.solid_bg ? '#000' : '#fff',
               font: task.option.font,
               bold: true,
@@ -161,10 +161,11 @@
     let mainImgOffset = mainImgTopOffset * 2;
     let contentTop = Math.ceil(mainImgTopOffset);
 
+    // 阴影宽度
     if (task.option.shadow_show) {
       const shadowHeight = Math.ceil(task.mainImgInfo.height * ((task.option.shadow || 6) / 100));
       const mainImgOffsetTop = Math.max(mainImgTopOffset, shadowHeight);
-      mainImgOffset = mainImgOffsetTop * 2;
+      mainImgOffset = mainImgOffsetTop * 2 * (3 / 4);
       contentTop = Math.ceil(mainImgOffsetTop);
     }
 
@@ -225,7 +226,7 @@
       ctx.shadowOffsetX = option.shadow.offsetX || 0; // 阴影水平偏移
       ctx.shadowOffsetY = option.shadow.offsetY || 0; // 阴影垂直偏移
       ctx.shadowBlur = option.shadow.blur; // 阴影模糊范围
-      ctx.shadowColor = '#000'; // 阴影颜色
+      ctx.shadowColor = 'rgba(0, 0, 0, 1)'; // 阴影颜色
     }
 
     const rectX = contentOffsetX || ctx.shadowBlur;
