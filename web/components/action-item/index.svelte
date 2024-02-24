@@ -1,5 +1,5 @@
 <script>
-  import Popup from '@components/popup';
+  import { Popover } from '@ggchivalrous/db-ui';
   import './index.scss';
 
   export let title = '';
@@ -7,12 +7,16 @@
 </script>
 
 <p class="action-item">
-  <span class="config-title" style:width={labelWidth} >{title}</span>
+  <span class="config-title" style:width={labelWidth} >
+    <slot name="title">{title}</slot>
+  </span>
   {#if $$slots.popup}
-    <Popup class="db-icon-question icon">
-      <slot name="popup" slot="message"></slot>
-    </Popup>
+    <Popover trigger="hover" >
+      <slot name="popup"></slot>
+      <i slot="reference" class="db-icon-question icon" />
+    </Popover>
   {/if}
+  <slot name="expand"></slot>
   <span class="config-value">
     <slot></slot>
   </span>

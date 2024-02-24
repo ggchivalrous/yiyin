@@ -17,17 +17,18 @@
   }
 
   .app-header-close {
-    padding: 4px 12px;
+    padding: 7px 12px !important;
     cursor: pointer;
   }
 
   .app-header-show {
-    padding: 4px 12px;
+    padding: 8px 12px !important;
     cursor: pointer;
   }
 
   .app-header-reset {
-    padding: 4px 6px;
+    padding: 7px 6px !important;
+    margin-left: 10px !important;
 
     .icon {
       display: inline-block;
@@ -42,7 +43,7 @@
   }
 
   .app-header-star {
-    padding: 0 0;
+    padding: 0 0 !important;
     line-height: 32px;
   }
 }

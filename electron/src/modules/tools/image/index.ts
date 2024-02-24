@@ -302,19 +302,7 @@ export class Image {
   }
 
   private getMainImgHeightRate() {
-    let rate = 0.83;
-    if (!this.opts.ext_show) {
-      rate += 0.02;
-    }
-
-    if (!this.opts.brand_show) {
-      rate += 0.02;
-    }
-
-    if (!this.opts.ext_show && !this.opts.brand_show) {
-      rate += 0.05;
-    }
-
+    const rate = 0.83;
     return rate;
   }
 

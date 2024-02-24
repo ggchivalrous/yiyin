@@ -2,7 +2,7 @@
 import { Message } from '@ggchivalrous/db-ui';
 import { writable } from 'svelte/store';
 
-import type { IConfig, IFieldInfoItem } from '../main/interface';
+import type { IConfig } from '../main/interface';
 
 let initConfig = false;
 let loadConfig = false;
@@ -10,9 +10,6 @@ let loadConfig = false;
 export const config = writable<IConfig>({
   options: {
     landscape: false,
-    ext_show: true,
-    model_show: true,
-    brand_show: true,
     solid_bg: false,
     origin_wh_output: true,
     radius: 2.1,
@@ -28,20 +25,7 @@ export const config = writable<IConfig>({
   },
   fontMap: {},
   fontDir: '',
-  templateFieldInfo: {
-    Force: getDefOptionItem(true),
-    Make: getDefOptionItem(''),
-    Model: getDefOptionItem(''),
-    ExposureTime: getDefOptionItem(''),
-    FNumber: getDefOptionItem(''),
-    ISO: getDefOptionItem(''),
-    FocalLength: getDefOptionItem(''),
-    ExposureProgram: getDefOptionItem(''),
-    DateTimeOriginal: getDefOptionItem(0),
-    LensModel: getDefOptionItem(''),
-    LensMake: getDefOptionItem(''),
-    PersonalSign: getDefOptionItem(''),
-  },
+  tempFields: [],
   output: '',
   staticDir: '',
 });
@@ -55,7 +39,7 @@ export async function getConfig() {
       v.output = defConf.data.output;
       v.fontMap = defConf.data.font.map;
       v.fontDir = defConf.data.font.dir;
-      v.templateFieldInfo = defConf.data.templateFieldInfo;
+      v.tempFields = defConf.data.tempFields;
       v.staticDir = defConf.data.staticDir;
       return v;
     });
@@ -77,7 +61,7 @@ export async function resetConfig() {
     v.output = res.data.output;
     v.fontMap = res.data.font.map;
     v.fontDir = res.data.font.dir;
-    v.templateFieldInfo = res.data.templateFieldInfo;
+    v.tempFields = res.data.tempFields;
     v.staticDir = res.data.staticDir;
     return v;
   });
@@ -106,23 +90,6 @@ config.subscribe(async (v) => {
 });
 
 getConfig().then(() => { initConfig = true; });
-
-function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
-  return {
-    use: false,
-    value: defV,
-    type: 'text',
-    bImg: '',
-    wImg: '',
-    param: {
-      use: false,
-      bold: false,
-      italic: false,
-      size: 0,
-      font: '',
-    },
-  };
-}
 
 async function getPathInfo() {
   const info = await window.api.pathInfo();

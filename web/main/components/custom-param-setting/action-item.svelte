@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Popup from '@components/popup';
-  import { Switch } from '@ggchivalrous/db-ui';
+  import { Switch, Popover } from '@ggchivalrous/db-ui';
   import type { IFieldInfoItem } from '@web/main/interface';
   import { createEventDispatcher } from 'svelte';
 
@@ -27,9 +26,10 @@
 <p class="action-item">
   <span class="config-title">{title}</span>
   {#if $$slots.popup}
-    <Popup class="db-icon-question icon" style="padding-right: 4px; color: var(--text-color);">
-      <slot name="popup" slot="message" />
-    </Popup>
+    <Popover trigger="hover">
+      <slot name="popup" />
+      <i slot="reference" class="db-icon-question icon" style="padding-right: 4px; color: var(--text-color);"></i>
+    </Popover>
   {/if}
 
   {#if showSwitch}
@@ -37,22 +37,22 @@
   {/if}
 
   <span class="config-value">
-    {#if form.value}
-      {form.value}
-    {/if}
+    {#if form.type === 'text'}
+      {form.value || ''}
+    {:else}
+      {#if form.bImg}
+        <Popover trigger="hover">
+          <img slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+          <img style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+        </Popover>
+      {/if}
 
-    {#if form.bImg}
-      <Popup>
-        <img src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
-        <img slot="message" style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
-      </Popup>
-    {/if}
-
-    {#if form.wImg}
-      <Popup>
-        <img src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
-        <img slot="message" style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
-      </Popup>
+      {#if form.wImg}
+        <Popover trigger="hover">
+          <img slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+          <img style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+        </Popover>
+      {/if}
     {/if}
   </span>
 
@@ -67,7 +67,6 @@
     height: 35px;
     display: flex;
     align-items: center;
-    padding-right: 15px;
   }
 
   .config-title {

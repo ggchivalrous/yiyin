@@ -36,21 +36,6 @@
         margin: 0;
       }
     }
-
-    .bg-rate-input {
-      background-color: transparent;
-      background-image: none;
-      border-radius: 4px;
-      border: 1px solid #cacdd4;
-      box-sizing: border-box;
-      display: inline-block;
-      font-size: inherit;
-      height: 20px;
-      width: 90px;
-      outline: none;
-      padding: 0 4px;
-      text-align: center;
-    }
   }
 
   .app-action-left-wrap {
@@ -64,5 +49,10 @@
         font-weight: bold;
       }
     }
+  }
+
+  .switch {
+    transform: rotate(90deg);
+    cursor: pointer;
   }
 }

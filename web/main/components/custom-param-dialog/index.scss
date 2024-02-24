@@ -8,6 +8,15 @@
     }
   }
 
+  .base-switch-wrap {
+    display: flex;
+
+    .action-item {
+      flex-grow: 1;
+      width: auto;
+    }
+  }
+
   .form-item {
     padding: 8px 0;
 
@@ -18,12 +27,21 @@
       display: flex;
       align-items: center;
 
+      &.title {
+        font-size: 16px;
+        opacity: 1;
+      }
+
       label {
         display: inline-block;
         height: 20px;
         width: 20px;
         margin-left: 10px;
       }
+    }
+
+    .form-item-content {
+      padding-left: 10px;
     }
 
     .db-icon-upload {
@@ -39,10 +57,10 @@
 
   .img-wrap {
     display: flex;
-    align-items: center;
 
-    .form-item {
+    .img-item {
       flex: 1;
+      height: 50px;
     }
   }
 }

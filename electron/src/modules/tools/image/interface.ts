@@ -7,21 +7,6 @@ export interface OutputSetting {
   landscape: boolean
 
   /**
-   * 是否显示参数
-   */
-  ext_show: boolean
-
-  /**
-   * 是否显示机型
-   */
-  model_show: boolean
-
-  /**
-   * 是否显示品牌
-   */
-  brand_show: boolean
-
-  /**
    * 纯色背景
    */
   solid_bg: false

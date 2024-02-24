@@ -38,9 +38,14 @@ export interface IConfig {
   options: OutputSetting
 
   /**
-   * 模板字段信息
+   * 模版字段列表
    */
-  templateFieldInfo: TTemplateFieldInfo
+  tempFields: IFieldInfoItem<any>[]
+
+  /**
+   * 模板
+   */
+  temps: string[]
 
   versionUpdateInfo: {
     checkDate: number
@@ -49,18 +54,37 @@ export interface IConfig {
   }
 }
 
-export type TTemplateFieldInfo = Record<string, IFieldInfoItem<any>>
-
 export interface IFontParam {
   use: boolean
   bold: boolean
   italic: boolean
   size: number
   font: string
+
+  /**
+   * 偏移
+   */
+  offset: {
+    top?: number
+    bottom?: number
+    left?: number
+    right?: number
+  }
 }
 
 export interface IFieldInfoItem<T = string> {
   use?: boolean
+
+  forceUse?: boolean
+
+  /**
+   * 是否显示
+   */
+  show?: boolean
+
+  key: string
+
+  name: string
 
   /**
    * 文本

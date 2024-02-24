@@ -12,7 +12,8 @@ export interface IConfig {
   output: string
   fontMap: Record<string, string>
   fontDir: string
-  templateFieldInfo: Config['templateFieldInfo']
+  // templateFieldInfo: Config['templateFieldInfo']
+  tempFields: Config['tempFields']
   staticDir: Config['staticDir']
 }
 

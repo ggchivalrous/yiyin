@@ -8,6 +8,15 @@
   justify-content: center;
   align-items: center;
 
+  .app-footer-item {
+    padding-bottom: 3px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   .version-update {
     position: relative;
 

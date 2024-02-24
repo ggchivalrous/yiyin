@@ -1,13 +1,13 @@
 <script lang="ts">
+  import { getTempFieldsConf } from '@web/modules/temp-field';
   import { config } from '@web/store/config';
 
   import type {
     IBoxShadowMarkOption, ITemplateItem, ITextOption,
     IFontInfo, IFontParam, IImgFileInfo,
-    ISlotInfo, ITaskInfo,
+    ISlotInfo, ITaskInfo, TFontParam,
   } from './interface';
   import { calcAverageBrightness, createCanvas, importFont, loadImage } from './main';
-  import * as utils from './utils';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
@@ -33,7 +33,7 @@
 
       try {
         const mainImg = await loadImage(task.mainImgInfo);
-        const templateFieldsConf = await utils.getTemplateFieldsConf(task.exifInfo, {
+        const tempFieldsConf = await getTempFieldsConf(task.exifInfo, {
           bgHeight: task.bgImgSize.h,
         });
 
@@ -60,7 +60,7 @@
               italic: false,
             },
           },
-        ], templateFieldsConf);
+        ], tempFieldsConf);
 
         const {
           contentHeight,
@@ -105,7 +105,7 @@
               italic: false,
             },
           },
-        ], templateFieldsConf);
+        ], tempFieldsConf);
 
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
@@ -285,9 +285,9 @@
     }
   }
 
-  async function createTextList(templateList: ITemplateItem[], templateFieldsConf: Awaited<ReturnType<typeof utils.getTemplateFieldsConf>>): Promise<IImgFileInfo[]> {
+  async function createTextList(templateList: ITemplateItem[], tempFieldsConf: Awaited<ReturnType<typeof getTempFieldsConf>>): Promise<IImgFileInfo[]> {
     const imgFileInfoList: IImgFileInfo[] = [];
-    console.log('模版字段信息', templateFieldsConf);
+    console.log('模版字段信息', tempFieldsConf);
 
     for (const i of templateList) {
       let text = i.text.trim();
@@ -298,7 +298,7 @@
       if (tempList?.length) {
         for (const temp of tempList) {
           const [field] = temp.match(/[A-Za-z0-9]+/);
-          const info = templateFieldsConf[field];
+          const info = tempFieldsConf[field];
 
           text = text.replace(temp, '{---}');
           const slotInfo: ISlotInfo = {
@@ -339,7 +339,7 @@
     return imgFileInfoList.filter(Boolean);
   }
 
-  function createTextFont(opts: Omit<IFontParam, 'use'>, extraOpts?: IFontParam) {
+  function createTextFont(opts: Omit<IFontParam, 'use' | 'offset'>, extraOpts?: TFontParam) {
     const _opts = { ...opts };
 
     if (extraOpts?.use) {
@@ -491,18 +491,18 @@
     };
   }
 
-  function mergeFontOpt(def: ITextOption, target: IFontParam): IFontParam {
+  function mergeFontOpt(def: ITextOption, target: IFontParam): TFontParam {
     if (!target || !target.use) {
       return { ...def, use: false };
     }
 
     const cpDef = { ...target };
-
     for (const key in def) {
-      if (target && target[key as keyof IFontParam]) {
-        (cpDef[key as keyof IFontParam] as any) = target[key as keyof IFontParam];
+      const _k = key as keyof TFontParam;
+      if (target && target[_k]) {
+        (cpDef[_k] as any) = target[_k];
       } else {
-        (cpDef[key as keyof IFontParam] as any) = def[key as keyof ITextOption];
+        (cpDef[_k] as any) = def[key as keyof ITextOption];
       }
     }
 

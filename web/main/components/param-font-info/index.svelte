@@ -43,7 +43,7 @@
         <br>
         参数默认为2，即 0.02%
       </svelte:fragment>
-      <input class="mini-input" type="number" bind:value={conf.size} />
+      <input class="input" type="number" bind:value={conf.size} />
     </ActionItem>
     <ActionItem title="字体">
       <svelte:fragment slot="popup">只对文本生效，指定该文本字体</svelte:fragment>

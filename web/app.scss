@@ -3,6 +3,8 @@
   --text-color-1: rgba(16, 33, 55, 0.75);
   --active-border-color: #13325eca;
   --active-color: #13325eba;
+  --black-shadow-color: rgba(191, 202, 219, .8);
+  --white-shadow-color: rgba(255, 255, 255, .8);
   --blackShadow: 3px 3px 6px rgba(191, 202, 219, .8);
   --whiteShadow: -3px -3px 6px rgba(255, 255, 255, .8);
   --bg-color: #E7EAF3;
@@ -15,20 +17,39 @@
 }
 
 html,
-body {
+body,
+#app {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   background-color: var(--bg-color);
   color: var(--text-color);
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+@mixin grass($offset: 3px, $width: 6px) {
+  box-shadow: -1 * $offset -1 * $offset $width var(--white-shadow-color), $offset $offset $width var(--black-shadow-color);
+}
+
+@mixin grass-inset($offset: 3px, $width: 6px) {
+  box-shadow: inset -1 * $offset -1 * $offset $width var(--white-shadow-color), inset $offset $offset $width var(--black-shadow-color);
+}
+
+#app,
 body {
   .db-drawer {
     background-color: var(--bg-color);
+    
+    .db-drawer__body {
+      overflow-y: auto;
+    }
   }
 
   .db-switch {
+    .db-switch__core {
+      @include grass(2px, 4px);
+    }
+
     &.is-checked {
       .db-switch__core {
         background-color: var(--active-color);
@@ -37,7 +58,7 @@ body {
     }
 
     .db-switch__label {
-      color: var(--active-color);
+      color: var(--black-shadow-color);
 
       &.is-active {
         color: var(--text-color);
@@ -48,12 +69,12 @@ body {
   .db-input {
     &.text-input {
       .db-input__inner {
-        box-shadow: inset var(--whiteShadow), inset var(--blackShadow);
+        @include grass-inset();
       }
     }
 
     .db-input__inner {
-      box-shadow: var(--whiteShadow), var(--blackShadow);
+      @include grass();
       background-color: var(--bg-color);
       color: var(--text-color-1);
       border: none;
@@ -74,14 +95,15 @@ body {
   }
 
   .grass {
-    box-shadow: var(--whiteShadow), var(--blackShadow);
+    @include grass();
   }
 
-  .grass-unset {
-    box-shadow: unset var(--whiteShadow), unset var(--blackShadow);
+  .grass-inset {
+    @include grass-inset();
   }
 
   .db-popover {
+    color: inherit;
     background: var(--bg-color);
   }
 
@@ -116,10 +138,51 @@ body {
       border-right-color: var(--bg-color) !important;
     }
   }
+
+  .input,
+  .input:focus {
+    @include grass-inset();
+    background-color: transparent;
+    background-image: none;
+    border-radius: 4px;
+    border: none;
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: inherit;
+    height: 28px;
+    width: 92px;
+    outline: none;
+    padding: 0 4px;
+    text-align: center;
+  }
+
+  .button {
+    @include grass();
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    margin-left: 10px;
+    box-sizing: border-box;
+  
+    &:hover {
+      @include grass-inset();
+    }
+  
+    &:active {
+      @include grass();
+    }
+  
+    &:first-child {
+      margin-left: 0px;
+    }
+  }
 }
 
 .normal-input {
-  box-shadow: var(--blackShadow), var(--whiteShadow);
+  @include grass();
   background-color: transparent;
   background-image: none;
   border: none;

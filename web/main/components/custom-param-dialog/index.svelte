@@ -1,23 +1,23 @@
 <script lang="ts">
-  import Popup from '@components/popup';
-  import { Dialog, Input, Message, Switch } from '@ggchivalrous/db-ui';
-  import type { ICameraInfo, IFieldInfoItem } from '@web/main/interface';
+  import ActionItem from '@components/action-item';
+  import { Dialog, Input, Message, Switch, Popover } from '@ggchivalrous/db-ui';
+  import type { IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
   import { createEventDispatcher } from 'svelte';
 
-  import './index.scss';
   import ParamFontInfo from '../param-font-info/index.svelte';
   import StaticDialog from '../static-dialog/index.svelte';
+  import './index.scss';
 
   export let title = '';
-  export let showImg = false;
-  export let showType = false;
   export let visible = false;
-  export let field: keyof ICameraInfo = 'Model';
+  export let field = 'Model';
   export let data: IFieldInfoItem<string | number | boolean> = null;
 
   const dispatch = createEventDispatcher();
   const model: IFieldInfoItem<string | number | boolean> = {
+    key: '',
+    name: '',
     use: false,
     value: '',
     bImg: '',
@@ -29,6 +29,12 @@
       italic: false,
       size: 0,
       font: '',
+      offset: {
+        top: null,
+        bottom: null,
+        left: null,
+        right: null,
+      },
     },
   };
   const form: IFieldInfoItem<string | number | boolean> = { ...model };
@@ -37,6 +43,8 @@
 
   function listenData(d: IFieldInfoItem<string | number | boolean>) {
     if (data) {
+      form.key = d.key || model.key;
+      form.name = d.name || model.name;
       form.bImg = d.bImg || model.bImg;
       form.value = d.value || model.value;
       form.wImg = d.wImg || model.wImg;
@@ -70,7 +78,10 @@
     }
 
     config.update((v) => {
-      v.templateFieldInfo[field] = { ...v.templateFieldInfo[field], ...form as any };
+      const item = v.tempFields.find((i) => i.key === form.key);
+      if (item) {
+        Object.assign(item, form);
+      }
       return v;
     });
     visible = false;
@@ -103,64 +114,83 @@
 </script>
 
 <Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="500px" top="8vh">
-  {#if showType}
-    <div class="form-item">
-      <div class="form-item-label">生效类型</div>
-      <Switch
-        bind:value={form.type}
-        inactiveValue="text"
-        inactiveText="Text"
-        activeText="Iamge"
-        activeValue="img"
-      />
-    </div>
-  {/if}
+  <ActionItem title="是否显示" labelWidth="auto">
+    <svelte:fragment slot="popup">控制是否显示该参数的内容<br>关闭则该参数不会出现在图片中</svelte:fragment>
+    <Switch bind:value={form.use} />
+  </ActionItem>
 
   <div class="form-item">
-    <div class="form-item-label">文本</div>
-    <Input class="text-input" type="text" bind:value={form.value} />
+    <div class="form-item-label title">字体参数</div>
+    <div class="form-item-content">
+      <ParamFontInfo bind:conf={form.param} />
+    </div>
   </div>
 
-  {#if showImg}
-    <div class="img-wrap">
-      <div class="form-item">
-        <div class="form-item-label">
-          白字图片
-          <label for="wImg"><i class="db-icon-upload" /></label>
-          <StaticDialog on:change={(e) => onStaticChange('white', e.detail)} />
-        </div>
-        <div class="form-item-value">
-          {#if form.wImg}
-            <Popup>
-              <img class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
-              <img slot="message" style="width: 200px; height: auto;" class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
-            </Popup>
-          {/if}
-        </div>
-        <input id="wImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('white')} />
-      </div>
-      <div class="form-item">
-        <div class="form-item-label">
-          黑字图片
-          <label for="bImg"><i class="db-icon-upload" /></label>
-          <StaticDialog on:change={(e) => onStaticChange('black', e.detail)} />
-        </div>
-        <div class="form-item-value">
-          {#if form.bImg}
-            <Popup>
-              <img class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
-              <img slot="message" style="width: 200px; height: auto;" class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
-            </Popup>
-          {/if}
-        </div>
-        <input id="bImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('black')} />
-      </div>
-    </div>
-  {/if}
-
   <div class="form-item">
-    <div class="form-item-label">字体参数</div>
-    <ParamFontInfo bind:conf={form.param} />
+    <div class="form-item-label title">自定义参数</div>
+    <div class="form-item-content">
+      <div class="base-switch-wrap">
+        <ActionItem title="是否生效">
+          <svelte:fragment slot="popup">开启则将启用自定义参数内容<br>如果是相机参数则会在未识别到该参数信息时使用</svelte:fragment>
+          <Switch bind:value={form.use} />
+        </ActionItem>
+        <ActionItem title="强制替换">
+          <svelte:fragment slot="popup">开启则将强制使用自定义的参数信息<br>如果是相机参数则强制替换识别出来的相机参数</svelte:fragment>
+          <Switch bind:value={form.forceUse} />
+        </ActionItem>
+      </div>
+
+      <ActionItem title="类型">
+        <svelte:fragment slot="popup">使用何种类型作为内容显示<br>支持: 文本、图片</svelte:fragment>
+        <Switch bind:value={form.type} inactiveValue="text" activeValue="img"/>
+        <span style="margin-left: 4px; font-weight: bold;">{form.type === 'text' ? '文本' : '图片'}</span>
+      </ActionItem>
+
+      {#if form.type === 'text'}
+        <ActionItem title="文本内容">
+          <Input class="text-input" type="text" bind:value={form.value} />
+        </ActionItem>
+      {:else}
+        <div class="img-wrap">
+          <div class="img-item">
+            <ActionItem title="模糊背景">
+              <svelte:fragment slot="popup">模糊背景下使用的图片<br>一般使用白色字体的图片</svelte:fragment>
+              <svelte:fragment slot="expand">
+                <label for="wImg" style="margin: 0 8px;"><i class="db-icon-upload" /></label>
+                <StaticDialog on:change={(e) => onStaticChange('white', e.detail)} />
+              </svelte:fragment>
+              <input id="wImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('white')} />
+            </ActionItem>
+
+            {#if form.wImg}
+              <Popover trigger="hover">
+                <img slot="reference" class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
+                <img style="width: 200px; height: auto;" class="form-item-img" src="file://{form.wImg}?flag={Date.now()}" alt="">
+              </Popover>
+            {/if}
+          </div>
+
+          <div class="img-item">
+            <ActionItem title="纯色背景">
+              <svelte:fragment slot="popup">纯色背景下使用的图片<br>一般使用黑色字体的图片</svelte:fragment>
+              <svelte:fragment slot="expand">
+                <label for="bImg" style="margin: 0 8px;"><i class="db-icon-upload" /></label>
+                <StaticDialog on:change={(e) => onStaticChange('black', e.detail)} />
+              </svelte:fragment>
+              <input id="bImg" class="normal-input" style="display: none;" type="file" on:change={onFileChange('black')} />
+            </ActionItem>
+
+            {#if form.bImg}
+              <Popover trigger="hover">
+                <img slot="reference" class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
+                <img style="width: 200px; height: auto;" class="form-item-img" src="file://{form.bImg}?flag={Date.now()}" alt="">
+              </Popover>
+            {/if}
+          </div>
+        </div>
+      {/if}
+    </div>
+
   </div>
 
   <footer>

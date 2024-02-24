@@ -36,3 +36,25 @@ export const pollSleep = async (fn: () => boolean, ms = 500, timeout = 60e3) => 
     totalMs += ms;
   }
 };
+
+type IArrToObjCb = <T, R = T>(item: T, objV: R, index: number) => R
+
+export const arrToObj = <T = any, R = T>(arr: T[], field?: string, cb?: IArrToObjCb): Record<any, R> => {
+  const _obj: Record<any, any> = {};
+
+  if (typeof cb !== 'function') {
+    cb = (item) => item as any;
+  }
+
+  for (let i = 0; i < arr.length; i++) {
+    const item: any = arr[i];
+
+    if (field === undefined || field === null) {
+      _obj[i] = cb(item, _obj[i], i);
+    } else {
+      _obj[item[field]] = cb(item, _obj[item[field]], i);
+    }
+  }
+
+  return _obj;
+};

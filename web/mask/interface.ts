@@ -1,5 +1,5 @@
 import type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
-import type { IFieldInfoItem, TTemplateFieldInfo } from '@src/interface';
+import type { IFieldInfoItem, IFontParam } from '@src/interface';
 
 export type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
 export type * from '@src/interface';
@@ -34,7 +34,9 @@ export interface ITextImgOption {
   background?: string
 }
 
-export type TExifInfo = Record<keyof ExifInfo, Omit<IFieldInfoItem, 'use'>>
+export type TFontParam = Omit<IFontParam, 'offset'>
+
+export type TExifInfo = Record<string, Omit<IFieldInfoItem, 'use'>>
 
 export interface IBoxShadowMarkOption {
   img: HTMLImageElement
@@ -76,5 +78,4 @@ export interface ISlotInfo {
 
 export interface ICreateTextOption {
   templateList: ITemplateItem[]
-  templateFieldConf: TTemplateFieldInfo
 }

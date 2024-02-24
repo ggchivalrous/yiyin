@@ -83,6 +83,16 @@
 
     v.currentTarget.value = $config.options[key] as string;
   }
+
+  function switchBgRate() {
+    config.update((d) => {
+      d.options.bg_rate = {
+        w: d.options.bg_rate.h,
+        h: d.options.bg_rate.w,
+      };
+      return d;
+    });
+  }
 </script>
 
 <div class="app-action-wrap">
@@ -93,21 +103,6 @@
       <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
       <span class="db-icon-setting output-setting" on:click|stopPropagation={changeOutputPath} on:keypress role="button" tabindex="-1"></span>
       <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress role="button" tabindex="-1">{outputDirName}</span>
-    </ActionItem>
-
-    <ActionItem {labelWidth} title="厂商显示">
-      <svelte:fragment slot="popup">是否显示厂商，如:Nikon、Sony...</svelte:fragment>
-      <Switch bind:value={$config.options.brand_show} />
-    </ActionItem>
-
-    <ActionItem {labelWidth} title="型号显示">
-      <svelte:fragment slot="popup">是否显示机型，如:Z30、A7M4...</svelte:fragment>
-      <Switch bind:value={$config.options.model_show} />
-    </ActionItem>
-
-    <ActionItem {labelWidth} title="参数显示">
-      <svelte:fragment slot="popup">是否显示快门、ISO、光圈信息</svelte:fragment>
-      <Switch bind:value={$config.options.ext_show} />
     </ActionItem>
 
     <ActionItem {labelWidth} title="纯色背景">
@@ -156,9 +151,9 @@
         <b>横屏输出：</b>失效
       </svelte:fragment>
       <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
-      <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.w}/>
-      :
-      <input class="bg-rate-input" style="width: 40px;" type="text" bind:value={$config.options.bg_rate.h}/>
+      <input class="input" style="width: 40px; margin-right: 4px;" type="text" bind:value={$config.options.bg_rate.w}/>
+      <i class="switch icon db-icon-sort" on:click={switchBgRate} role="button" tabindex="-1" on:keypress />
+      <input class="input" style="width: 40px; margin-left: 4px;" type="text" bind:value={$config.options.bg_rate.h}/>
     </ActionItem>
 
     <ActionItem {labelWidth} title="圆角大小">
@@ -171,9 +166,10 @@
       </svelte:fragment>
       <Switch bind:value={$config.options.radius_show} />
       <input
-        class="bg-rate-input"
+        class="input"
         type="text"
         value={$config.options.radius}
+        style="width: 103px;"
         on:input={(v) => onNumInput(v, 'radius', 30, 0)}
         on:change={(v) => onNumInputChange(v, 'radius')}
       />
@@ -189,9 +185,10 @@
       </svelte:fragment>
       <Switch bind:value={$config.options.shadow_show} />
       <input
-        class="bg-rate-input"
+        class="input"
         type="text"
         value={$config.options.shadow}
+        style="width: 103px;"
         on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
         on:change={(v) => onNumInputChange(v, 'shadow')}
       />

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Message as toast } from '@ggchivalrous/db-ui';
-  import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
   import { config } from '@web/store/config';
   import { tick } from 'svelte';
   import './index.scss';
@@ -8,12 +7,10 @@
   import { Actions, CustomParamSetting, Footer, Header } from './components';
   import type { IFileInfo, TInputEvent } from './interface';
 
-  initializeStores();
-
   let fileUrlList: IFileInfo[] = [];
   let processing = false;
   let fileSelectDom: HTMLInputElement = null;
-  let clipboardDom: HTMLDivElement = null;
+  const clipboardDom: HTMLDivElement = null;
 
   let imgExif = '';
   let showSetting = false;
@@ -84,7 +81,7 @@
         <label for="path" class="button grass">选择图片</label>
         <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
         <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
-        <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
+        <!-- <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div> -->
         <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">自定义参数</div>
       {:else}
         印框生成中...
@@ -97,4 +94,4 @@
   <CustomParamSetting bind:visible={showSetting} />
 </div>
 
-<Modal />
+<!-- <Modal /> -->
