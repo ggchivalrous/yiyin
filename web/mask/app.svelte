@@ -300,7 +300,12 @@
           const [field] = temp.match(/[A-Za-z0-9]+/);
           const info = tempFieldsConf[field];
 
-          text = text.replace(temp, '{---}');
+          text = text.replace(temp, info.show ? '{---}' : '');
+
+          if (!info.show) {
+            continue;
+          }
+
           const slotInfo: ISlotInfo = {
             value: '',
             param: info.param,
@@ -323,7 +328,7 @@
           slotInfoList.push(slotInfo);
         }
 
-        const _arr = text.split('{---}');
+        const _arr = text.trim().split('{---}');
         for (let j = 0; j < _arr.length; j++) {
           if (slotInfoList[j]?.value) {
             textList.push(_arr[j], slotInfoList[j]);

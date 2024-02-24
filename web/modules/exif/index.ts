@@ -20,6 +20,10 @@ export class Exif {
     return this.exifIns;
   }
 
+  get oriExif() {
+    return this.exif;
+  }
+
   constructor(exif: any) {
     this.exif = exif;
     this.init();
@@ -27,7 +31,7 @@ export class Exif {
   }
 
   private init() {
-    this.exif.Make = this.exif.Make.replace('CORPORATION', '');
+    this.exif.Make = this.exif.Make.replace('CORPORATION', '').trim();
   }
 
   private insExif() {

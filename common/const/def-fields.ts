@@ -1,8 +1,8 @@
 export const exifFieldInfo: { key: string, name: string, value: '' }[] = [
   { key: 'PersonalSign', name: '个性签名', value: '' },
-  { key: 'Make', name: '厂商', value: '' },
+  { key: 'Make', name: 'Logo', value: '' },
   { key: 'Model', name: '型号', value: '' },
-  { key: 'LensMake', name: '镜头厂商', value: '' },
+  { key: 'LensMake', name: '镜头Logo', value: '' },
   { key: 'LensModel', name: '镜头型号', value: '' },
   { key: 'ExposureTime', name: '快门', value: '' },
   { key: 'FNumber', name: '光圈', value: '' },

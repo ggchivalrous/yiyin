@@ -4,7 +4,7 @@ import { ExifBase } from './base';
 
 export class NikonExif extends ExifBase {
   Model(): string {
-    const v = this.exif.Model.replace(this.exif.Make).replace(/[Zz]/g, 'ℤ');
+    const v = this.exif.Model.replace(this.exif.Make.toUpperCase(), '').replace(/[Zz]/g, 'ℤ');
     const arr = v.split('_');
 
     if (arr.length > 1) {

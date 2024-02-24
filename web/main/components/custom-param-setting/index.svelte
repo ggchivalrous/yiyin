@@ -46,13 +46,13 @@
     },
   };
 
-  function onUseChange() {
+  function onShowChange() {
     return async (e: CustomEvent<any>) => {
       const data: IFieldInfoItem = e.detail;
       config.update((v) => {
         const item = v.tempFields.find((i) => i.key === data.key);
         if (item) {
-          item.use = data.use;
+          item.show = data.show;
         }
         return v;
       });
@@ -79,7 +79,7 @@
 >
   <div class="custom-params-wrap">
     {#each $config.tempFields as i (i.key)}
-      <ActionItem imgFlag={flag} title={i.name} showSwitch data={i} on:use-change={onUseChange()} on:edit={onEdit(i.key)} />
+      <ActionItem imgFlag={flag} title={i.name} showSwitch data={i} on:show-change={onShowChange()} on:edit={onEdit(i.key)} />
     {/each}
   </div>
 </Drawer>

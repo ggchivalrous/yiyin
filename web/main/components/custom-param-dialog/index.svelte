@@ -43,12 +43,14 @@
 
   function listenData(d: IFieldInfoItem<string | number | boolean>) {
     if (data) {
+      form.use = d.use || model.use;
+      form.forceUse = d.forceUse || model.forceUse;
+      form.show = d.show || model.show;
       form.key = d.key || model.key;
       form.name = d.name || model.name;
-      form.bImg = d.bImg || model.bImg;
       form.value = d.value || model.value;
       form.wImg = d.wImg || model.wImg;
-      form.use = d.use || model.use;
+      form.bImg = d.bImg || model.bImg;
       form.type = d.type || model.type;
       form.param = { ...model.param, ...d.param };
     }
@@ -113,10 +115,10 @@
   }
 </script>
 
-<Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="500px" top="8vh">
+<Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="520px" top="8vh">
   <ActionItem title="是否显示" labelWidth="auto">
-    <svelte:fragment slot="popup">控制是否显示该参数的内容<br>关闭则该参数不会出现在图片中</svelte:fragment>
-    <Switch bind:value={form.use} />
+    <svelte:fragment slot="popup">控制是否显示该参数的内容<br>控制{title}参数是否显示</svelte:fragment>
+    <Switch bind:value={form.show} />
   </ActionItem>
 
   <div class="form-item">
@@ -131,11 +133,11 @@
     <div class="form-item-content">
       <div class="base-switch-wrap">
         <ActionItem title="是否生效">
-          <svelte:fragment slot="popup">开启则将启用自定义参数内容<br>如果是相机参数则会在未识别到该参数信息时使用</svelte:fragment>
+          <svelte:fragment slot="popup">开启则将启用自定义参数内容<br>在未识别到该相机参数信息时自动使用自定义内容</svelte:fragment>
           <Switch bind:value={form.use} />
         </ActionItem>
         <ActionItem title="强制替换">
-          <svelte:fragment slot="popup">开启则将强制使用自定义的参数信息<br>如果是相机参数则强制替换识别出来的相机参数</svelte:fragment>
+          <svelte:fragment slot="popup">开启则将强制使用自定义的参数信息<br>强制替换识别出来的相机参数</svelte:fragment>
           <Switch bind:value={form.forceUse} />
         </ActionItem>
       </div>

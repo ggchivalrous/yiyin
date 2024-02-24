@@ -18,8 +18,8 @@
     dispatch('edit', { ...form, title });
   }
 
-  function onUseChange() {
-    dispatch('use-change', form);
+  function onShowChange() {
+    dispatch('show-change', form);
   }
 </script>
 
@@ -33,7 +33,7 @@
   {/if}
 
   {#if showSwitch}
-    <Switch bind:value={form.use} on:change={onUseChange} />
+    <Switch bind:value={form.show} on:change={onShowChange} />
   {/if}
 
   <span class="config-value">

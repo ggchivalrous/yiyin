@@ -96,12 +96,13 @@ export function getConfig(def = false) {
 
   if (!def && fs.existsSync(_config.dir)) {
     const content = fs.readFileSync(_config.dir);
-    const fileConfig = tryCatch(() => JSON.parse(content.toString()), {});
+    const fileConfig = tryCatch<Partial<IConfig>>(() => JSON.parse(content.toString()), {});
     Object.assign(_config, {
       output: fileConfig.output || _config.output,
       cacheDir: fileConfig.cacheDir || _config.cacheDir,
       options: Object.assign(_config.options, fileConfig.options),
       versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
+      tempFields: fileConfig.tempFields,
     } as Partial<IConfig>);
 
     // 默认的内容需要单独处理

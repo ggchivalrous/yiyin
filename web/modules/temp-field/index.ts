@@ -2,6 +2,7 @@ import type { ExifInfo } from '@modules/tools/image';
 import type { IFieldInfoItem } from '@src/interface';
 import { Exif } from '@web/modules/exif';
 import { config, pathInfo } from '@web/store/config';
+import { loadImage } from '@web/util/util';
 import { get } from 'svelte/store';
 
 interface IGetTempFieldsConfOpts {
@@ -35,7 +36,7 @@ export async function getTempFieldsConf(exifInfo: ExifInfo, opts: IGetTempFields
  * @param exifInfo - 规范化的相机信息对象
  * @returns
  */
-function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, exifInfo?: Record<string, any>) {
+async function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, exifInfo?: Record<string, any>) {
   const exif = new Exif(exifInfo || {});
   const tempFieldInfo: Record<string, IFieldInfoItem> = {};
 
@@ -51,18 +52,28 @@ function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, exifIn
       tempFieldInfo[field] = JSON.parse(JSON.stringify(_info));
 
       if (field === 'Make') {
-        tempFieldInfo[field].wImg = `file://${get(pathInfo).logo}/${_info.value.toLowerCase()}-w.svg`;
-        tempFieldInfo[field].bImg = `file://${get(pathInfo).logo}/${_info.value.toLowerCase()}-b.svg`;
+        const wImg = `file://${get(pathInfo).logo}/${exif.oriExif.Make.toLowerCase()}-w.svg`;
+        const bImg = `file://${get(pathInfo).logo}/${exif.oriExif.Make.toLowerCase()}-b.svg`;
+
+        if (await loadImage(wImg).catch(() => null)) {
+          tempFieldInfo[field].wImg = wImg;
+          tempFieldInfo[field].type = 'img';
+        }
+
+        if (await loadImage(bImg).catch(() => null)) {
+          tempFieldInfo[field].bImg = bImg;
+          tempFieldInfo[field].type = 'img';
+        }
       }
     }
 
     // 强制使用则看该配置是否启动 || 非强制使用则看是否有原始相机信息
-    if (info.use && (info.forceUse || !exifInfo[field].value)) {
-      exifInfo[field].type = info.type;
-      exifInfo[field].value = `${info.value}`;
-      exifInfo[field].bImg = `${info.bImg}`;
-      exifInfo[field].wImg = `${info.wImg}`;
-      exifInfo[field].param = info.param || exifInfo[field].param;
+    if (info.use && (info.forceUse || !tempFieldInfo[field].value)) {
+      tempFieldInfo[field].type = info.type || 'text';
+      tempFieldInfo[field].value = `${info.value || ''}`;
+      tempFieldInfo[field].bImg = `${info.bImg || ''}`;
+      tempFieldInfo[field].wImg = `${info.wImg || ''}`;
+      tempFieldInfo[field].param = info.param || tempFieldInfo[field].param;
     }
   }
 
