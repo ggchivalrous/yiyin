@@ -35,7 +35,7 @@ export const DefaultConfig: IConfig = {
     font: 'PingFang SC',
   },
 
-  tempFields: [getDefOptionItem()],
+  tempFields: [getDefOptionItem('')],
 
   temps: [],
 

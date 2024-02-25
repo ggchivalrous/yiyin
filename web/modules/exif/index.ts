@@ -25,7 +25,7 @@ export class Exif {
   }
 
   constructor(exif: any) {
-    this.exif = exif;
+    this.exif = exif || {};
     this.init();
     this.insExif();
   }

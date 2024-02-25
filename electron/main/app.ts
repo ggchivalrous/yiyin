@@ -8,6 +8,7 @@ import { config, storeConfig } from '@src/config';
 import { hasNewVersion } from '@utils';
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
 
+const isDev = import.meta.env.DEV;
 const log = new Logger('App');
 
 export default class Application {
@@ -118,8 +119,8 @@ export default class Application {
 
   private async createDefWin() {
     const opts: BrowserWindowConstructorOptions = {
-      width: 680,
-      height: 490,
+      width: 700 + (isDev ? 500 : 0),
+      height: 610,
       title: '壹印',
       frame: false,
       webPreferences: {

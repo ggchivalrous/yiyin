@@ -423,10 +423,10 @@
     }
 
     ctx.font = createTextFont(maxFontOpt);
-    ctx.textBaseline = 'hanging';
-    const textInfo = ctx.measureText(totalText);
-    can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
+    const textInfo = ctx.measureText('QOSyYtl709');
+    const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + 25);
 
+    can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
     can.width = textList.reduce((n, i, j) => {
       if (i === undefined || !i) return n;
       if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
@@ -444,10 +444,9 @@
         }
 
         ctx.font = font;
-        ctx.textBaseline = 'hanging';
         const info = ctx.measureText(value);
         const h = Math.ceil(info.actualBoundingBoxAscent + info.actualBoundingBoxDescent);
-        const y = roundDecimalPlaces((info.actualBoundingBoxAscent + (can.height - h) / 2));
+        const y = roundDecimalPlaces(baseline - 3);
         textInfoList.push({
           font,
           value,
@@ -460,8 +459,10 @@
         n += info.width;
       } else {
         const fontOpt = mergeFontOpt(opts, i.param);
-        const h = Math.ceil(fontOpt.size);
-        const y = roundDecimalPlaces((can.height - h) / 2);
+        ctx.font = createTextFont(opts, fontOpt);
+        const info = ctx.measureText('QSOPNYuiyl90');
+        const h = Math.ceil(info.actualBoundingBoxAscent);
+        const y = roundDecimalPlaces(baseline - h);
         const w = Math.ceil(h * (i.value.width / i.value.height));
 
         textInfoList.push({
@@ -482,7 +483,6 @@
       if (info.type === 'text') {
         ctx.font = info.font;
         ctx.fillStyle = opts.color || '#000';
-        ctx.textBaseline = 'hanging';
         ctx.fillText(info.value as string, info.x, info.y);
       } else {
         ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);

@@ -109,9 +109,7 @@
       <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
       <Switch bind:value={$config.options.solid_bg} />
     </ActionItem>
-  </div>
 
-  <div class="app-action-right-wrap">
     <ActionItem {labelWidth} title="横屏输出">
       <svelte:fragment slot="popup">
         软件自己判断图片宽高那一边更长
@@ -139,23 +137,9 @@
       </svelte:fragment>
       <Switch bind:value={$config.options.origin_wh_output} disabled={$config.options.bg_rate_show} />
     </ActionItem>
+  </div>
 
-    <ActionItem {labelWidth} title="输出宽高比">
-      <svelte:fragment slot="popup">
-        指定输出的图片的宽高比(该比例只生效于背景，对原图不生效)
-        <br>
-        该选项生效后影响以下选项效果：
-        <br>
-        <b>原宽高输出：</b>失效
-        <br>
-        <b>横屏输出：</b>失效
-      </svelte:fragment>
-      <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
-      <input class="input" style="width: 40px; margin-right: 4px;" type="text" bind:value={$config.options.bg_rate.w}/>
-      <i class="switch icon db-icon-sort" on:click={switchBgRate} role="button" tabindex="-1" on:keypress />
-      <input class="input" style="width: 40px; margin-left: 4px;" type="text" bind:value={$config.options.bg_rate.h}/>
-    </ActionItem>
-
+  <div class="app-action-right-wrap">
     <ActionItem {labelWidth} title="圆角大小">
       <svelte:fragment slot="popup">
         指定圆角的大小，不指定则为直角
@@ -192,6 +176,22 @@
         on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
         on:change={(v) => onNumInputChange(v, 'shadow')}
       />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="输出宽高比">
+      <svelte:fragment slot="popup">
+        指定输出的图片的宽高比(该比例只生效于背景，对原图不生效)
+        <br>
+        该选项生效后影响以下选项效果：
+        <br>
+        <b>原宽高输出：</b>失效
+        <br>
+        <b>横屏输出：</b>失效
+      </svelte:fragment>
+      <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
+      <input class="input" style="width: 40px; margin-right: 4px;" type="text" bind:value={$config.options.bg_rate.w}/>
+      <i class="switch icon db-icon-sort" on:click={switchBgRate} role="button" tabindex="-1" on:keypress />
+      <input class="input" style="width: 40px; margin-left: 4px;" type="text" bind:value={$config.options.bg_rate.h}/>
     </ActionItem>
   </div>
 </div>
