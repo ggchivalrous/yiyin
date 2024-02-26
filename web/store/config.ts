@@ -26,6 +26,7 @@ export const config = writable<IConfig>({
   fontMap: {},
   fontDir: '',
   tempFields: [],
+  temps: [],
   output: '',
   staticDir: '',
 });
@@ -40,6 +41,7 @@ export async function getConfig() {
       v.fontMap = defConf.data.font.map;
       v.fontDir = defConf.data.font.dir;
       v.tempFields = defConf.data.tempFields;
+      v.temps = defConf.data.temps;
       v.staticDir = defConf.data.staticDir;
       return v;
     });
@@ -62,6 +64,7 @@ export async function resetConfig() {
     v.fontMap = res.data.font.map;
     v.fontDir = res.data.font.dir;
     v.tempFields = res.data.tempFields;
+    v.temps = res.data.temps;
     v.staticDir = res.data.staticDir;
     return v;
   });

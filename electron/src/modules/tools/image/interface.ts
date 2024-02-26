@@ -61,55 +61,6 @@ export interface ImgInfo {
   metadata: Partial<sharp.Metadata>
 }
 
-export interface ExifInfo {
-  /**
-   * 相机厂商
-   */
-  Make: string
-
-  /**
-   * 机型 Nikon Z 30
-   */
-  Model: string
-
-  /**
-   * 照片拍摄时间
-   */
-  DateTimeOriginal: number
-
-  /**
-   * 快门速度
-   */
-  ExposureTime: number
-
-  /**
-   * 光圈大小
-   */
-  FNumber: number
-
-  /**
-   * 焦段
-   */
-  FocalLength: number
-
-  ISO: number
-
-  /**
-   * 档位
-   */
-  ExposureProgram: number
-
-  /**
-   * 镜头型号
-   */
-  LensModel: string
-
-  /**
-   * 镜头厂商
-   */
-  LensMake: string
-}
-
 export interface IImgFileInfo {
   data?: string
   path: string

@@ -4,7 +4,8 @@ import path from 'node:path';
 import type { IFieldInfoItem, IConfig } from '@src/interface';
 import { app } from 'electron';
 
-import { exifFieldInfo } from '@/common/const';
+import { exifFields } from '@/common/const';
+import { defTemps, type ITemp } from '@/common/const/def-temps';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
 
 export const DefaultConfig: IConfig = {
@@ -37,7 +38,7 @@ export const DefaultConfig: IConfig = {
 
   tempFields: [getDefOptionItem('')],
 
-  temps: [],
+  temps: [getDefTemps()],
 
   versionUpdateInfo: {
     version: import.meta.env.VITE_VERSION,
@@ -75,13 +76,30 @@ function getDefOptionItem<T>(defV?: T, key = '', name = ''): IFieldInfoItem<T> {
   };
 }
 
+function getDefTemps(d?: ITemp): ITemp {
+  return {
+    key: '',
+    name: '',
+    temp: '',
+    ...d,
+    opts: {
+      size: 0,
+      font: '',
+      bold: false,
+      italic: false,
+      ...d?.opts,
+    },
+  };
+}
+
 function getConfModel(): IConfig {
   return JSON.parse(JSON.stringify(DefaultConfig));
 }
 
 function getDefConf(): IConfig {
   const conf = getConfModel();
-  conf.tempFields = exifFieldInfo.map((i) => getDefOptionItem(i.value, i.key, i.name));
+  conf.tempFields = exifFields.map((i) => getDefOptionItem(i.value, i.key, i.name));
+  conf.temps = defTemps.map((i) => getDefTemps(i));
   return conf;
 }
 
@@ -103,13 +121,21 @@ export function getConfig(def = false) {
       options: Object.assign(_config.options, fileConfig.options),
       versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
       tempFields: fileConfig.tempFields,
+      temps: fileConfig.temps,
     } as Partial<IConfig>);
 
     // 默认的内容需要单独处理
     const tempFieldObj = arrToObj(_config.tempFields, 'key');
-    for (const exifField of exifFieldInfo) {
+    for (const exifField of exifFields) {
       if (!tempFieldObj[exifField.key]) {
         _config.tempFields.push(getDefOptionItem(exifField.value, exifField.key, exifField.name));
+      }
+    }
+
+    const tempObj = arrToObj(_config.temps, 'key');
+    for (const temp of defTemps) {
+      if (!tempObj[temp.key]) {
+        _config.temps.push(getDefTemps(temp));
       }
     }
 

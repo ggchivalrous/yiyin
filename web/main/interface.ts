@@ -12,9 +12,9 @@ export interface IConfig {
   output: string
   fontMap: Record<string, string>
   fontDir: string
-  // templateFieldInfo: Config['templateFieldInfo']
   tempFields: Config['tempFields']
   staticDir: Config['staticDir']
+  temps: Config['temps']
 }
 
 export type TInputEvent = Event & {

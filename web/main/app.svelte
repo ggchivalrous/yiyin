@@ -82,7 +82,7 @@
         <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
         <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
         <!-- <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div> -->
-        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">自定义参数</div>
+        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
       {:else}
         印框生成中...
       {/if}

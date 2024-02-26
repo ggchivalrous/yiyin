@@ -1,4 +1,4 @@
-export const exifFieldInfo: { key: string, name: string, value: '' }[] = [
+export const exifFields: { key: string, name: string, value: '' }[] = [
   { key: 'PersonalSign', name: '个性签名', value: '' },
   { key: 'Make', name: 'Logo', value: '' },
   { key: 'Model', name: '型号', value: '' },

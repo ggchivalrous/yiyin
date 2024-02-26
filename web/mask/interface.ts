@@ -1,13 +1,13 @@
-import type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
+import type { IImgFileInfo, OutputSetting } from '@modules/tools/image';
 import type { IFieldInfoItem, IFontParam } from '@src/interface';
 
-export type { ExifInfo, IImgFileInfo, OutputSetting } from '@modules/tools/image';
+export type { IImgFileInfo, OutputSetting } from '@modules/tools/image';
 export type * from '@src/interface';
 
 export interface ITaskInfo {
   name: string
   md5: string
-  exifInfo: ExifInfo
+  exifInfo: Record<string, any>
   bgImgSize: {
     w: number
     h: number
@@ -56,7 +56,7 @@ export interface IBoxShadowMarkOption {
 export interface ITextOption {
   size: number
   font: string
-  color: string
+  color?: string
   bold: boolean
   height?: number
   width?: number
@@ -66,16 +66,7 @@ export interface ITextOption {
   italic: boolean
 }
 
-export interface ITemplateItem {
-  text: string
-  opts: ITextOption
-}
-
 export interface ISlotInfo {
   value: string | HTMLImageElement
   param: IFieldInfoItem['param']
-}
-
-export interface ICreateTextOption {
-  templateList: ITemplateItem[]
 }

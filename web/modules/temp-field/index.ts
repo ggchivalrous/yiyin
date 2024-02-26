@@ -1,9 +1,10 @@
-import type { ExifInfo } from '@modules/tools/image';
 import type { IFieldInfoItem } from '@src/interface';
 import { Exif } from '@web/modules/exif';
 import { config, pathInfo } from '@web/store/config';
 import { loadImage } from '@web/util/util';
 import { get } from 'svelte/store';
+
+import type { ITemp } from '@/common/const/def-temps';
 
 interface IGetTempFieldsConfOpts {
   bgHeight: number
@@ -13,7 +14,7 @@ interface IGetTempFieldsConfOpts {
  * 获取模版参数信息配置
  * @param exifInfo - 读取到的相机信息
  */
-export async function getTempFieldsConf(exifInfo: ExifInfo, opts: IGetTempFieldsConfOpts) {
+export async function getTempFieldsConf(exifInfo: Record<string, any>, opts: IGetTempFieldsConfOpts) {
   const tempFields = get(config).tempFields;
   const tempFieldRecord: Record<string, IFieldInfoItem> = {};
 
@@ -28,6 +29,24 @@ export async function getTempFieldsConf(exifInfo: ExifInfo, opts: IGetTempFields
   }
 
   return fillTempFieldInfo(tempFieldRecord, exifInfo);
+}
+
+interface IGetTempsConfOpts {
+  bgHeight: number
+  color: string
+}
+
+export function getTempsConf(opts?: IGetTempsConfOpts): ITemp[] {
+  const temps = get(config).temps;
+
+  return temps.map((temp) => ({
+    ...temp,
+    opts: {
+      ...temp.opts,
+      color: temp.opts.color || opts.color,
+      size: opts.bgHeight * (temp.opts.size / 100),
+    },
+  }));
 }
 
 /**

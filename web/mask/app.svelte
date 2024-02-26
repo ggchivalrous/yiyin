@@ -1,13 +1,15 @@
 <script lang="ts">
-  import { getTempFieldsConf } from '@web/modules/temp-field';
+  import { getTempFieldsConf, getTempsConf } from '@web/modules/temp-field';
   import { config } from '@web/store/config';
 
   import type {
-    IBoxShadowMarkOption, ITemplateItem, ITextOption,
+    IBoxShadowMarkOption, ITextOption,
     IFontInfo, IFontParam, IImgFileInfo,
     ISlotInfo, ITaskInfo, TFontParam,
   } from './interface';
   import { calcAverageBrightness, createCanvas, importFont, loadImage } from './main';
+
+  import type { ITemp } from '@/common/const/def-temps';
 
   let canvas: HTMLCanvasElement;
   let taskList: ITaskInfo[] = [];
@@ -33,41 +35,10 @@
 
       try {
         const mainImg = await loadImage(task.mainImgInfo);
-        const tempFieldsConf = await getTempFieldsConf(task.exifInfo, {
-          bgHeight: task.bgImgSize.h,
-        });
+        const tempFieldsConf = await getTempFieldsConf(task.exifInfo, { bgHeight: task.bgImgSize.h });
+        let textImgList = await getTempList(task, tempFieldsConf);
+        const { contentHeight, contentTop, textButtomOffset, textOffset } = calcContentOffsetInfo(task, textImgList);
 
-        let textImgList = await createTextList([
-          {
-            text: '{Make} {Model}',
-            opts: {
-              width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.025,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
-              italic: false,
-            },
-          },
-          {
-            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
-            opts: {
-              width: task.bgImgSize.w,
-              size: task.bgImgSize.h * 0.02,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
-              italic: false,
-            },
-          },
-        ], tempFieldsConf);
-
-        const {
-          contentHeight,
-          contentTop,
-          textButtomOffset,
-          textOffset,
-        } = calcContentOffsetInfo(task, textImgList);
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
           height: contentHeight,
@@ -81,31 +52,9 @@
           });
           continue;
         }
+
         const bgImg = await loadImage(bgImgInfo.data);
-        textImgList = await createTextList([
-          {
-            text: '{Make} {Model}',
-            opts: {
-              width: bgImg.width,
-              size: bgImg.height * 0.025,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
-              italic: false,
-            },
-          },
-          {
-            text: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
-            opts: {
-              width: bgImg.width,
-              size: bgImg.height * 0.02,
-              color: task.option.solid_bg ? '#000' : '#fff',
-              font: task.option.font,
-              bold: true,
-              italic: false,
-            },
-          },
-        ], tempFieldsConf);
+        textImgList = await getTempList(task, tempFieldsConf);
 
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
@@ -150,6 +99,16 @@
     }
     taskList = [];
     processing = false;
+  }
+
+  function getTempList(task: ITaskInfo, tempFieldsConf: Awaited<ReturnType<typeof getTempFieldsConf>>) {
+    return createTextList(
+      getTempsConf({
+        bgHeight: task.bgImgSize.h,
+        color: task.option.solid_bg ? '#000' : '#fff',
+      }),
+      tempFieldsConf,
+    );
   }
 
   function calcContentOffsetInfo(task: ITaskInfo, textImgList: IImgFileInfo[]) {
@@ -285,12 +244,12 @@
     }
   }
 
-  async function createTextList(templateList: ITemplateItem[], tempFieldsConf: Awaited<ReturnType<typeof getTempFieldsConf>>): Promise<IImgFileInfo[]> {
+  async function createTextList(templateList: ITemp[], tempFieldsConf: Awaited<ReturnType<typeof getTempFieldsConf>>): Promise<IImgFileInfo[]> {
     const imgFileInfoList: IImgFileInfo[] = [];
     console.log('模版字段信息', tempFieldsConf);
 
     for (const i of templateList) {
-      let text = i.text.trim();
+      let text = i.temp.trim();
       const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
       const textList = [];
       const slotInfoList = [];
@@ -477,7 +436,8 @@
         n += w;
       }
       return n;
-    }, 0);
+    }, 30);
+    can.width += 30;
 
     for (const info of textInfoList) {
       if (info.type === 'text') {

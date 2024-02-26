@@ -1,5 +1,7 @@
 import { OutputSetting } from '@modules/tools/image';
 
+import type { ITemp } from '@/common/const/def-temps';
+
 export interface IConfig {
   /**
    * 配置文件存放路径
@@ -45,7 +47,7 @@ export interface IConfig {
   /**
    * 模板
    */
-  temps: string[]
+  temps: ITemp[]
 
   versionUpdateInfo: {
     checkDate: number
@@ -110,21 +112,6 @@ export interface IFieldInfoItem<T = string> {
    * 显示参数
    */
   param: IFontParam
-}
-
-export interface ICameraInfo {
-  Force: IFieldInfoItem<boolean>
-  Make: IFieldInfoItem
-  Model: IFieldInfoItem
-  ExposureTime: IFieldInfoItem
-  FNumber: IFieldInfoItem
-  ISO: IFieldInfoItem
-  FocalLength: IFieldInfoItem
-  ExposureProgram: IFieldInfoItem
-  DateTimeOriginal: IFieldInfoItem<number>
-  LensModel: IFieldInfoItem
-  LensMake: IFieldInfoItem
-  PersonalSign: IFieldInfoItem
 }
 
 export interface IReleaseData {

@@ -11,7 +11,7 @@ import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import type { RGBA } from 'sharp';
 
-import type { OutputSetting, ImgInfo, ExifInfo, IImgFileInfo } from './interface';
+import type { OutputSetting, ImgInfo, IImgFileInfo } from './interface';
 
 export * from './interface';
 
@@ -224,20 +224,26 @@ export class Image {
     return result;
   }
 
-  getExifInfo(imgBuffer?: Buffer): ExifInfo {
+  getExifInfo(imgBuffer?: Buffer): Record<string, any> {
     const exifInfo = this.getOriginExifInfo(imgBuffer) || {};
 
     return {
       Make: (exifInfo.Make || '').toUpperCase(),
       Model: (exifInfo.Model || '').toUpperCase(),
+      LensMake: (exifInfo.LensMake || '').toUpperCase(),
+      LensModel: (exifInfo.LensModel || '').toUpperCase(),
       ExposureTime: exifInfo.ExposureTime || 0,
       FNumber: exifInfo.FNumber || 0,
       ISO: exifInfo.ISO || 0,
       FocalLength: exifInfo.FocalLength || 0,
+      FocalLengthIn35mmFormat: exifInfo.FocalLengthIn35mmFormat || 0,
       ExposureProgram: exifInfo.ExposureProgram || 0,
       DateTimeOriginal: exifInfo.DateTimeOriginal || 0,
-      LensModel: (exifInfo.LensModel || '').toUpperCase(),
-      LensMake: (exifInfo.LensMake || '').toUpperCase(),
+      ExposureCompensation: exifInfo.ExposureCompensation || 0,
+      MeteringMode: exifInfo.MeteringMode || 0,
+      Flash: exifInfo.Flash || 0,
+      ExposureMode: exifInfo.ExposureMode || 0,
+      WhiteBalance: exifInfo.WhiteBalance || 0,
     };
   }
 
