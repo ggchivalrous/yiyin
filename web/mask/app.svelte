@@ -1,13 +1,14 @@
 <script lang="ts">
   import { getTempFieldsConf, getTempsConf } from '@web/modules/temp-field';
   import { config } from '@web/store/config';
+  import { calcAverageBrightness, loadImage, importFont, createCanvas } from '@web-utils/util';
+  import type { IFontInfo } from '@web-utils/util';
 
   import type {
     IBoxShadowMarkOption, ITextOption,
-    IFontInfo, IFontParam, IImgFileInfo,
+    IFontParam, IImgFileInfo,
     ISlotInfo, ITaskInfo, TFontParam,
   } from './interface';
-  import { calcAverageBrightness, createCanvas, importFont, loadImage } from './main';
 
   import type { ITemp } from '@/common/const/def-temps';
 
@@ -34,7 +35,7 @@
       const task = taskList[i];
 
       try {
-        const mainImg = await loadImage(task.mainImgInfo);
+        const mainImg = await loadImage(task.mainImgInfo.path);
         const tempFieldsConf = await getTempFieldsConf(task.exifInfo, { bgHeight: task.bgImgSize.h });
         let textImgList = await getTempList(task, tempFieldsConf);
         const { contentHeight, contentTop, textButtomOffset, textOffset } = calcContentOffsetInfo(task, textImgList);
@@ -53,8 +54,14 @@
           continue;
         }
 
-        const bgImg = await loadImage(bgImgInfo.data);
-        textImgList = await getTempList(task, tempFieldsConf);
+        const bgImg = await loadImage(bgImgInfo.data.path);
+        textImgList = await getTempList({
+          ...task,
+          bgImgSize: {
+            w: bgImg.width,
+            h: bgImg.height,
+          },
+        }, tempFieldsConf);
 
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
@@ -281,7 +288,7 @@
               continue;
             }
 
-            slotInfo.value = await loadImage({ path: $config.options.solid_bg ? info.bImg : info.wImg });
+            slotInfo.value = await loadImage($config.options.solid_bg ? info.bImg : info.wImg);
           }
 
           slotInfoList.push(slotInfo);

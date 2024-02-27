@@ -16,11 +16,6 @@ export interface ITaskInfo {
   option: OutputSetting,
 }
 
-export interface IFontInfo {
-  path: string
-  name: string
-}
-
 export interface IExifImgInfo {
   title?: IImgFileInfo
   info?: IImgFileInfo
