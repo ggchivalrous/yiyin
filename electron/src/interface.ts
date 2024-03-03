@@ -44,6 +44,8 @@ export interface IConfig {
    */
   tempFields: IFieldInfoItem<any>[]
 
+  customTempFields: IFieldInfoItem<any>[]
+
   /**
    * 模板
    */

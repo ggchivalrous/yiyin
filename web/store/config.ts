@@ -26,25 +26,29 @@ export const config = writable<IConfig>({
   fontMap: {},
   fontDir: '',
   tempFields: [],
+  customTempFields: [],
   temps: [],
   output: '',
   staticDir: '',
 });
 
+function onConfigUpdate(v: IConfig, newConf: any) {
+  v.options = newConf.options;
+  v.output = newConf.output;
+  v.fontMap = newConf.font.map;
+  v.fontDir = newConf.font.dir;
+  v.tempFields = newConf.tempFields;
+  v.customTempFields = newConf.customTempFields;
+  v.temps = newConf.temps;
+  v.staticDir = newConf.staticDir;
+  return v;
+}
+
 export async function getConfig() {
   loadConfig = true;
   const defConf = await window.api.getConfig();
   if (defConf.code === 0) {
-    config.update((v) => {
-      v.options = defConf.data.options;
-      v.output = defConf.data.output;
-      v.fontMap = defConf.data.font.map;
-      v.fontDir = defConf.data.font.dir;
-      v.tempFields = defConf.data.tempFields;
-      v.temps = defConf.data.temps;
-      v.staticDir = defConf.data.staticDir;
-      return v;
-    });
+    config.update((v) => onConfigUpdate(v, defConf.data));
     console.log('配置信息:', defConf.data);
     config.subscribe((v) => console.log('使用配置信息:', v))();
   }
@@ -58,16 +62,7 @@ export async function resetConfig() {
     return;
   }
 
-  config.update((v) => {
-    v.options = res.data.options;
-    v.output = res.data.output;
-    v.fontMap = res.data.font.map;
-    v.fontDir = res.data.font.dir;
-    v.tempFields = res.data.tempFields;
-    v.temps = res.data.temps;
-    v.staticDir = res.data.staticDir;
-    return v;
-  });
+  config.update((v) => onConfigUpdate(v, res.data));
   Message.success({ message: '重置成功' });
 }
 

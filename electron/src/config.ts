@@ -38,6 +38,8 @@ export const DefaultConfig: IConfig = {
 
   tempFields: [getDefOptionItem('')],
 
+  customTempFields: [getDefOptionItem('')],
+
   temps: [getDefTemps()],
 
   versionUpdateInfo: {
@@ -100,6 +102,7 @@ function getDefConf(): IConfig {
   const conf = getConfModel();
   conf.tempFields = exifFields.map((i) => getDefOptionItem(i.value, i.key, i.name));
   conf.temps = defTemps.map((i) => getDefTemps(i));
+  conf.customTempFields = [];
   return conf;
 }
 
@@ -121,6 +124,7 @@ export function getConfig(def = false) {
       options: Object.assign(_config.options, fileConfig.options),
       versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
       tempFields: fileConfig.tempFields,
+      customTempFields: fileConfig.customTempFields,
       temps: fileConfig.temps,
     } as Partial<IConfig>);
 

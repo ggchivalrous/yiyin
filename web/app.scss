@@ -139,6 +139,30 @@ body {
     }
   }
 
+  .db-collapse {
+    border: none;
+  }
+
+  .db-collapse-item {
+    .db-collapse-item__header {
+      color: inherit;
+      font-weight: bold;
+      border: none;
+      background-color: transparent;
+
+      .button {
+        padding: 4px 10px;
+        margin-left: 10px;
+        border-radius: 4px;
+      }
+    }
+
+    .db-collapse-item__wrap {
+      border: none;
+      background-color: transparent;
+    }
+  }
+
   .input,
   .input:focus {
     @include grass-inset();

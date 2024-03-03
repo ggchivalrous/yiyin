@@ -13,6 +13,7 @@
   export let visible = false;
   export let field = 'Model';
   export let data: IFieldInfoItem<string | number | boolean> = null;
+  export let type: 'preset' | 'custom' = 'preset';
 
   const dispatch = createEventDispatcher();
   const model: IFieldInfoItem<string | number | boolean> = {
@@ -79,13 +80,6 @@
       }
     }
 
-    config.update((v) => {
-      const item = v.tempFields.find((i) => i.key === form.key);
-      if (item) {
-        Object.assign(item, form);
-      }
-      return v;
-    });
     visible = false;
     dispatch('update', form);
   }
@@ -115,11 +109,17 @@
   }
 </script>
 
-<Dialog class="custom-param-dialog" title="设置{title}" bind:visible appendToBody width="520px" top="8vh">
+<Dialog class="custom-param-dialog" title="{form.key ? '设置' : '添加参数'}{title}" bind:visible appendToBody width="520px" top="8vh">
   <ActionItem title="是否显示" labelWidth="auto">
     <svelte:fragment slot="popup">控制是否显示该参数的内容<br>控制{title}参数是否显示</svelte:fragment>
     <Switch bind:value={form.show} />
   </ActionItem>
+
+  {#if type === 'custom'}
+    <ActionItem title="名称">
+      <Input class="text-input" bind:value={form.name} />
+    </ActionItem>
+  {/if}
 
   <div class="form-item">
     <div class="form-item-label title">字体参数</div>

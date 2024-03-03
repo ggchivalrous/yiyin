@@ -13,6 +13,7 @@ export interface IConfig {
   fontMap: Record<string, string>
   fontDir: string
   tempFields: Config['tempFields']
+  customTempFields: Config['customTempFields']
   staticDir: Config['staticDir']
   temps: Config['temps']
 }

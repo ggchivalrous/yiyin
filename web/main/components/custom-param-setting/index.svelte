@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { Drawer } from '@ggchivalrous/db-ui';
-  import type { IFieldInfoItem } from '@web/main/interface';
+  import './index.scss';
+  import { Drawer, Collapse, CollapseItem } from '@ggchivalrous/db-ui';
+  import type { IConfig, IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
+  import { md5 } from '@web/util/md5';
 
   import CustomParamDialog from '../custom-param-dialog/index.svelte';
 
@@ -11,6 +13,7 @@
   export let beforeClose: any = null;
 
   let flag = Date.now();
+  let keyInc = 1;
   const form: IFieldInfoItem = {
     key: '',
     name: '',
@@ -21,51 +24,106 @@
     type: 'text',
     param: undefined,
   };
-  const dialog: {
+
+  interface IDialogData {
     form: IFieldInfoItem<string | number | boolean>
     title: string
-    showImg: boolean
-    showType: boolean
     show: boolean
     field: string
-  } = {
-    title: '',
-    showImg: false,
-    showType: false,
-    show: false,
-    field: 'Model',
-    form: {
-      key: '',
-      name: '',
-      use: false,
-      value: '',
-      bImg: '',
-      wImg: '',
-      type: 'text',
-      param: undefined,
-    },
-  };
+    type: 'preset' | 'custom'
+  }
 
-  function onShowChange() {
-    return async (e: CustomEvent<any>) => {
-      const data: IFieldInfoItem = e.detail;
+  let dialog: IDialogData = getFieldModel();
+
+  function getFieldModel(): IDialogData {
+    return {
+      title: '',
+      show: false,
+      field: 'Model',
+      type: 'preset',
+      form: {
+        key: '',
+        name: '',
+        use: false,
+        value: '',
+        bImg: '',
+        wImg: '',
+        type: 'text',
+        param: undefined,
+      },
+    };
+  }
+
+  function onShowChange(e: CustomEvent<IFieldInfoItem>) {
+    const data = e.detail;
+    config.update((v) => {
+      const item = getActiveFieldInfoList(v, dialog.type).find((i) => i.key === data.key);
+      if (item) {
+        item.show = data.show;
+      }
+      return v;
+    });
+  }
+
+  function onEdit(field: string, type: IDialogData['type']) {
+    return async (e: CustomEvent<IFieldInfoItem & { title: string }>) => {
+      dialog.field = field;
+      dialog.form = { ...form, ...e.detail };
+      dialog.title = e.detail.title;
+      dialog.show = true;
+      dialog.type = type;
+    };
+  }
+
+  function onDel(type: IDialogData['type']) {
+    return async (e: CustomEvent<IFieldInfoItem & { title: string }>) => {
       config.update((v) => {
-        const item = v.tempFields.find((i) => i.key === data.key);
-        if (item) {
-          item.show = data.show;
+        const fieldsList = getActiveFieldInfoList(v, type);
+        const index = fieldsList.findIndex((i) => i.key === e.detail.key);
+        if (index !== -1) {
+          fieldsList.splice(index, 1);
         }
         return v;
       });
     };
   }
 
-  function onEdit(field: string) {
-    return async (e: CustomEvent<IFieldInfoItem & { title: string }>) => {
-      dialog.field = field;
-      dialog.form = { ...form, ...e.detail };
-      dialog.title = e.detail.title;
-      dialog.show = true;
-    };
+  function addField() {
+    dialog = getFieldModel();
+    dialog.show = true;
+    dialog.type = 'custom';
+  }
+
+  function onFieldSave(ev: CustomEvent<IFieldInfoItem>) {
+    const d = ev.detail;
+    flag = Date.now();
+
+    config.update((v) => {
+      const fieldsList = getActiveFieldInfoList(v, dialog.type);
+      // 新增
+      if (!dialog.form.key) {
+        fieldsList.push({ ...d, key: md5(`${Date.now()}-${keyInc++}-${d.name}`) });
+      } else {
+        const item = fieldsList.find((i) => i.key === d.key);
+        if (item) {
+          Object.assign(item, d);
+        }
+      }
+
+      return v;
+    });
+  }
+
+  function getActiveFieldInfoList(conf: IConfig, type: IDialogData['type']) {
+    let fieldsList: IFieldInfoItem[] = [];
+
+    switch (type) {
+      case 'preset': fieldsList = conf.tempFields; break;
+      case 'custom': fieldsList = conf.customTempFields; break;
+      default: return fieldsList;
+    }
+
+    return fieldsList;
   }
 </script>
 
@@ -78,9 +136,22 @@
   modal={false}
 >
   <div class="custom-params-wrap">
-    {#each $config.tempFields as i (i.key)}
-      <ActionItem imgFlag={flag} title={i.name} showSwitch data={i} on:show-change={onShowChange()} on:edit={onEdit(i.key)} />
-    {/each}
+    <Collapse>
+      <CollapseItem title="相机参数" name="tempFields">
+        {#each $config.tempFields as i (i.key)}
+          <ActionItem imgFlag={flag} title={i.name} data={i} on:show-change={onShowChange} on:edit={onEdit(i.key, 'preset')} />
+        {/each}
+      </CollapseItem>
+      <CollapseItem name="customFields">
+        <p slot="title">
+          自定义参数
+          <i class="button icon db-icon-plus" on:click={addField} on:keypress role="button" tabindex="-1"></i>
+        </p>
+        {#each $config.customTempFields as i (i.key)}
+          <ActionItem imgFlag={flag} title={i.name} showDelete data={i} on:show-change={onShowChange} on:edit={onEdit(i.key, 'custom')} on:delete={onDel('custom')} />
+        {/each}
+      </CollapseItem>
+    </Collapse>
   </div>
 </Drawer>
 
@@ -89,13 +160,6 @@
   title={dialog.title}
   field={dialog.field}
   data={dialog.form}
-  on:update={() => flag = Date.now()}
+  type={dialog.type}
+  on:update={onFieldSave}
 />
-
-<style>
-  .custom-params-wrap {
-    padding: 20px 15px;
-    padding-top: 0;
-    overflow-y: auto;
-  }
-</style>

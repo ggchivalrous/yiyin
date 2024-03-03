@@ -6,6 +6,7 @@
   export let title = '';
   export let showSwitch = true;
   export let showEdit = true;
+  export let showDelete = false;
   export let data: IFieldInfoItem<string | number | boolean> = null;
   export let imgFlag = Date.now();
 
@@ -20,6 +21,10 @@
 
   function onShowChange() {
     dispatch('show-change', form);
+  }
+
+  function onDel() {
+    dispatch('delete', { ...form, title });
   }
 </script>
 
@@ -42,14 +47,14 @@
     {:else}
       {#if form.bImg}
         <Popover trigger="hover">
-          <img slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+          <img style="width: 120px; height: auto;" slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
           <img style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
         </Popover>
       {/if}
 
       {#if form.wImg}
         <Popover trigger="hover">
-          <img slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+          <img style="width: 120px; height: auto;" slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
           <img style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
         </Popover>
       {/if}
@@ -58,6 +63,10 @@
 
   {#if showEdit}
     <i class="db-icon-edit icon" on:click={onEdit} on:keypress role="button" tabindex="-1"></i>
+  {/if}
+
+  {#if showDelete}
+    <i class="db-icon-delete icon" on:click={onDel} on:keypress role="button" tabindex="-1"></i>
   {/if}
 </p>
 
