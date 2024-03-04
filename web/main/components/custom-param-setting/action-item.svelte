@@ -1,4 +1,5 @@
 <script lang="ts">
+  import './action-item.scss';
   import { Switch, Popover } from '@ggchivalrous/db-ui';
   import type { IFieldInfoItem } from '@web/main/interface';
   import { createEventDispatcher } from 'svelte';
@@ -9,6 +10,8 @@
   export let showDelete = false;
   export let data: IFieldInfoItem<string | number | boolean> = null;
   export let imgFlag = Date.now();
+  export let labelPosition: 'left' | 'right' | 'top' = 'right';
+  export let labelWidth = '70px';
 
   const dispatch = createEventDispatcher();
   let form: Partial<IFieldInfoItem<string | number | boolean>> = {};
@@ -28,91 +31,48 @@
   }
 </script>
 
-<p class="action-item">
-  <span class="config-title">{title}</span>
-  {#if $$slots.popup}
-    <Popover trigger="hover">
-      <slot name="popup" />
-      <i slot="reference" class="db-icon-question icon" style="padding-right: 4px; color: var(--text-color);"></i>
-    </Popover>
-  {/if}
-
-  {#if showSwitch}
-    <Switch bind:value={form.show} on:change={onShowChange} />
-  {/if}
-
-  <span class="config-value">
-    {#if form.type === 'text'}
-      {form.value || ''}
-    {:else}
-      {#if form.bImg}
-        <Popover trigger="hover">
-          <img style="width: 120px; height: auto;" slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
-          <img style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
-        </Popover>
-      {/if}
-
-      {#if form.wImg}
-        <Popover trigger="hover">
-          <img style="width: 120px; height: auto;" slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
-          <img style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
-        </Popover>
-      {/if}
+<div class="custom-param-setting-action-item {labelPosition === 'top' ? '' : 'flex'}">
+  <div class="config-head">
+    <span class="config-title {labelPosition}" style:width={labelWidth}>{title}</span>
+    {#if $$slots.popup}
+      <Popover trigger="hover">
+        <slot name="popup" />
+        <i slot="reference" class="db-icon-question icon" style="padding-right: 4px; color: var(--text-color);"></i>
+      </Popover>
     {/if}
-  </span>
+  </div>
 
-  {#if showEdit}
-    <i class="db-icon-edit icon" on:click={onEdit} on:keypress role="button" tabindex="-1"></i>
-  {/if}
+  <div class="config-content">
+    {#if showSwitch}
+      <Switch bind:value={form.show} on:change={onShowChange} />
+    {/if}
 
-  {#if showDelete}
-    <i class="db-icon-delete icon" on:click={onDel} on:keypress role="button" tabindex="-1"></i>
-  {/if}
-</p>
+    <span class="config-value">
+      {#if form.type === 'text'}
+        {form.value || ''}
+      {:else}
+        {#if form.bImg}
+          <Popover trigger="hover">
+            <img style="width: 120px; height: auto;" slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+            <img style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+          </Popover>
+        {/if}
 
-<style scoped>
-  .action-item {
-    width: 100%;
-    height: 35px;
-    display: flex;
-    align-items: center;
-  }
+        {#if form.wImg}
+          <Popover trigger="hover">
+            <img style="width: 120px; height: auto;" slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+            <img style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+          </Popover>
+        {/if}
+      {/if}
+    </span>
 
-  .config-title {
-    display: inline-block;
-    width: 90px;
-    font-weight: bold;
-    text-align: right;
-    margin-right: 8px;
-  }
+    {#if showEdit}
+      <i class="db-icon-edit icon" on:click={onEdit} on:keypress role="button" tabindex="-1"></i>
+    {/if}
 
-  .config-value {
-    flex: 1;
-    font-size: 13px;
-    padding: 0 6px;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
-
-  .config-value img {
-    display: inline-block;
-    height: 12px;
-  }
-
-  .config-value img:last-of-type {
-    margin-left: 10px;
-  }
-
-  .icon {
-    color: var(--text-color);
-    padding: 0 4px;
-  }
-
-  .icon:hover {
-    cursor: pointer;
-    font-weight: bold;
-    color: var(--active-color);
-  }
-</style>
+    {#if showDelete}
+      <i class="db-icon-delete icon" on:click={onDel} on:keypress role="button" tabindex="-1"></i>
+    {/if}
+  </div>
+</div>

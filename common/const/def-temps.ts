@@ -25,7 +25,18 @@ export const defTemps: ITemp[] = [
   },
   {
     key: 'exif-params',
-    name: '参数模版',
+    name: '参数模版 - 等效焦距',
+    temp: '{FocalLengthIn35mmFormat} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
+    opts: {
+      size: 2,
+      font: 'PingFang SC',
+      bold: true,
+      italic: false,
+    },
+  },
+  {
+    key: 'exif-params-1',
+    name: '参数模版 - 原始焦距',
     temp: '{FocalLength} {FNumber} {ExposureTime} {ISO} {PersonalSign}',
     opts: {
       size: 2,

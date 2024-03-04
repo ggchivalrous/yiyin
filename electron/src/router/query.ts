@@ -17,6 +17,8 @@ r.listen(routerConfig.setConfig, async (data: any) => {
   storeConfig({
     options: Object.assign(config.options, data.options),
     tempFields: data.tempFields,
+    customTempFields: data.customTempFields,
+    temps: data.temps,
   });
   return config;
 });

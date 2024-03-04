@@ -54,15 +54,17 @@
     };
   }
 
-  function onShowChange(e: CustomEvent<IFieldInfoItem>) {
-    const data = e.detail;
-    config.update((v) => {
-      const item = getActiveFieldInfoList(v, dialog.type).find((i) => i.key === data.key);
-      if (item) {
-        item.show = data.show;
-      }
-      return v;
-    });
+  function onShowChange(type: IDialogData['type']) {
+    return (e: CustomEvent<IFieldInfoItem>) => {
+      const data = e.detail;
+      config.update((v) => {
+        const item = getActiveFieldInfoList(v, type).find((i) => i.key === data.key);
+        if (item) {
+          item.show = data.show;
+        }
+        return v;
+      });
+    };
   }
 
   function onEdit(field: string, type: IDialogData['type']) {
@@ -139,7 +141,7 @@
     <Collapse>
       <CollapseItem title="相机参数" name="tempFields">
         {#each $config.tempFields as i (i.key)}
-          <ActionItem imgFlag={flag} title={i.name} data={i} on:show-change={onShowChange} on:edit={onEdit(i.key, 'preset')} />
+          <ActionItem imgFlag={flag} title={i.name} data={i} on:show-change={onShowChange('preset')} on:edit={onEdit(i.key, 'preset')} />
         {/each}
       </CollapseItem>
       <CollapseItem name="customFields">
@@ -148,7 +150,17 @@
           <i class="button icon db-icon-plus" on:click={addField} on:keypress role="button" tabindex="-1"></i>
         </p>
         {#each $config.customTempFields as i (i.key)}
-          <ActionItem imgFlag={flag} title={i.name} showDelete data={i} on:show-change={onShowChange} on:edit={onEdit(i.key, 'custom')} on:delete={onDel('custom')} />
+          <ActionItem
+            showDelete
+            imgFlag={flag}
+            title={i.name}
+            data={i}
+            labelPosition='top'
+            labelWidth='auto'
+            on:show-change={onShowChange('custom')}
+            on:edit={onEdit(i.key, 'custom')}
+            on:delete={onDel('custom')}
+          />
         {/each}
       </CollapseItem>
     </Collapse>
