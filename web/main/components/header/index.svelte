@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FontSelect from '@components/font-select';
+  import { FontSelect } from '@components';
   import { Popover } from '@ggchivalrous/db-ui';
   import { config, getConfig, resetConfig, pathInfo } from '@web/store/config';
   import './index.scss';

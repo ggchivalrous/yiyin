@@ -58,22 +58,23 @@ export interface IConfig {
   }
 }
 
-export interface IFontParam {
-  use: boolean
+export interface IFont {
   bold: boolean
   italic: boolean
   size: number
   font: string
+  caseType: 'lowcase' | 'upcase' | 'default'
+}
 
-  /**
-   * 偏移
-   */
-  offset: {
-    top?: number
-    bottom?: number
-    left?: number
-    right?: number
-  }
+export interface IPosition {
+  top: number
+  bottom: number
+  left: number
+  right: number
+}
+
+export interface IFontParam extends Partial<IFont> {
+  use?: boolean
 }
 
 export interface IFieldInfoItem<T = string> {
@@ -113,7 +114,7 @@ export interface IFieldInfoItem<T = string> {
   /**
    * 显示参数
    */
-  param: IFontParam
+  font: IFontParam
 }
 
 export interface IReleaseData {

@@ -134,7 +134,7 @@ r.listen<any, any>(routerConfig.composite, async (data, ev, win) => {
       log.info('【%s】水印已添加并保存为 ', imgTool.md5, imgTool.fileNames.output);
     }
 
-    if ((import.meta.env.DEV && compositeState) || import.meta.env.PROD) {
+    if (import.meta.env.PROD) {
       imgTool.clearCache();
     }
 

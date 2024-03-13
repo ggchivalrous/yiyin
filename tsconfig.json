@@ -23,7 +23,9 @@
     "skipLibCheck": true,
     "paths": {
       "@web/*": ["web/*"],
+      "@common/*": ["common/*"],
       "@components/*": ["web/components/*"],
+      "@components": ["web/components/index"],
       "@web-utils/*": ["web/util/*"],
       "@modules": ["electron/src/modules"],
       "@modules/*": ["electron/src/modules/*"],

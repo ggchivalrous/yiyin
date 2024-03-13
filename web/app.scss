@@ -37,6 +37,10 @@ body,
 
 #app,
 body {
+  .icon {
+    cursor: pointer;
+  }
+
   .db-drawer {
     background-color: var(--bg-color);
     
@@ -83,6 +87,12 @@ body {
     &.is-active .db-input__inner,
     .db-input__inner:focus {
       border-color: var(--text-color);
+    }
+
+    .db-input-group__append, .db-input-group__prepend {
+      @include grass();
+      border: none;
+      background-color: var(--bg-color);
     }
   }
 
@@ -201,6 +211,22 @@ body {
   
     &:first-child {
       margin-left: 0px;
+    }
+  }
+
+  .db-dropdown-menu {
+    background-color: var(--bg-color);
+    border: none;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    .db-dropdown-menu__item:focus,
+    .db-dropdown-menu__item:not(.is-disabled):hover {
+      font-weight: bold;
+      color: var(--active-color);
+      background-color: transparent;
+      box-sizing: border-box;
     }
   }
 }

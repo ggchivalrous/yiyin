@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FontDialog from '@components/font-dialog';
+  import { FontDialog } from '@components';
   import { Message, Option, Select } from '@ggchivalrous/db-ui';
   import { createEventDispatcher } from 'svelte';
   import './index.scss';

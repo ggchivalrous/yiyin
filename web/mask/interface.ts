@@ -1,6 +1,8 @@
 import type { IImgFileInfo, OutputSetting } from '@modules/tools/image';
 import type { IFieldInfoItem, IFontParam } from '@src/interface';
 
+import { ITemp } from '@/common/const';
+
 export type { IImgFileInfo, OutputSetting } from '@modules/tools/image';
 export type * from '@src/interface';
 
@@ -49,19 +51,11 @@ export interface IBoxShadowMarkOption {
 }
 
 export interface ITextOption {
-  size: number
-  font: string
-  color?: string
-  bold: boolean
-  height?: number
-  width?: number
-  /**
-   * 斜体
-   */
-  italic: boolean
+  height: ITemp['height']
+  font: ITemp['font']
 }
 
 export interface ISlotInfo {
   value: string | HTMLImageElement
-  param: IFieldInfoItem['param']
+  font: IFieldInfoItem['font']
 }

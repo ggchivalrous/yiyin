@@ -4,7 +4,7 @@
   import { tick } from 'svelte';
   import './index.scss';
 
-  import { Actions, CustomParamSetting, Footer, Header } from './components';
+  import { Actions, ParamSetting, Footer, Header, TempSetting } from './components';
   import type { IFileInfo, TInputEvent } from './interface';
 
   let fileUrlList: IFileInfo[] = [];
@@ -13,7 +13,8 @@
   const clipboardDom: HTMLDivElement = null;
 
   let imgExif = '';
-  let showSetting = false;
+  let showParamSetting = false;
+  let showTempSetting = false;
 
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
@@ -81,7 +82,8 @@
         <label for="path" class="button grass">选择图片</label>
         <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
         <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
-        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
+        <div class="button grass" on:click={() => { showParamSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
+        <div class="button grass" on:click={() => { showTempSetting = true; }} on:keypress role="button" tabindex="-1">模板设置</div>
       {:else}
         印框生成中...
       {/if}
@@ -89,6 +91,6 @@
   </div>
 
   <Footer />
-
-  <CustomParamSetting bind:visible={showSetting} />
+  <ParamSetting bind:visible={showParamSetting} />
+  <TempSetting bind:visible={showTempSetting} />
 </div>

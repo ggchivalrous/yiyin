@@ -53,14 +53,14 @@
       {:else}
         {#if form.bImg}
           <Popover trigger="hover">
-            <img style="width: 120px; height: auto;" slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
+            <img style="max-width: 120px; height: auto; max-height: 25px;" slot="reference" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
             <img style="width: 200px; height: auto;" src="file://{form.bImg}?flag={imgFlag}" alt="图片" />
           </Popover>
         {/if}
 
         {#if form.wImg}
           <Popover trigger="hover">
-            <img style="width: 120px; height: auto;" slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
+            <img style="max-width: 120px; height: auto; max-height: 25px;" slot="reference" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
             <img style="width: 200px; height: auto;" src="file://{form.wImg}?flag={imgFlag}" alt="图片" />
           </Popover>
         {/if}

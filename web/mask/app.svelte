@@ -274,7 +274,7 @@
 
           const slotInfo: ISlotInfo = {
             value: '',
-            param: info.param,
+            font: info.font,
           };
 
           if (info.type === 'text') {
@@ -298,19 +298,21 @@
         for (let j = 0; j < _arr.length; j++) {
           if (slotInfoList[j]?.value) {
             textList.push(_arr[j], slotInfoList[j]);
+          } else {
+            textList.push(_arr[j]);
           }
         }
       } else {
         textList.push(text);
       }
 
-      imgFileInfoList.push(createTextImg(textList, i.opts));
+      imgFileInfoList.push(createTextImg(textList, { font: i.font, height: i.height }));
     }
 
     return imgFileInfoList.filter(Boolean);
   }
 
-  function createTextFont(opts: Omit<IFontParam, 'use' | 'offset'>, extraOpts?: TFontParam) {
+  function createTextFont(opts: Omit<IFontParam, 'use'>, extraOpts?: TFontParam) {
     const _opts = { ...opts };
 
     if (extraOpts?.use) {
@@ -335,7 +337,7 @@
     }
 
     if (_opts.font) {
-      font += `${_opts.font},`;
+      font += `${_opts.font}, `;
     }
 
     font += '"PingFang SC"';
@@ -351,7 +353,7 @@
 
     const can = createCanvas(0, 0);
     const ctx = can.getContext('2d');
-    const defFont = createTextFont(opts);
+    const defFont = createTextFont(opts.font);
     const textInfoList: {
       font: string
       value: string | HTMLImageElement
@@ -362,34 +364,29 @@
       h: number
     }[] = [];
 
-    let totalText = '';
-    const maxFontOpt: ITextOption = { ...opts };
-
+    // 计算所有字体显示后的最高高度，作为画布高度
+    const maxFontOpt: ITextOption['font'] = { ...opts.font };
     for (const text of textList) {
       if (typeof text === 'string') {
-        totalText += text;
         continue;
       }
 
-      if (typeof text.value === 'string') {
-        totalText += text.value;
-      }
-
-      if (text.param && text.param.use) {
+      if (text.font && text.font.use) {
         // 加粗
-        if (!maxFontOpt.bold && text.param.bold) {
+        if (!maxFontOpt.bold && text.font.bold) {
           maxFontOpt.bold = true;
         }
 
         // 使用最大的字体
-        if (maxFontOpt.size < text.param.size) {
-          maxFontOpt.size = text.param.size;
+        if (maxFontOpt.size < text.font.size) {
+          maxFontOpt.size = text.font.size;
         }
       }
     }
 
     ctx.font = createTextFont(maxFontOpt);
     const textInfo = ctx.measureText('QOSyYtl709');
+    // const baseline = Math.ceil(textInfo.actualBoundingBoxAscent);
     const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + 25);
 
     can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
@@ -397,16 +394,34 @@
       if (i === undefined || !i) return n;
       if ((j === textList.length - 1 || j === 0) && typeof i === 'string' && !i.trim()) return n;
 
-      if (typeof i === 'string' || typeof i.value === 'string') {
-        let font = '';
-        let value = '';
+      if (typeof i === 'object' && i.value instanceof HTMLImageElement) {
+        const fontOpt = mergeFontOpt(opts.font, i.font);
+        ctx.font = createTextFont(opts.font, fontOpt);
+        const info = ctx.measureText('QSOPNYuiyl90');
+        const h = Math.ceil(info.actualBoundingBoxAscent);
+        const y = roundDecimalPlaces(baseline - h);
+        const w = Math.ceil(h * (i.value.width / i.value.height));
 
-        if (typeof i === 'string') {
+        textInfoList.push({
+          font: defFont,
+          value: i.value,
+          type: 'img',
+          x: n,
+          y,
+          w,
+          h,
+        });
+        n += w;
+      } else {
+        let font = '';
+        let value: any = '';
+
+        if (typeof i === 'object') {
+          font = createTextFont(opts.font, mergeFontOpt(opts.font, i.font));
+          value = i.value;
+        } else {
           font = defFont;
           value = i;
-        } else if (typeof i.value === 'string') {
-          font = createTextFont(opts, mergeFontOpt(opts, i.param));
-          value = i.value;
         }
 
         ctx.font = font;
@@ -423,24 +438,6 @@
           h,
         });
         n += info.width;
-      } else {
-        const fontOpt = mergeFontOpt(opts, i.param);
-        ctx.font = createTextFont(opts, fontOpt);
-        const info = ctx.measureText('QSOPNYuiyl90');
-        const h = Math.ceil(info.actualBoundingBoxAscent);
-        const y = roundDecimalPlaces(baseline - h);
-        const w = Math.ceil(h * (i.value.width / i.value.height));
-
-        textInfoList.push({
-          font: defFont,
-          value: i.value,
-          type: 'img',
-          x: n,
-          y,
-          w,
-          h,
-        });
-        n += w;
       }
       return n;
     }, 30);
@@ -449,7 +446,7 @@
     for (const info of textInfoList) {
       if (info.type === 'text') {
         ctx.font = info.font;
-        ctx.fillStyle = opts.color || '#000';
+        ctx.fillStyle = opts.font.color || '#000';
         ctx.fillText(info.value as string, info.x, info.y);
       } else {
         ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);
@@ -463,7 +460,7 @@
     };
   }
 
-  function mergeFontOpt(def: ITextOption, target: IFontParam): TFontParam {
+  function mergeFontOpt(def: IFontParam, target: IFontParam): TFontParam {
     if (!target || !target.use) {
       return { ...def, use: false };
     }
@@ -474,7 +471,7 @@
       if (target && target[_k]) {
         (cpDef[_k] as any) = target[_k];
       } else {
-        (cpDef[_k] as any) = def[key as keyof ITextOption];
+        (cpDef[_k] as any) = def[key as keyof IFontParam];
       }
     }
 

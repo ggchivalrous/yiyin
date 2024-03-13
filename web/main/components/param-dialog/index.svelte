@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ActionItem from '@components/action-item';
+  import { ActionItem, FontSetting } from '@components';
   import { Dialog, Input, Message, Switch, Popover } from '@ggchivalrous/db-ui';
   import type { IFieldInfoItem } from '@web/main/interface';
   import { config } from '@web/store/config';
   import { createEventDispatcher } from 'svelte';
 
-  import ParamFontInfo from '../param-font-info/index.svelte';
   import StaticDialog from '../static-dialog/index.svelte';
   import './index.scss';
 
@@ -24,18 +23,12 @@
     bImg: '',
     wImg: '',
     type: 'text',
-    param: {
+    font: {
       use: false,
       bold: false,
       italic: false,
       size: 0,
       font: '',
-      offset: {
-        top: null,
-        bottom: null,
-        left: null,
-        right: null,
-      },
     },
   };
   const form: IFieldInfoItem<string | number | boolean> = { ...model };
@@ -53,7 +46,7 @@
       form.wImg = d.wImg || model.wImg;
       form.bImg = d.bImg || model.bImg;
       form.type = d.type || model.type;
-      form.param = { ...model.param, ...d.param };
+      form.font = { ...model.font, ...d.font };
     }
   }
 
@@ -124,7 +117,7 @@
   <div class="form-item">
     <div class="form-item-label title">字体参数</div>
     <div class="form-item-content">
-      <ParamFontInfo bind:conf={form.param} />
+      <FontSetting bind:conf={form.param} />
     </div>
   </div>
 

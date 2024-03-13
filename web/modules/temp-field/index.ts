@@ -16,14 +16,16 @@ interface IGetTempFieldsConfOpts {
  */
 export async function getTempFieldsConf(exifInfo: Record<string, any>, opts: IGetTempFieldsConfOpts) {
   const tempFields = get(config).tempFields;
+  const customTempFields = get(config).customTempFields;
   const tempFieldRecord: Record<string, IFieldInfoItem> = {};
+  const fileds = [...customTempFields, ...tempFields];
 
-  for (const filed of tempFields) {
+  for (const filed of fileds) {
     tempFieldRecord[filed.key] = {
       ...filed,
-      param: filed.param && {
-        ...filed.param,
-        size: filed.param.size ? Math.round(opts.bgHeight * (filed.param.size / 100)) : 0,
+      font: filed.font && {
+        ...filed.font,
+        size: filed.font.size ? Math.round(opts.bgHeight * (filed.font.size / 100)) : 0,
       },
     };
   }
@@ -37,16 +39,18 @@ interface IGetTempsConfOpts {
 }
 
 export function getTempsConf(opts?: IGetTempsConfOpts): ITemp[] {
-  const temps = get(config).temps;
+  const conf = get(config);
+  const temps = conf.temps;
 
   return temps.map((temp) => ({
     ...temp,
-    opts: {
-      ...temp.opts,
-      color: temp.opts.color || opts.color,
-      size: opts.bgHeight * (temp.opts.size / 100),
+    font: {
+      ...temp.font,
+      font: temp.font.font || conf.options.font,
+      color: temp.font.color || opts.color,
+      size: opts.bgHeight * (temp.font.size / 100),
     },
-  }));
+  })).filter((i) => i.use);
 }
 
 /**
@@ -92,7 +96,7 @@ async function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, 
       tempFieldInfo[field].value = `${info.value || ''}`;
       tempFieldInfo[field].bImg = `${info.bImg || ''}`;
       tempFieldInfo[field].wImg = `${info.wImg || ''}`;
-      tempFieldInfo[field].param = info.param || tempFieldInfo[field].param;
+      tempFieldInfo[field].font = info.font || tempFieldInfo[field].font;
     }
   }
 

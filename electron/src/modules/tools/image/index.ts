@@ -9,7 +9,7 @@ import { tryCatch, usePromise, md5, getFileName } from '@utils';
 import ExifParser from 'exif-parser';
 import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
-import type { RGBA } from 'sharp';
+import type { RGBA, Sharp } from 'sharp';
 
 import type { OutputSetting, ImgInfo, IImgFileInfo } from './interface';
 
@@ -33,6 +33,8 @@ export class Image {
     w: number
     h: number
   };
+
+  private imgSharp: Sharp;
 
   name: string;
 
@@ -64,6 +66,7 @@ export class Image {
     if (this.isInit) { return; }
     this.isInit = true;
 
+    this.imgSharp = await this.getRotateSharp();
     await this.rotateImg();
   }
 
@@ -123,7 +126,7 @@ export class Image {
     // 输出不按照原始大小，则直接复制一份
     if (!this.opts.origin_wh_output) {
       const mainImgInfo = await imgSharp
-        .withMetadata()
+        .withMetadata({ density: this.rotateImgInfo.metadata.density })
         .toFormat('jpeg', { quality: 100 })
         .toBuffer({ resolveWithObject: true });
       fs.writeFileSync(toFilePath, mainImgInfo.data);
@@ -148,7 +151,7 @@ export class Image {
     outHeight = contentHeight;
 
     const mainImgInfo = await imgSharp
-      .withMetadata()
+      .withMetadata({ density: this.rotateImgInfo.metadata.density })
       .resize({ width: outWidth, height: outHeight, fit: 'inside' })
       .toFormat('jpeg', { quality: 100 })
       .toBuffer({ resolveWithObject: true });
@@ -198,9 +201,7 @@ export class Image {
       });
     }
 
-    const [result, res, rej] = usePromise();
-
-    sharp({
+    const outputBuf = await sharp({
       create: {
         channels: 3,
         width: originWidth,
@@ -212,16 +213,13 @@ export class Image {
         },
       },
     })
-      .withMetadata()
-      // .toFormat('png', { compressionLevel: 9 })
+      .withMetadata({ density: this.rotateImgInfo.metadata.density })
       .toFormat('jpeg', { quality: 100 })
       .composite(composite)
-      .toFile(this.fileNames.output, (err) => {
-        if (err) rej(err);
-        else res(true);
-      });
+      .toBuffer();
 
-    return result;
+    fs.writeFileSync(this.fileNames.output, outputBuf);
+    return true;
   }
 
   getExifInfo(imgBuffer?: Buffer): Record<string, any> {
@@ -272,8 +270,7 @@ export class Image {
   }
 
   private async rotateImg() {
-    const imgSharp = await this.getRotateSharp();
-    const bufferInfo = await imgSharp.toBuffer({ resolveWithObject: true });
+    const bufferInfo = await this.imgSharp.toBuffer({ resolveWithObject: true });
     const imgInfo: ImgInfo = {
       buf: bufferInfo.data,
       info: {
@@ -284,7 +281,7 @@ export class Image {
         w: bufferInfo.info.width,
         h: bufferInfo.info.height,
       },
-      metadata: await imgSharp.metadata(),
+      metadata: await this.imgSharp.metadata(),
     };
 
     // 重置宽高比

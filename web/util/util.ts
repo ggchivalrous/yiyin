@@ -94,6 +94,7 @@ export interface IFontInfo {
 // 导入字体
 export async function importFont(arr: IFontInfo[]) {
   for (const i of arr) {
+    console.log('%s 字体加载....', i.name);
     const font = new FontFace(i.name, `url('${i.path}')`);
     const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
     if (_font) {

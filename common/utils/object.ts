@@ -6,7 +6,7 @@ export const normalize = <T = object>(origin: any, model: T): T => {
 
   for (const k in model) {
     if (Object.prototype.hasOwnProperty.call(model, k)) {
-      if (isObj(model[k])) {
+      if (isObj(model[k]) && Object.keys(model[k]).length) {
         newObj[k] = normalize(origin[k], model[k]);
       } else if (Array.isArray(model[k]) && isObj((model[k] as any)[0])) {
         if (!Array.isArray(origin[k])) {
@@ -29,3 +29,5 @@ export const normalize = <T = object>(origin: any, model: T): T => {
 
   return newObj;
 };
+
+export const cpObj = (obj: any) => JSON.parse(JSON.stringify(obj));

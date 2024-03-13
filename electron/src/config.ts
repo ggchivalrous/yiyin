@@ -4,8 +4,7 @@ import path from 'node:path';
 import type { IFieldInfoItem, IConfig } from '@src/interface';
 import { app } from 'electron';
 
-import { exifFields } from '@/common/const';
-import { defTemps, type ITemp } from '@/common/const/def-temps';
+import { exifFields, defTemps, getDefTemp } from '@/common/const';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
 
 export const DefaultConfig: IConfig = {
@@ -40,7 +39,7 @@ export const DefaultConfig: IConfig = {
 
   customTempFields: [getDefOptionItem('')],
 
-  temps: [getDefTemps()],
+  temps: [getDefTemp()],
 
   versionUpdateInfo: {
     version: import.meta.env.VITE_VERSION,
@@ -62,34 +61,13 @@ function getDefOptionItem<T>(defV?: T, key = '', name = ''): IFieldInfoItem<T> {
     type: 'text',
     bImg: '',
     wImg: '',
-    param: {
+    font: {
       use: false,
       bold: false,
       italic: false,
       size: 0,
       font: '',
-      offset: {
-        top: null,
-        bottom: null,
-        left: null,
-        right: null,
-      },
-    },
-  };
-}
-
-function getDefTemps(d?: ITemp): ITemp {
-  return {
-    key: '',
-    name: '',
-    temp: '',
-    ...d,
-    opts: {
-      size: 0,
-      font: '',
-      bold: false,
-      italic: false,
-      ...d?.opts,
+      caseType: 'default',
     },
   };
 }
@@ -101,7 +79,7 @@ function getConfModel(): IConfig {
 function getDefConf(): IConfig {
   const conf = getConfModel();
   conf.tempFields = exifFields.map((i) => getDefOptionItem(i.value, i.key, i.name));
-  conf.temps = defTemps.map((i) => getDefTemps(i));
+  conf.temps = defTemps.map((i) => getDefTemp(i));
   conf.customTempFields = [];
   return conf;
 }
@@ -139,7 +117,7 @@ export function getConfig(def = false) {
     const tempObj = arrToObj(_config.temps, 'key');
     for (const temp of defTemps) {
       if (!tempObj[temp.key]) {
-        _config.temps.push(getDefTemps(temp));
+        _config.temps.push(getDefTemp(temp));
       }
     }
 

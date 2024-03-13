@@ -1,10 +1,11 @@
 <script lang="ts">
   import { Switch } from '@ggchivalrous/db-ui';
   import type { IFontParam } from '@src/interface';
-  import ActionItem from '@web/components/action-item';
-  import FontSelect from '@web/components/font-select';
+  import { ActionItem, FontSelect } from '@web/components';
   import { config } from '@web/store/config';
   import './index.scss';
+
+  export let showUseSwitch = true;
 
   export let conf: IFontParam = {
     use: false,
@@ -16,10 +17,12 @@
 </script>
 
 <div class="param-font-info">
-  <ActionItem title="生效">
-    <svelte:fragment slot="popup">是否启用自定义字体参数</svelte:fragment>
-    <Switch bind:value={conf.use} />
-  </ActionItem>
+  {#if showUseSwitch}
+    <ActionItem title="生效">
+      <svelte:fragment slot="popup">是否启用自定义字体参数</svelte:fragment>
+      <Switch bind:value={conf.use} />
+    </ActionItem>
+  {/if}
   <div class="param-font-item">
     <ActionItem title="粗体">
       <svelte:fragment slot="popup">只对文本生效，文本加粗</svelte:fragment>
@@ -39,7 +42,7 @@
         <br>
         指定的大小为图片背景的高度的百分比
         <br>
-        机型默认为4，即 0.04%
+        机型默认为4，即 0.025%
         <br>
         参数默认为2，即 0.02%
       </svelte:fragment>

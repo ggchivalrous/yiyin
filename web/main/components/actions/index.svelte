@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import ActionItem from '@components/action-item';
+  import { ActionItem } from '@components';
   import { Switch } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
 
@@ -191,7 +191,7 @@
       <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
       <input class="input" style="width: 40px; margin-right: 4px;" type="text" bind:value={$config.options.bg_rate.w}/>
       <i class="switch icon db-icon-sort" on:click={switchBgRate} role="button" tabindex="-1" on:keypress />
-      <input class="input" style="width: 40px; margin-left: 4px;" type="text" bind:value={$config.options.bg_rate.h}/>
+      <input class="input" style="width: 40px; margin-left: 5px;" type="text" bind:value={$config.options.bg_rate.h}/>
     </ActionItem>
   </div>
 </div>

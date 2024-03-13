@@ -5,7 +5,7 @@
   import { config } from '@web/store/config';
   import { md5 } from '@web/util/md5';
 
-  import CustomParamDialog from '../custom-param-dialog/index.svelte';
+  import CustomParamDialog from '../param-dialog/index.svelte';
 
   import ActionItem from './action-item.svelte';
 
@@ -22,7 +22,7 @@
     bImg: '',
     wImg: '',
     type: 'text',
-    param: undefined,
+    font: undefined,
   };
 
   interface IDialogData {
@@ -44,12 +44,12 @@
       form: {
         key: '',
         name: '',
-        use: false,
+        use: true,
         value: '',
         bImg: '',
         wImg: '',
         type: 'text',
-        param: undefined,
+        font: undefined,
       },
     };
   }
