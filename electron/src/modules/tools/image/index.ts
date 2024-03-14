@@ -181,26 +181,26 @@ export class Image {
       { input: bgImgInfo.path, gravity: sharp.gravity.center },
     ];
 
+    const textCompositeList: sharp.OverlayOptions[] = [];
     for (let i = textInfo.length - 1; i >= 0; i--) {
       if (!textInfo[i].data) {
         continue;
       }
 
-      let otherTextHeight = 0;
-      for (let j = i + 1; j < textInfo.length; j++) {
-        if (textInfo[j].data) {
-          otherTextHeight += textInfo[j].height;
-        }
+      const _composite: sharp.OverlayOptions = {
+        input: textInfo[i].data,
+        left: Math.round((originWidth - textInfo[i].width) / 2),
+      };
+      if (!textCompositeList.length) {
+        _composite.top = Math.round(originHeight - (textInfo[i].height + opts.textButtomOffset));
+      } else {
+        _composite.top = Math.round(textCompositeList[textCompositeList.length - 1].top - textInfo[i].height);
       }
 
-      const top = Math.round(originHeight - (textInfo[i].height + otherTextHeight + opts.textButtomOffset + (i === textInfo.length - 1 ? 0 : opts.textOffset)));
-      composite.push({
-        input: textInfo[i].data,
-        top,
-        left: Math.round((originWidth - textInfo[i].width) / 2),
-      });
+      textCompositeList.push(_composite);
     }
 
+    composite.push(...textCompositeList);
     const outputBuf = await sharp({
       create: {
         channels: 3,

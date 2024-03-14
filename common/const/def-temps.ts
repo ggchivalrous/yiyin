@@ -25,7 +25,7 @@ export const defTemps: ITemp[] = [
     use: true,
     type: 'system',
     font: {
-      size: 2.5,
+      size: 3,
       font: '',
       bold: true,
       italic: false,
@@ -38,7 +38,7 @@ export const defTemps: ITemp[] = [
     use: true,
     type: 'system',
     font: {
-      size: 2,
+      size: 2.2,
       font: '',
       bold: true,
       italic: false,
@@ -68,7 +68,7 @@ export function getDefTemp(d?: ITemp): ITemp {
     type: 'custom',
     ...d,
     font: {
-      size: 2,
+      size: 2.2,
       font: '',
       bold: false,
       italic: false,

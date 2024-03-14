@@ -37,8 +37,8 @@
       try {
         const mainImg = await loadImage(task.mainImgInfo.path);
         const tempFieldsConf = await getTempFieldsConf(task.exifInfo, { bgHeight: task.bgImgSize.h });
-        let textImgList = await getTempList(task, tempFieldsConf);
-        const { contentHeight, contentTop, textButtomOffset, textOffset } = calcContentOffsetInfo(task, textImgList);
+        const textImgList = await getTempList(task, tempFieldsConf);
+        const { contentHeight, contentTop, textButtomOffset } = calcContentOffsetInfo(task, textImgList);
 
         const bgImgInfo = await window.api.createBgImg({
           md5: task.md5,
@@ -55,14 +55,6 @@
         }
 
         const bgImg = await loadImage(bgImgInfo.data.path);
-        textImgList = await getTempList({
-          ...task,
-          bgImgSize: {
-            w: bgImg.width,
-            h: bgImg.height,
-          },
-        }, tempFieldsConf);
-
         const _bgImgInfo = await createBoxShadowMark(canvas, {
           img: bgImg,
           contentImg: mainImg,
@@ -89,7 +81,6 @@
           offsetInfo: {
             contentTop,
             textButtomOffset,
-            textOffset,
           },
           text: textImgList,
           option: task.option,
@@ -119,7 +110,6 @@
   }
 
   function calcContentOffsetInfo(task: ITaskInfo, textImgList: IImgFileInfo[]) {
-    const textOffset = task.bgImgSize.h * 0.009;
     const mainImgTopOffset = task.bgImgSize.h * 0.036;
     const textButtomOffset = task.bgImgSize.h * 0.027;
 
@@ -137,18 +127,16 @@
 
     if (textImgList.length) {
       mainImgOffset += textButtomOffset;
+    } else {
+      mainImgOffset += mainImgTopOffset;
     }
 
     // 生成背景图片
-    const contentHeight = Math.ceil(textImgList.reduce(
-      (n, j, index) => n += j.height + (index === textImgList.length - 1 ? 0 : textOffset),
-      task.mainImgInfo.height + Math.round(mainImgOffset),
-    ));
+    const contentHeight = Math.ceil(textImgList.reduce((n, j) => n += j.height, task.mainImgInfo.height + Math.round(mainImgOffset)));
 
     return {
       contentHeight,
       contentTop,
-      textOffset,
       textButtomOffset,
     };
   }
@@ -257,6 +245,8 @@
 
     for (const i of templateList) {
       let text = i.temp.trim();
+      if (!text) continue;
+
       const tempList = text.match(/\{[A-Za-z0-9]+\}/ig);
       const textList = [];
       const slotInfoList = [];
@@ -265,7 +255,6 @@
         for (const temp of tempList) {
           const [field] = temp.match(/[A-Za-z0-9]+/);
           const info = tempFieldsConf[field];
-
           text = text.replace(temp, info.show ? '{---}' : '');
 
           if (!info.show) {
@@ -278,7 +267,7 @@
           };
 
           if (info.type === 'text') {
-            slotInfo.value = info.value;
+            slotInfo.value = info.value.trim();
           } else {
             if ($config.options.solid_bg) {
               if (!info.bImg || info.bImg === 'false') {
@@ -291,10 +280,18 @@
             slotInfo.value = await loadImage($config.options.solid_bg ? info.bImg : info.wImg);
           }
 
-          slotInfoList.push(slotInfo);
+          if (slotInfo.value) {
+            slotInfoList.push(slotInfo);
+          }
         }
 
         const _arr = text.trim().split('{---}');
+
+        if (
+          (_arr.length === 1 && !_arr[0].trim())
+          || (_arr.length > 1 && !slotInfoList.length)
+        ) continue;
+
         for (let j = 0; j < _arr.length; j++) {
           if (slotInfoList[j]?.value) {
             textList.push(_arr[j], slotInfoList[j]);
@@ -306,7 +303,9 @@
         textList.push(text);
       }
 
-      imgFileInfoList.push(createTextImg(textList, { font: i.font, height: i.height }));
+      if (textList.length) {
+        imgFileInfoList.push(createTextImg(textList, { font: i.font, height: i.height }));
+      }
     }
 
     return imgFileInfoList.filter(Boolean);
