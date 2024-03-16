@@ -10,7 +10,8 @@
     "build": "vite build",
     "package:dir": "yarn build && electron-builder -c electron-make.ts --dir",
     "package": "yarn build && electron-builder",
-    "make": "yarn build && electron-builder -p never && node release.js"
+    "make": "yarn build && electron-builder -p never",
+    "push-release": "node release.js"
   },
   "author": {
     "name": "ggchivalrous",
