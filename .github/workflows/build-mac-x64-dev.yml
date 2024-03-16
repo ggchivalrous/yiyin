@@ -34,6 +34,7 @@ jobs:
       - name: 构建 ${{ runner.arch }}
         run: |
           yarn make
+          mkdir upload-dist
           yarn push:dev
 
       - name: Download artifacts
