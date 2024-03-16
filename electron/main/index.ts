@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
+import { format } from 'util';
 
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
 import paths from '@src/path';
@@ -33,15 +34,15 @@ import('@src/config').then(async ({ config }) => {
 
 process.on('uncaughtException', (e) => {
   const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
+  fs.appendFileSync(crashPath, format('%s uncaughtException 错误: %s\n', formatDate(), e));
 });
 
 process.on('unhandledRejection', (e) => {
   const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
+  fs.appendFileSync(crashPath, format('%s unhandledRejection 错误: %s\n', formatDate(), e));
 });
 
 process.on('uncaughtExceptionMonitor', (e) => {
   const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
+  fs.appendFileSync(crashPath, format('%s uncaughtExceptionMonitor 错误: %s\n', formatDate(), e));
 });
