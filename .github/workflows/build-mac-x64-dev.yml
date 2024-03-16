@@ -10,8 +10,8 @@ on:
 
 jobs:
   build:
-    name: windows-latest
-    runs-on: windows-latest
+    name: macOS-latest
+    runs-on: macOS-latest
     permissions:
       contents: write
       packages: write
@@ -32,6 +32,9 @@ jobs:
       - name: 构建 ${{ runner.arch }}
         run: |
           yarn make
-          yarn push-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: app
+          path: dist
