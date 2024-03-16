@@ -1,0 +1,42 @@
+name: Build Release
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: "SSH connection to Actions"
+        required: false
+        default: "false"
+
+jobs:
+  build:
+    name: macOS-latest
+    runs-on: macOS-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: 拉取自身仓库代码
+        uses: actions/checkout@v2
+        with:
+          ref: dev
+
+      - name: 安装依赖
+        run: |
+          yarn
+      
+      - name: 构建 ${{ runner.arch }}
+        run: |
+          yarn make
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: app
+          path: dist
