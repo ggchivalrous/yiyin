@@ -3,6 +3,8 @@ import { OutputSetting } from '@modules/tools/image';
 import type { ITemp } from '@/common/const/def-temps';
 
 export interface IConfig {
+  version: string
+
   /**
    * 配置文件存放路径
    */

@@ -7,7 +7,10 @@ import { app } from 'electron';
 import { exifFields, defTemps, getDefTemp } from '@/common/const';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
 
+const needResetVer = ['1.5.0'];
+
 export const DefaultConfig: IConfig = {
+  version: import.meta.env.VITE_VERSION,
   dir: path.join(app.getPath('userData'), 'config.json'),
   output: path.join(app.getPath('pictures'), 'watermark'),
   cacheDir: path.join(app.getPath('temp'), 'yiyin'),
@@ -97,15 +100,24 @@ export function getConfig(def = false) {
   if (!def && fs.existsSync(_config.dir)) {
     const content = fs.readFileSync(_config.dir);
     const fileConfig = tryCatch<Partial<IConfig>>(() => JSON.parse(content.toString()), {});
-    Object.assign(_config, {
-      output: fileConfig.output || _config.output,
-      cacheDir: fileConfig.cacheDir || _config.cacheDir,
-      options: Object.assign(_config.options, fileConfig.options),
-      versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
-      tempFields: fileConfig.tempFields,
-      customTempFields: fileConfig.customTempFields,
-      temps: fileConfig.temps,
-    } as Partial<IConfig>);
+
+    if (
+      !fileConfig?.version
+      // 升版本时重置配置信息
+      || (needResetVer.includes(_config.version) && fileConfig.version < _config.version)
+    ) {
+      console.log('重置配置信息');
+    } else {
+      Object.assign(_config, {
+        output: fileConfig.output || _config.output,
+        cacheDir: fileConfig.cacheDir || _config.cacheDir,
+        options: Object.assign(_config.options, fileConfig.options),
+        versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
+        tempFields: fileConfig.tempFields,
+        customTempFields: fileConfig.customTempFields,
+        temps: fileConfig.temps,
+      } as Partial<IConfig>);
+    }
 
     // 默认的内容需要单独处理
     const tempFieldObj = arrToObj(_config.tempFields, 'key');

@@ -87,12 +87,12 @@
       />
     </FormItem>
     <FormItem label="字体文件">
-      <input class="font-input-file grass" type="file" on:change={onFileChange} />
+      <Input class="font-input-file grass" type="file" on:change={onFileChange} />
     </FormItem>
   </Form>
 
   <footer class="modal-footer">
-    <button class="grass button" on:click={close}>取消</button>
-    <button class="grass button" on:click={onFormSubmit}>添加</button>
+    <div class="grass button" on:click={close} on:keypress role="button" tabindex="-1">取消</div>
+    <div class="grass button" on:click={onFormSubmit} on:keypress role="button" tabindex="-1">添加</div>
   </footer>
 </Dialog>
