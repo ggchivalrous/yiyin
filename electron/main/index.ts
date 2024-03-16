@@ -33,16 +33,23 @@ import('@src/config').then(async ({ config }) => {
 });
 
 process.on('uncaughtException', (e) => {
-  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, format('%s uncaughtException 错误: %s\n', formatDate(), e));
+  onError('uncaughtException', e);
 });
 
 process.on('unhandledRejection', (e) => {
-  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, format('%s unhandledRejection 错误: %s\n', formatDate(), e));
+  onError('unhandledRejection', e as Error);
 });
 
 process.on('uncaughtExceptionMonitor', (e) => {
-  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
-  fs.appendFileSync(crashPath, format('%s uncaughtExceptionMonitor 错误: %s\n', formatDate(), e));
+  onError('uncaughtExceptionMonitor', e);
 });
+
+function onError(type: string, e: Error) {
+  const logPath = path.join(app.getPath('userData'), 'logs');
+  if (!fs.existsSync(logPath)) {
+    fs.mkdirSync(logPath);
+  }
+
+  const crashPath = path.join(logPath, 'crash.log');
+  fs.appendFileSync(crashPath, format('%s %s 错误: %s\n', formatDate(), type, e));
+}
