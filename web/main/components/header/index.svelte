@@ -1,8 +1,10 @@
 <script lang="ts">
   import { FontSelect } from '@components';
-  import { Popover } from '@ggchivalrous/db-ui';
+  import { Popover, Message } from '@ggchivalrous/db-ui';
   import { config, getConfig, resetConfig, pathInfo } from '@web/store/config';
   import './index.scss';
+
+  const qqQun = '718615618';
 
   function miniSizeWindow() {
     window.api.miniSize();
@@ -10,6 +12,11 @@
 
   function closeApp() {
     window.api.closeApp();
+  }
+
+  function copyQQQun() {
+    navigator.clipboard.writeText(qqQun);
+    Message.success('群号已复制到粘贴板');
   }
 </script>
 
@@ -20,8 +27,8 @@
         <i class="db-icon-star-off"></i>
       </div>
       <div class="app-header-star-content">
-        <div class="star-item group-chat">
-          QQ交流群:718615618
+        <div class="star-item group-chat button" on:click={copyQQQun} on:keypress role="button" tabindex="-1">
+          QQ交流群:{qqQun}
         </div>
         <div class="star-item button">
           <a href="https://message.bilibili.com/#/whisper/mid94829489" target="_blank">反馈 - 建议(B站私信)</a>
@@ -30,8 +37,19 @@
           <a href="https://github.com/ggchivalrous/yiyin/issues" target="_blank">反馈 - 建议(Github Issues)</a>
         </div>
         <div class="star-item">
-          ๑乛◡乛๑你不会想白嫖吧
-          <img class="zanshang" src="file://{$pathInfo.public}/zan.jpg" alt="赞赏码">
+          <div class="star-item-head">
+            ๑乛◡乛๑你不会想白嫖吧
+          </div>
+          <div class="star-item-content">
+            <div class="zan-item">
+              <img class="zanshang grass" src="file://{$pathInfo.public}/zs-wx.jpg" alt="赞赏码">
+              微信
+            </div>
+            <div class="zan-item">
+              <img class="zanshang grass" src="file://{$pathInfo.public}/zs-zfb.jpg" alt="赞赏码">
+              支付宝
+            </div>
+          </div>
         </div>
       </div>
     </Popover>

@@ -57,6 +57,8 @@
 }
 
 .app-header-star-content {
+  width: 360px;
+
   .star-item {
     padding: 10px 0;
     text-align: center;
@@ -71,9 +73,31 @@
       margin-top: 10px;
     }
 
-    .zanshang {
-      width: 250px;
+    .star-item-head {
+      text-align: center;
+      margin-bottom: 4px;
+      font-weight: bold;
     }
+
+    .star-item-content {
+      text-align: center;
+    }
+
+    .zan-item {
+      display: inline-block;
+
+      &:first-of-type {
+        margin-right: 8px;
+      }
+
+      .zanshang {
+        border-radius: 4px;
+        display: block;
+        width: 170px;
+        margin-bottom: 8px;
+      }
+    }
+
   }
 
   .group-chat {

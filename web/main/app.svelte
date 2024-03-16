@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Message as toast } from '@ggchivalrous/db-ui';
+  import { Message } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
-  import { tick } from 'svelte';
   import './index.scss';
 
   import { Actions, ParamSetting, Footer, Header, TempSetting } from './components';
@@ -10,9 +9,6 @@
   let fileUrlList: IFileInfo[] = [];
   let processing = false;
   let fileSelectDom: HTMLInputElement = null;
-  const clipboardDom: HTMLDivElement = null;
-
-  let imgExif = '';
   let showParamSetting = false;
   let showTempSetting = false;
 
@@ -60,13 +56,13 @@
       const info = await window.api.getExitInfo(fileUrlList[0].path);
 
       if (info.code === 0) {
-        imgExif = JSON.stringify(info.data, null, 2);
-        await tick();
-        clipboardDom.click();
-        toast.success('复制成功');
+        navigator.clipboard.writeText(JSON.stringify(info.data, null, 2));
+        Message.success('图片的相机信息已复制到粘贴板');
+      } else {
+        Message.error('图片相机信息获取失败');
       }
     } else {
-      toast.info('请选择一张图片');
+      Message.info('请选择一张图片');
     }
   }
 
