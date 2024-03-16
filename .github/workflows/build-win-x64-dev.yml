@@ -23,7 +23,9 @@ jobs:
           node-version: 18
 
       - name: 拉取自身仓库代码
-        uses: actions/checkout@main
+        uses: actions/checkout@v2
+        with:
+          ref: dev
 
       - name: 安装依赖
         run: |
