@@ -34,10 +34,11 @@ jobs:
       - name: 构建 ${{ runner.arch }}
         run: |
           yarn make
+          pwd
           ls -la ./
 
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: app
-          path: /dist
+          path: dist
