@@ -6,9 +6,8 @@ const __dirname = path.parse(import.meta.url.slice(os.platform() === 'win32' ? 8
 
 async function start() {
   const files = fs.readdirSync(path.join(__dirname, 'dist'));
-  const toPath = fs.readdirSync(path.join(__dirname, 'upload-dist'));
+  const toPath = path.join(__dirname, 'upload-dist');
   console.log('文件列表:', files);
-  fs.mkdirSync(toPath);
 
   for (const file of files) {
     const filePath = path.join(__dirname, 'dist', file);
