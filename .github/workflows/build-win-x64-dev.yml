@@ -34,7 +34,7 @@ jobs:
       - name: 构建 ${{ runner.arch }}
         run: |
           yarn make
-          yarn push-dev
+          yarn push:dev
 
       - name: Download artifacts
         uses: actions/upload-artifact@v2
