@@ -7,15 +7,13 @@ export interface IFileInfo {
   name: string
 }
 
-export interface IConfig {
-  options: Config['options']
+export interface IConfig extends Pick<
+  Config,
+  'options' | 'tempFields' | 'customTempFields' | 'staticDir' | 'temps'
+> {
   output: string
   fontMap: Record<string, string>
   fontDir: string
-  tempFields: Config['tempFields']
-  customTempFields: Config['customTempFields']
-  staticDir: Config['staticDir']
-  temps: Config['temps']
 }
 
 export type TInputEvent = Event & {

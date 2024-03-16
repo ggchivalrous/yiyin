@@ -20,6 +20,7 @@ export const DefaultConfig: IConfig = {
   },
 
   options: {
+    iot: false,
     landscape: false,
     solid_bg: false,
     origin_wh_output: false,

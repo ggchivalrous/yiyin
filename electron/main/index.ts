@@ -1,8 +1,10 @@
 /* eslint-disable no-console */
+import fs from 'node:fs';
 import path from 'node:path';
 
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
 import paths from '@src/path';
+import { formatDate } from '@utils';
 import { app } from 'electron';
 
 const isDev = import.meta.env.DEV;
@@ -27,4 +29,19 @@ import('@src/config').then(async ({ config }) => {
   const _app = new Application();
   await _app.init();
   await _app.start();
+});
+
+process.on('uncaughtException', (e) => {
+  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
+  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
+});
+
+process.on('unhandledRejection', (e) => {
+  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
+  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
+});
+
+process.on('uncaughtExceptionMonitor', (e) => {
+  const crashPath = path.join(app.getPath('userData'), 'logs/crash.log');
+  fs.appendFileSync(crashPath, `${formatDate()}: ${JSON.stringify(e)}`);
 });

@@ -121,6 +121,15 @@
       <Switch bind:value={$config.options.landscape} disabled={$config.options.bg_rate_show} />
     </ActionItem>
 
+    <ActionItem {labelWidth} title="快速输出">
+      <svelte:fragment slot="popup">
+        开启后选择图片/拖拽图片到软件将直接输出水印图片无需点击生成按钮
+      </svelte:fragment>
+      <Switch bind:value={$config.options.iot} />
+    </ActionItem>
+  </div>
+
+  <div class="app-action-right-wrap">
     <ActionItem {labelWidth} title="原宽高输出">
       <svelte:fragment slot="popup">
         开启将控制输出的宽高为输入的图片宽高
@@ -137,9 +146,7 @@
       </svelte:fragment>
       <Switch bind:value={$config.options.origin_wh_output} disabled={$config.options.bg_rate_show} />
     </ActionItem>
-  </div>
 
-  <div class="app-action-right-wrap">
     <ActionItem {labelWidth} title="圆角大小">
       <svelte:fragment slot="popup">
         指定圆角的大小，不指定则为直角

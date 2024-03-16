@@ -267,7 +267,7 @@
           };
 
           if (info.type === 'text') {
-            slotInfo.value = info.value.trim();
+            slotInfo.value = typeof info.value === 'string' ? info.value.trim() : info.value;
           } else {
             if ($config.options.solid_bg) {
               if (!info.bImg || info.bImg === 'false') {
@@ -385,9 +385,10 @@
 
     ctx.font = createTextFont(maxFontOpt);
     const textInfo = ctx.measureText('QOSyYtl709');
-    // const baseline = Math.ceil(textInfo.actualBoundingBoxAscent);
+    // TODO: 后续去掉默认的50高度，采用文本模板高度定义
     const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + 25);
 
+    // TODO: 后续去掉默认的50高度，采用文本模板高度定义
     can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontOpt.size));
     can.width = textList.reduce((n, i, j) => {
       if (i === undefined || !i) return n;

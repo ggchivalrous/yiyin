@@ -16,6 +16,10 @@
   let showParamSetting = false;
   let showTempSetting = false;
 
+  $: onFileUrlListChange(fileUrlList);
+
+  onFileDrop();
+
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
       const files = ev.currentTarget.files;
@@ -63,6 +67,39 @@
       }
     } else {
       toast.info('请选择一张图片');
+    }
+  }
+
+  // 监听文件放入，然后执行水印生成等后续操作
+  function onFileDrop() {
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const files = e.dataTransfer.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files.item(i);
+        fileUrlList.push({
+          name: file.name,
+          path: file.path,
+        });
+      }
+      fileUrlList = fileUrlList;
+
+      if ($config.options?.iot) {
+        generatePictureFrames();
+      }
+    });
+
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
+
+  function onFileUrlListChange(fileList: IFileInfo[]) {
+    if ($config.options?.iot) {
+      generatePictureFrames();
     }
   }
 </script>

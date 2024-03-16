@@ -1,6 +1,9 @@
 import type sharp from 'sharp';
 
 export interface OutputSetting {
+  /** 立即输出 */
+  iot: boolean
+
   /**
    * 是否横屏显示
    */
