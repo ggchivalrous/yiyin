@@ -13,7 +13,5 @@ export const exifFields: { key: string, name: string, value: '' }[] = [
   { key: 'DateTimeOriginal', name: '拍摄日期', value: '' },
   { key: 'ExposureCompensation', name: '曝光补偿', value: '' },
   { key: 'MeteringMode', name: '测光模式', value: '' },
-  { key: 'Flash', name: '闪光灯', value: '' },
-  { key: 'ExposureMode', name: '曝光模式', value: '' },
   { key: 'WhiteBalance', name: '白平衡', value: '' },
 ];

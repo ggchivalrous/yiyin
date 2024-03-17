@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import { config } from '@config';
 import ffmpegPath from '@ffmpeg-installer/ffmpeg';
+import { ExifTool } from '@modules/exiftool';
 import { Logger } from '@modules/logger';
 import { getConfig } from '@src/config';
-import { tryCatch, usePromise, md5, getFileName } from '@utils';
-import ExifParser from 'exif-parser';
+import { usePromise, md5, getFileName } from '@utils';
 import fluentFfmpeg from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import type { RGBA, Sharp } from 'sharp';
@@ -222,46 +222,24 @@ export class Image {
     return true;
   }
 
-  getExifInfo(imgBuffer?: Buffer): Record<string, any> {
-    const exifInfo = this.getOriginExifInfo(imgBuffer) || {};
+  getExifInfo(): Record<string, any> {
+    const exifInfo = this.getOriginExifInfo();
 
     return {
       Make: (exifInfo.Make || '').toUpperCase(),
       Model: (exifInfo.Model || '').toUpperCase(),
       LensMake: (exifInfo.LensMake || '').toUpperCase(),
       LensModel: (exifInfo.LensModel || '').toUpperCase(),
-      ExposureTime: exifInfo.ExposureTime || 0,
-      FNumber: exifInfo.FNumber || 0,
-      ISO: exifInfo.ISO || 0,
-      FocalLength: exifInfo.FocalLength || 0,
-      FocalLengthIn35mmFormat: exifInfo.FocalLengthIn35mmFormat || 0,
-      ExposureProgram: exifInfo.ExposureProgram || 0,
-      DateTimeOriginal: exifInfo.DateTimeOriginal || 0,
-      ExposureCompensation: exifInfo.ExposureCompensation || 0,
-      MeteringMode: exifInfo.MeteringMode || 0,
-      Flash: exifInfo.Flash || 0,
-      ExposureMode: exifInfo.ExposureMode || 0,
-      WhiteBalance: exifInfo.WhiteBalance || 0,
+      ...exifInfo,
     };
   }
 
-  getOriginExifInfo(imgBuffer?: Buffer) {
-    return tryCatch(() => {
-      imgBuffer = imgBuffer || this.exitBuf;
-      if (!imgBuffer && !this.exitBuf) {
-        const buffer = Buffer.alloc(200 * 1024);
-        const openImg = fs.openSync(this.imgPath, 'r');
+  getOriginExifInfo() {
+    const exiftool = new ExifTool({
+      path: this.imgPath,
+    });
 
-        fs.readSync(openImg, buffer, 0, buffer.length, 0);
-        fs.closeSync(openImg);
-
-        imgBuffer = buffer;
-        this.exitBuf = buffer;
-      }
-
-      const info = ExifParser.create(imgBuffer).parse();
-      return info?.tags;
-    }, null, (e) => log.error('图片 %s 相机参数获取失败', this.imgPath, e.message));
+    return exiftool.parse();
   }
 
   private async getRotateSharp() {
