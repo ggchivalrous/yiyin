@@ -52,6 +52,11 @@ export class ExifTool {
       );
     }
 
+    // 校验所有字段是否为空
+    if (parseRes && Object.values(parseRes).every((i) => i === '' || i === 0)) {
+      return null;
+    }
+
     return parseRes;
   }
 
@@ -81,8 +86,8 @@ export class ExifTool {
       LensModel: record.LensModel || '',
       FNumber: record.FNumber || '',
       ISO: record.ISO || '',
-      FocalLength: record.FocalLength.split('.')[0] || '',
-      FocalLengthIn35mmFormat: record.FocalLengthIn35mmFormat.split(' ')[0] || '',
+      FocalLength: record.FocalLength?.split('.')[0] || '',
+      FocalLengthIn35mmFormat: record.FocalLengthIn35mmFormat?.split(' ')[0] || '',
       ExposureTime: record.ExposureTime || '',
       DateTimeOriginal: record.DateTimeOriginal || '',
       ExposureCompensation: record.ExposureCompensation || '',

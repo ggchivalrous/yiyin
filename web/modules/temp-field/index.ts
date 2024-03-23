@@ -74,16 +74,16 @@ async function fillTempFieldInfo(
       };
       tempFieldInfo[field] = JSON.parse(JSON.stringify(_info));
 
-      if (field === 'Make') {
+      if (field === 'Make' && exif.oriExif.Make) {
         const wImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-w.svg`;
         const bImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-b.svg`;
 
-        if (await loadImage(wImg)) {
+        if (await loadImage(wImg).catch((e) => e)) {
           tempFieldInfo[field].wImg = wImg;
           tempFieldInfo[field].type = 'img';
         }
 
-        if (await loadImage(bImg)) {
+        if (await loadImage(bImg).catch((e) => e)) {
           tempFieldInfo[field].bImg = bImg;
           tempFieldInfo[field].type = 'img';
         }

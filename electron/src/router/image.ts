@@ -1,3 +1,4 @@
+import { ExifTool } from '@modules/exiftool';
 import { OutputOption } from '@modules/image-tool/interface';
 import { Router } from '@modules/router';
 import routerConfig from '@root/router-config';
@@ -26,6 +27,11 @@ r.listen(routerConfig.genTextImg, async (data: any) => {
 
 r.listen(routerConfig.genMainImgShadow, async (data: any) => {
   genMainImgShadowQueue.add(data);
+});
+
+r.listen(routerConfig.getExitInfo, async (imgPath: string) => {
+  const tool = new ExifTool(imgPath);
+  return tool.parse();
 });
 
 export default r;

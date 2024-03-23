@@ -1,3 +1,4 @@
+import Event from 'events';
 import fs from 'fs';
 import { join } from 'path';
 
@@ -21,14 +22,16 @@ import type { ImageToolOption, Material, OutputFilePaths, SizeInfo } from './int
 const log = new Logger('ImageTool');
 const NotInit = Symbol('未初始化');
 
-export class ImageTool {
+interface EventMap {
+  progress(id: string, progress: number): void
+}
+
+export class ImageTool extends Event {
   private isInit: boolean;
 
   private id: string;
 
   private path: string;
-
-  private opt: ImageToolOption;
 
   private outputOpt: IConfig['options'];
 
@@ -42,6 +45,8 @@ export class ImageTool {
 
   private exif: Exif;
 
+  private _progress = 0;
+
   private material: Material = {
     bg: undefined,
     main: [],
@@ -50,8 +55,14 @@ export class ImageTool {
 
   private contentH: number;
 
+  set progress(n: number) {
+    this._progress = n;
+    this.emit('progress', this.id, this._progress);
+  }
+
   constructor(path: string, name: string, opt: ImageToolOption) {
-    this.opt = opt;
+    super();
+
     this.path = path;
     this.outputOpt = opt.outputOption;
     this.id = md5(`${md5(path)}${Math.random()}${Date.now()}`);
@@ -66,19 +77,20 @@ export class ImageTool {
     };
   }
 
-  private async init() {
+  async init() {
     if (this.isInit) return;
     this.isInit = true;
 
     // 准备基础信息
-    const imgSharp = sharp(this.path);
+    const imgSharp = sharp(this.path).rotate();
 
     this.meta = await imgSharp.metadata();
+    const { info: imgInfo } = await imgSharp.toBuffer({ resolveWithObject: true });
     this.sizeInfo = {
-      w: this.meta.width,
-      h: this.meta.height,
-      resetW: this.meta.width,
-      resetH: this.meta.height,
+      w: imgInfo.width,
+      h: imgInfo.height,
+      resetW: imgInfo.width,
+      resetH: imgInfo.height,
     };
 
     const { outputOpt } = this;
@@ -113,27 +125,35 @@ export class ImageTool {
   async genWatermark() {
     log.info('【%s】初始化基础数据', this.id);
     await this.init();
+    this.progress = 10;
 
     log.info('【%s】初步计算背景图片大小', this.id);
     this.clacBgImgSize();
+    this.progress = 20;
 
     log.info('【%s】生成文本图片', this.id);
     await this.genTextImg();
+    this.progress = 30;
 
     log.info('【%s】生成主图', this.id);
     await this.genMainImg();
+    this.progress = 50;
 
     log.info('【%s】计算内容高度', this.id);
     this.calcContentHeight();
+    this.progress = 60;
 
     log.info('【%s】生成背景图', this.id);
     await this.genBgImg();
+    this.progress = 70;
 
     log.info('【%s】生成主图阴影遮罩', this.id);
     await this.genMainImgShadow();
+    this.progress = 90;
 
     log.info('【%s】图片合成...', this.id);
     await this.composite();
+    this.progress = 100;
   }
 
   async genBgImg() {
@@ -204,7 +224,7 @@ export class ImageTool {
 
     mainApp.win.webContents.send(routerConfig.on.genTextImg, {
       id: this.id,
-      exif: this.exif,
+      exif: this.exif || {},
       bgHeight: this.material.bg.h,
       options: config.options,
       fields: [...config.tempFields, ...config.customTempFields],
@@ -280,6 +300,7 @@ export class ImageTool {
 
     // 统一转成固定大小，方便控制模糊数值
     await sharp(this.path)
+      .rotate()
       .resize({ width: 3025, height: 3025, fit: 'fill' })
       .toFormat('jpeg', { quality: 50 })
       .toFile(toFilePath);
@@ -373,6 +394,12 @@ export class ImageTool {
       resetHeight = height;
       resetWidth = Math.ceil(resetHeight * whRate);
     }
+    else {
+      // 主图高度比重置后的高度高，需要使用主图高度作为最终高度
+      const validHeight = this.sizeInfo.h > resetHeight ? this.sizeInfo.h : resetHeight;
+      resetHeight = validHeight;
+      resetWidth = Math.ceil(resetHeight * whRate);
+    }
 
     // 如果重置后，宽度太窄，则等比扩大宽高
     if (this.sizeInfo.w / resetWidth > 0.9) {
@@ -401,7 +428,7 @@ export class ImageTool {
 
     // 阴影宽度
     if (opt.shadow_show) {
-      const shadowHeight = Math.ceil(this.meta.height * ((opt.shadow || 6) / 100));
+      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 6) / 100));
       const mainImgOffsetTop = Math.max(mainImgTopOffset, shadowHeight);
       mainImgOffset = mainImgOffsetTop * 2 * (3 / 4);
       contentTop = Math.ceil(mainImgOffsetTop);
@@ -424,5 +451,36 @@ export class ImageTool {
     if (this.material.text?.length) {
       this.material.text[this.material.text.length - 1].h += textButtomOffset;
     }
+  }
+
+  emit<U extends keyof EventMap>(
+    event: U,
+    ...args: Parameters<EventMap[U]>
+  ): boolean {
+    return super.emit(event, ...args);
+  }
+
+  off<U extends keyof EventMap>(
+    eventName: U,
+    listener: EventMap[U],
+  ): this {
+    super.off(eventName, listener);
+    return this;
+  }
+
+  on<U extends keyof EventMap>(
+    event: U,
+    listener: EventMap[U],
+  ): this {
+    super.on(event, listener);
+    return this;
+  }
+
+  once<U extends keyof EventMap>(
+    event: U,
+    listener: EventMap[U],
+  ): this {
+    super.once(event, listener);
+    return this;
   }
 }

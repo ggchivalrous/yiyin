@@ -2,7 +2,7 @@ export class ExifBase {
   exif: any;
 
   constructor(exif: any) {
-    this.exif = exif;
+    this.exif = exif || {};
   }
 
   /**

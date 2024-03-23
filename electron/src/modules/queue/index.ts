@@ -9,7 +9,7 @@ export interface QueueHandler<T> {
 }
 
 export class Queue<T = any> {
-  private status: 'stop' | 'paused' |'running' | 'drain' = 'drain';
+  private status: 'close' |'running' | 'drain' = 'drain';
 
   private queue: Map<string, T> = new Map();
 
@@ -18,6 +18,10 @@ export class Queue<T = any> {
   private queueHandler: QueueHandler<T>[] = [];
 
   private error: (type: string, e: Error) => void = () => {};
+
+  private closeing = false;
+
+  private awaitList: Map<string, Promise<string>> = new Map();
 
   constructor(opt?: QueueOption) {
     this.concurrency = opt?.concurrency || 1;
@@ -66,14 +70,22 @@ export class Queue<T = any> {
     this.error = listen;
   }
 
+  async close() {
+    this.closeing = true;
+    this.status = 'close';
+    return Promise.all(this.awaitList).catch((e) => {
+      this.error('close', e);
+    });
+  }
+
   private async run() {
     if (this.status === 'running') return;
 
     this.status = 'running';
     let flag = 1;
-    const awaitList: Map<string, Promise<string>> = new Map();
+    const awaitList: Map<string, Promise<string>> = this.awaitList;
 
-    while (awaitList.size || this.queue.size) {
+    while (!this.closeing && (awaitList.size || this.queue.size)) {
       for (const [id, data] of this.queue) {
         this.queue.delete(id);
         flag = 1;
@@ -94,7 +106,7 @@ export class Queue<T = any> {
         })());
 
         // 达到并发数
-        if (this.concurrency >= awaitList.size) {
+        if (this.concurrency >= awaitList.size || this.closeing) {
           break;
         }
       }
@@ -114,9 +126,5 @@ export class Queue<T = any> {
     }
 
     this.status = 'drain';
-  }
-
-  private async getNextJob() {
-
   }
 }

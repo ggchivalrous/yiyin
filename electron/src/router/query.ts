@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { config, getConfig, storeConfig } from '@config';
-import { ExifTool } from '@modules/exiftool';
 import { Router } from '@modules/router';
 import routerConfig from '@root/router-config';
 import paths from '@src/path';
@@ -31,11 +30,6 @@ r.listen(routerConfig.resetConfig, async () => {
 r.listen(routerConfig.miniSize, async () => BrowserWindow.getFocusedWindow().minimize());
 
 r.listen(routerConfig.closeApp, async () => app.quit());
-
-r.listen(routerConfig.getExitInfo, async (imgPath: string) => {
-  const tool = new ExifTool(imgPath);
-  return tool.parse();
-});
 
 r.listen(routerConfig.getFontList, async () => config.font.map);
 

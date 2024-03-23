@@ -31,7 +31,7 @@ export class ExifFormat {
   }
 
   private init() {
-    this.exif.Make = this.exif.Make.replace('CORPORATION', '').trim();
+    this.exif.Make = this.exif.Make ? this.exif.Make.replace('CORPORATION', '').trim() : '';
   }
 
   private insExif() {

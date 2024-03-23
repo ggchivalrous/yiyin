@@ -1,3 +1,4 @@
+import type { Exif } from '@modules/exiftool/interface';
 import type { IConfig as Config } from '@src/interface';
 
 export * from '@src/interface';
@@ -18,4 +19,9 @@ export interface IConfig extends Pick<
 
 export type TInputEvent = Event & {
   currentTarget: EventTarget & HTMLInputElement;
+}
+
+export interface ActiveImgInfo extends IFileInfo {
+  exif: Exif
+  progress: number
 }
