@@ -10,26 +10,22 @@ import { Exif } from './interface';
 const log = new Logger('ExifTool');
 const exiftoolPath = import.meta.env.VITE_EXIFTOOL;
 
-interface ExifToolOption {
-  path: string
-}
-
 export class ExifTool {
   private hasExiftool = false;
 
   private exifBuf: Buffer;
 
-  private opt: ExifToolOption;
+  private path: string;
 
-  constructor(opt: ExifToolOption) {
-    this.opt = opt;
+  constructor(path: string) {
+    this.path = path;
     this.hasExiftool = fs.existsSync(exiftoolPath);
     this.init();
   }
 
   private init() {
     const buffer = Buffer.alloc(1024 * 1024);
-    const openImg = fs.openSync(this.opt.path, 'r');
+    const openImg = fs.openSync(this.path, 'r');
 
     fs.readSync(openImg, buffer, 0, buffer.length, 0);
     fs.closeSync(openImg);
@@ -44,7 +40,7 @@ export class ExifTool {
       parseRes = tryCatch(
         this.exiftoolParse.bind(this),
         null,
-        (e) => log.error('使用ExifTool获取图片 %s 相机参数失败', this.opt.path, e),
+        (e) => log.error('使用ExifTool获取图片 %s 相机参数失败', this.path, e),
       );
     }
 
@@ -52,7 +48,7 @@ export class ExifTool {
       parseRes = tryCatch(
         this.exifparserParse.bind(this),
         null,
-        (e) => log.error('使用ExifParser获取图片 %s 相机参数失败', this.opt.path, e),
+        (e) => log.error('使用ExifParser获取图片 %s 相机参数失败', this.path, e),
       );
     }
 
@@ -60,7 +56,7 @@ export class ExifTool {
   }
 
   private exiftoolParse(): Exif {
-    const res = execSync(`${exiftoolPath} ${this.opt.path}`);
+    const res = execSync(`${exiftoolPath} ${this.path}`);
     const text = res.toString();
     const strList = text.split('\n');
     const kvList = strList.map((i) => {

@@ -15,6 +15,8 @@ export default {
   uploadExifImg: 'uploadExifImg',
   pathInfo: 'pathInfo',
   logoList: 'logoList',
+  genTextImg: 'genTextImg',
+  genMainImgShadow: 'genMainImgShadow',
   open: {
     selectPath: 'open:selectPath',
     dir: 'open:dir',
@@ -25,5 +27,7 @@ export default {
     progress: 'on:progress',
     composite: 'on:composite',
     assetsUpdate: 'on:assetsUpdate',
+    genTextImg: 'on:genTextImg',
+    genMainImgShadow: 'on:genMainImgShadow',
   },
 };

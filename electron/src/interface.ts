@@ -1,4 +1,4 @@
-import { OutputSetting } from '@modules/tools/image';
+import type { OutputOption } from '@modules/image-tool/interface';
 
 import type { ITemp } from '@/common/const/def-temps';
 
@@ -39,7 +39,7 @@ export interface IConfig {
   /**
    * 参数信息
    */
-  options: OutputSetting
+  options: OutputOption
 
   /**
    * 模版字段列表

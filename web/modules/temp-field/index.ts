@@ -1,52 +1,48 @@
+import { ExifFormat } from '@common/modules/exif-format';
 import type { IFieldInfoItem } from '@src/interface';
-import { Exif } from '@web/modules/exif';
-import { config, pathInfo } from '@web/store/config';
 import { loadImage } from '@web/util/util';
-import { get } from 'svelte/store';
 
 import type { ITemp } from '@/common/const/def-temps';
 
-interface IGetTempFieldsConfOpts {
+interface GetFieldTempInfoOpt {
   bgHeight: number
+  fields: IFieldInfoItem[]
+  logoPath: string
 }
 
 /**
  * 获取模版参数信息配置
  * @param exifInfo - 读取到的相机信息
  */
-export async function getTempFieldsConf(exifInfo: Record<string, any>, opts: IGetTempFieldsConfOpts) {
-  const tempFields = get(config).tempFields;
-  const customTempFields = get(config).customTempFields;
+export async function getFieldTempInfo(exifInfo: Record<string, any>, opt: GetFieldTempInfoOpt) {
   const tempFieldRecord: Record<string, IFieldInfoItem> = {};
-  const fileds = [...customTempFields, ...tempFields];
+  const fileds = opt.fields;
 
   for (const filed of fileds) {
     tempFieldRecord[filed.key] = {
       ...filed,
       font: filed.font && {
         ...filed.font,
-        size: filed.font.size ? Math.round(opts.bgHeight * (filed.font.size / 100)) : 0,
+        size: filed.font.size ? Math.round(opt.bgHeight * (filed.font.size / 100)) : 0,
       },
     };
   }
 
-  return fillTempFieldInfo(tempFieldRecord, exifInfo);
+  return fillTempFieldInfo(tempFieldRecord, opt.logoPath, exifInfo);
 }
 
 interface IGetTempsConfOpts {
   bgHeight: number
   color: string
+  defFont: string
 }
 
-export function getTempsConf(opts?: IGetTempsConfOpts): ITemp[] {
-  const conf = get(config);
-  const temps = conf.temps;
-
+export function getTextTempList(temps: ITemp[], opts?: IGetTempsConfOpts): ITemp[] {
   return temps.map((temp) => ({
     ...temp,
     font: {
       ...temp.font,
-      font: temp.font.font || conf.options.font,
+      font: temp.font.font || opts.defFont,
       color: temp.font.color || opts.color,
       size: opts.bgHeight * (temp.font.size / 100),
     },
@@ -59,8 +55,12 @@ export function getTempsConf(opts?: IGetTempsConfOpts): ITemp[] {
  * @param exifInfo - 规范化的相机信息对象
  * @returns
  */
-async function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, exifInfo?: Record<string, any>) {
-  const exif = new Exif(exifInfo || {});
+async function fillTempFieldInfo(
+  tempFieldConf: Record<string, IFieldInfoItem>,
+  logoPath: string,
+  exifInfo?: Record<string, any>,
+) {
+  const exif = new ExifFormat(exifInfo || {});
   const tempFieldInfo: Record<string, IFieldInfoItem> = {};
 
   for (const field in tempFieldConf) {
@@ -75,15 +75,15 @@ async function fillTempFieldInfo(tempFieldConf: Record<string, IFieldInfoItem>, 
       tempFieldInfo[field] = JSON.parse(JSON.stringify(_info));
 
       if (field === 'Make') {
-        const wImg = `file://${get(pathInfo).logo}/${exif.oriExif.Make.toLowerCase()}-w.svg`;
-        const bImg = `file://${get(pathInfo).logo}/${exif.oriExif.Make.toLowerCase()}-b.svg`;
+        const wImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-w.svg`;
+        const bImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-b.svg`;
 
-        if (await loadImage(wImg).catch(() => null)) {
+        if (await loadImage(wImg)) {
           tempFieldInfo[field].wImg = wImg;
           tempFieldInfo[field].type = 'img';
         }
 
-        if (await loadImage(bImg).catch(() => null)) {
+        if (await loadImage(bImg)) {
           tempFieldInfo[field].bImg = bImg;
           tempFieldInfo[field].type = 'img';
         }

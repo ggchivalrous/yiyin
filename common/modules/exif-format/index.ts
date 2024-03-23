@@ -6,7 +6,7 @@ interface IExifBaseClass {
   new(exif: any): ExifBase
 }
 
-export class Exif {
+export class ExifFormat {
   private exif: any;
 
   private exifIns: ExifBase;

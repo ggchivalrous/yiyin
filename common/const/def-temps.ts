@@ -34,7 +34,7 @@ export const defTemps: ITemp[] = [
   {
     key: 'exif-params',
     name: '参数模版 - 等效焦距',
-    temp: '{FocalLengthIn35mmFormat}mm f/{FNumber} {ExposureTime}s ISO{ISO} {PersonalSign}',
+    temp: '{FocalLengthIn35mmFormat}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: true,
     type: 'system',
     font: {
@@ -47,11 +47,11 @@ export const defTemps: ITemp[] = [
   {
     key: 'exif-params-1',
     name: '参数模版 - 原始焦距',
-    temp: '{FocalLength}mm f/{FNumber} {ExposureTime}s ISO{ISO} {PersonalSign}',
+    temp: '{FocalLength}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: false,
     type: 'system',
     font: {
-      size: 2,
+      size: 2.2,
       font: '',
       bold: true,
       italic: false,

@@ -113,9 +113,9 @@ export function getConfig(def = false) {
         cacheDir: fileConfig.cacheDir || _config.cacheDir,
         options: Object.assign(_config.options, fileConfig.options),
         versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
-        tempFields: fileConfig.tempFields,
-        customTempFields: fileConfig.customTempFields,
-        temps: fileConfig.temps,
+        tempFields: fileConfig.tempFields || _config.tempFields,
+        customTempFields: fileConfig.customTempFields || _config.customTempFields,
+        temps: fileConfig.temps || _config.temps,
       } as Partial<IConfig>);
     }
 

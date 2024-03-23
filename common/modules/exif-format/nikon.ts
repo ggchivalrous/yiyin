@@ -1,4 +1,4 @@
-import { toRoman } from '@web/util/util';
+import { toRoman } from '@common/utils';
 
 import { ExifBase } from './base';
 

@@ -1,5 +1,9 @@
 <script lang="ts">
   import { Message } from '@ggchivalrous/db-ui';
+  import { ImageTool } from '@web/modules/image-tool';
+  import type { ImageToolOption } from '@web/modules/image-tool/interface';
+  import { TextTool } from '@web/modules/text-tool';
+  import type { TextToolOption } from '@web/modules/text-tool/interface';
   import { config } from '@web/store/config';
   import './index.scss';
 
@@ -15,6 +19,25 @@
   $: onFileUrlListChange(fileUrlList);
 
   onFileDrop();
+
+  window.api['on:genTextImg'](async (data: TextToolOption & { id: string }) => {
+    const textTool = new TextTool(data.exif, data);
+    const textImgList = await textTool.genTextImg();
+
+    window.api.genTextImg({
+      id: data.id,
+      textImgList,
+    });
+  });
+
+  window.api['on:genMainImgShadow'](async (data: ImageToolOption & { id: string }) => {
+    const tool = new ImageTool(data);
+    const _data = await tool.genMainImgShadow();
+    window.api.genMainImgShadow({
+      id: data.id,
+      data: _data,
+    });
+  });
 
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
@@ -93,7 +116,7 @@
     });
   }
 
-  function onFileUrlListChange(fileList: IFileInfo[]) {
+  function onFileUrlListChange(_: IFileInfo[]) {
     if ($config.options?.iot) {
       generatePictureFrames();
     }

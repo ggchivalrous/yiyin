@@ -26,10 +26,9 @@ import('@src/config').then(async ({ config }) => {
 
   app.addListener('quit', closeAllLogger);
 
-  const { default: Application } = await import('./app');
-  const _app = new Application();
-  await _app.init();
-  await _app.start();
+  const { mainApp } = await import('@src/common/app');
+  await mainApp.init();
+  await mainApp.start();
 });
 
 process.on('uncaughtException', (e) => {

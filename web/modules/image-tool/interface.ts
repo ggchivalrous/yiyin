@@ -1,6 +1,9 @@
-import type sharp from 'sharp';
+export interface ImageToolOption {
+  material: Material
+  options: OutputOption
+}
 
-export interface OutputSetting {
+export interface OutputOption {
   /** 立即输出 */
   iot: boolean
 
@@ -51,22 +54,28 @@ export interface OutputSetting {
   font: string
 }
 
-export interface ImgInfo {
-  buf: Buffer
-  info: {
-    w: number
-    h: number
-  }
-  reset_info: {
-    w: number
-    h: number
-  }
-  metadata: Partial<sharp.Metadata>
+export interface Material {
+  /**
+   * 背景图片素材信息
+   */
+  bg: Img
+
+  /**
+   * 主图素材信息
+   */
+  main: Img[]
+
+  /**
+   * 文本素材信息
+   */
+  text: Img[]
 }
 
-export interface IImgFileInfo {
-  data?: string
+export interface Img {
   path: string
-  width?: number
-  height?: number
+  buf?: Buffer
+  w: number
+  h: number
+  top: number
+  left: number
 }
