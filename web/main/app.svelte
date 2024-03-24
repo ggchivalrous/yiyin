@@ -1,11 +1,13 @@
 <script lang="ts">
+  import './index.scss';
   import { Message } from '@ggchivalrous/db-ui';
   import { ImageTool } from '@web/modules/image-tool';
   import type { ImageToolOption } from '@web/modules/image-tool/interface';
   import { TextTool } from '@web/modules/text-tool';
   import type { TextToolOption } from '@web/modules/text-tool/interface';
   import { config } from '@web/store/config';
-  import './index.scss';
+  import { importFont } from '@web/util/util';
+  import type { IFontInfo } from '@web/util/util';
 
   import { Actions, ParamSetting, Footer, Header, TempSetting } from './components';
   import type { IFileInfo, TInputEvent } from './interface';
@@ -15,8 +17,11 @@
   let fileSelectDom: HTMLInputElement = null;
   let showParamSetting = false;
   let showTempSetting = false;
+  let fontList: IFontInfo[] = [];
 
   $: onFileInfoListChange(fileInfoList);
+  $: onFontMap($config.fontMap);
+  $: importFont(fontList);
 
   onFileDrop();
 
@@ -80,7 +85,6 @@
 
       const _fileInfoList = [];
       const files = e.dataTransfer.files;
-      console.log(files.length);
 
       for (let i = 0; i < files.length; i++) {
         const file = files.item(i);
@@ -118,6 +122,20 @@
   function onFileInfoListChange(_: IFileInfo[]) {
     if ($config.options?.iot) {
       startTask();
+    }
+  }
+
+  function onFontMap(fontMap: Record<string, string>) {
+    if (fontMap) {
+      const list = [];
+      for (const key in fontMap) {
+        list.push({
+          name: key,
+          path: `file://${$config.fontDir}/${fontMap[key]}`,
+        });
+      }
+
+      fontList = list;
     }
   }
 </script>
