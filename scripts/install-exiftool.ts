@@ -9,7 +9,7 @@ import { usePromise } from '../common/utils';
 
 const platform = os.platform();
 const __dirname = path.parse(import.meta.url.slice(platform === 'win32' ? 8 : 7)).dir;
-const WindowsExifToolPath = path.join(__dirname, '../static/commond-exiftool.zip');
+const WindowsExifToolPath = path.join(__dirname, '../static/windows-exiftool.zip');
 const CommondExifToolPath = path.join(__dirname, '../static/commond-exiftool.tar.gz');
 
 export default (outputPath: string) => {
