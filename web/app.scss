@@ -8,6 +8,8 @@
   --blackShadow: 3px 3px 6px rgba(191, 202, 219, .8);
   --whiteShadow: -3px -3px 6px rgba(255, 255, 255, .8);
   --bg-color: #E7EAF3;
+  --success-color: #529E4E;
+  --error-color: #BA4848;
 }
 
 * {
@@ -37,6 +39,14 @@ body,
 
 #app,
 body {
+  .success {
+    color: var(--success-color);
+  }
+
+  .error {
+    color: var(--error-color);
+  }
+
   .icon {
     cursor: pointer;
   }

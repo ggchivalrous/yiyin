@@ -37,9 +37,11 @@ export const pollSleep = async (fn: () => boolean, ms = 500, timeout = 60e3) => 
   }
 };
 
-type IArrToObjCb = <T, R = T>(item: T, objV: R, index: number) => R
+interface IArrToObjCb<T, R = T> {
+  (item: T, objV: R, index: number): R
+}
 
-export const arrToObj = <T = any, R = T>(arr: T[], field?: string, cb?: IArrToObjCb): Record<any, R> => {
+export const arrToObj = <T = any, R = T>(arr: T[], field?: string, cb?: IArrToObjCb<T, R>): Record<any, R> => {
   const _obj: Record<any, any> = {};
 
   if (typeof cb !== 'function') {

@@ -94,7 +94,11 @@ export class TextTool {
       }
 
       if (textList.length) {
-        imgFileInfoList.push(this.createTextImg(textList, { font: i.font, height: i.height }));
+        imgFileInfoList.push(this.createTextImg(textList, {
+          font: i.font,
+          height: i.height,
+          bgHeight: this.opt.bgHeight,
+        }));
       }
     }
 
@@ -125,11 +129,12 @@ export class TextTool {
 
     ctx.font = this.getFont(maxFontParam);
     const textInfo = ctx.measureText('QOSyYtl709');
+    const defTextMargin = opts.bgHeight * 0.004;
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
-    const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + 25);
+    const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + defTextMargin);
 
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
-    can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + 50, maxFontParam.size));
+    can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + defTextMargin * 2, maxFontParam.size));
     can.width = textList.reduce((n, i, j) => {
       if (!i) return n;
 

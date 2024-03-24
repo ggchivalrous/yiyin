@@ -1,5 +1,6 @@
 export default {
   startTask: 'startTask',
+  addTask: 'addTask',
   composite: 'composite',
   compositeFail: 'compositeFail',
   createBgImg: 'createBgImg',
@@ -17,6 +18,7 @@ export default {
   logoList: 'logoList',
   genTextImg: 'genTextImg',
   genMainImgShadow: 'genMainImgShadow',
+  drainQueue: 'drainQueue',
   open: {
     selectPath: 'open:selectPath',
     dir: 'open:dir',
@@ -24,6 +26,7 @@ export default {
   on: {
     createMask: 'on:createMask',
     taskStart: 'on:taskStart',
+    faildTask: 'on:faildTask',
     progress: 'on:progress',
     composite: 'on:composite',
     assetsUpdate: 'on:assetsUpdate',

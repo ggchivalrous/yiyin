@@ -4,6 +4,7 @@ import type { IConfig as Config } from '@src/interface';
 export * from '@src/interface';
 
 export interface IFileInfo {
+  id?: string
   path: string
   name: string
 }
@@ -21,7 +22,10 @@ export type TInputEvent = Event & {
   currentTarget: EventTarget & HTMLInputElement;
 }
 
-export interface ActiveImgInfo extends IFileInfo {
+export interface ImgInfo extends IFileInfo {
   exif: Exif
+  faild: boolean
+  faildMsg: string
   progress: number
+  closeInterval: () => void
 }

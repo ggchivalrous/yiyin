@@ -87,14 +87,14 @@ export default class Application {
       this.checkAssetsUpdate();
     });
 
-    imageToolQueue.on(async (data) => {
-      if (data) {
-        const imgTool = new ImageTool(data.path, data.name, {
-          cachePath: config.cacheDir,
-          outputOption: cpObj(config.options),
-          outputPath: cpObj(config.output),
+    imageToolQueue.on(async (imgTool) => {
+      if (imgTool) {
+        await imgTool.genWatermark().catch((e: Error) => {
+          this.win.webContents.send(routerConfig.on.faildTask, {
+            id: imgTool.id,
+            msg: e.message,
+          });
         });
-        await imgTool.genWatermark();
       }
     });
 

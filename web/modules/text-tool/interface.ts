@@ -35,6 +35,7 @@ export interface ISlotInfo {
 export interface ITextOption {
   height: ITemp['height']
   font: ITemp['font']
+  bgHeight: number
 }
 
 export interface TextInfo {

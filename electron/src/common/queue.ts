@@ -1,3 +1,4 @@
+import { ImageTool } from '@modules/image-tool';
 import { Queue } from '@modules/queue';
 import type { IImgFileInfo } from '@web/modules/text-tool/interface';
 
@@ -11,7 +12,4 @@ export const genMainImgShadowQueue = new Queue<{
   data: string
 }>({ concurrency: 2 });
 
-export const imageToolQueue = new Queue<{
-  path: string
-  name: string
-}>({ concurrency: 2 });
+export const imageToolQueue = new Queue<ImageTool>({ concurrency: 2, autoRun: false });

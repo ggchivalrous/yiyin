@@ -1,5 +1,5 @@
 .app-action-wrap {
-  width: 450px;
+  width: 100%;
   display: flex;
   flex-wrap: nowrap;
   margin-bottom: 20px;
@@ -39,6 +39,10 @@
   }
 
   .app-action-left-wrap {
+    width: 350px;
+    flex-basis: 350px;
+    flex-grow: 0;
+
     .output-setting {
       padding: 0 4px;
       display: inline-block;
@@ -47,6 +51,52 @@
       &:hover {
         color: var(--active-color);
         font-weight: bold;
+      }
+    }
+  }
+
+  .app-action-right-wrap {
+    padding: 0 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    border-radius: 4px;
+  }
+
+  .img-list {
+    padding: 5px 0 20px;
+
+    .img-item {
+      margin-top: 15px;
+      border-radius: 4px;
+      padding: 6px 12px;
+
+      .img-item-head {
+        display: flex;
+        align-items: center;
+        padding-bottom: 4px;
+      }
+
+      .img-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+        font-weight: bold;
+        color: #515255;
+      }
+
+      .img-item-info {
+        font-size: 12px;
+        color: #8f9094;
+      }
+
+      .img-item-faild-msg {
+        max-height: 30px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        font-size: 12px;
+        color: #8f9094;
       }
     }
   }

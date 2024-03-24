@@ -2,6 +2,7 @@ import { md5, sleep, tryAsyncCatch } from '@utils';
 
 export interface QueueOption {
   concurrency: number
+  autoRun?: boolean
 }
 
 export interface QueueHandler<T> {
@@ -9,6 +10,8 @@ export interface QueueHandler<T> {
 }
 
 export class Queue<T = any> {
+  private opt: QueueOption;
+
   private status: 'close' |'running' | 'drain' = 'drain';
 
   private queue: Map<string, T> = new Map();
@@ -23,8 +26,13 @@ export class Queue<T = any> {
 
   private awaitList: Map<string, Promise<string>> = new Map();
 
+  get list() {
+    return [...this.queue.values()];
+  }
+
   constructor(opt?: QueueOption) {
     this.concurrency = opt?.concurrency || 1;
+    this.opt = { autoRun: true, ...opt };
   }
 
   add(d: T, id?: string) {
@@ -32,7 +40,7 @@ export class Queue<T = any> {
     this.queue.set(id, d);
 
     // 队列为空时启动轮询
-    if (this.status === 'drain') {
+    if (this.status === 'drain' && this.opt.autoRun) {
       this.run();
     }
   }
@@ -78,7 +86,7 @@ export class Queue<T = any> {
     });
   }
 
-  private async run() {
+  async run() {
     if (this.status === 'running') return;
 
     this.status = 'running';

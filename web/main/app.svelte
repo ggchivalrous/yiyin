@@ -10,19 +10,21 @@
   import { Actions, ParamSetting, Footer, Header, TempSetting } from './components';
   import type { IFileInfo, TInputEvent } from './interface';
 
-  let fileUrlList: IFileInfo[] = [];
-  let processing = false;
+  let fileInfoList: IFileInfo[] = [];
+  const processing = false;
   let fileSelectDom: HTMLInputElement = null;
   let showParamSetting = false;
   let showTempSetting = false;
 
-  $: onFileUrlListChange(fileUrlList);
+  $: onFileInfoListChange(fileInfoList);
 
   onFileDrop();
 
   window.api['on:genTextImg'](async (data: TextToolOption & { id: string }) => {
     const textTool = new TextTool(data.exif, data);
-    const textImgList = await textTool.genTextImg();
+    const textImgList = await textTool.genTextImg().catch((e) => {
+      console.log(e);
+    });
 
     window.api.genTextImg({
       id: data.id,
@@ -42,71 +44,68 @@
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
       const files = ev.currentTarget.files;
-      fileUrlList = [];
+      const _fileUrlList: IFileInfo[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        fileUrlList.push({
+        _fileUrlList.push({
           path: files[i].path,
           name: files[i].name,
         });
       }
-    }
-  }
 
-  async function generatePictureFrames() {
-    if (processing) return;
-
-    if (fileUrlList.length) {
-      processing = true;
-      const res = await window.api.startTask({
-        fileUrlList,
-        output: $config.output,
-        option: $config.options,
-      });
-
+      const res = await window.api.addTask(_fileUrlList);
       if (res.code !== 0) {
-        console.log(res);
+        Message.error(`图片添加失败${res.message}`);
+        return;
       }
 
-      fileUrlList = [];
+      fileInfoList.unshift(...res.data);
       fileSelectDom.value = '';
-      processing = false;
+      fileInfoList = fileInfoList;
     }
   }
 
-  async function getExitInfo() {
-    if (fileUrlList.length) {
-      const info = await window.api.getExitInfo(fileUrlList[0].path);
-
-      if (info.code === 0) {
-        navigator.clipboard.writeText(JSON.stringify(info.data, null, 2));
-        Message.success('图片的相机信息已复制到粘贴板');
-      } else {
-        Message.error('图片相机信息获取失败');
-      }
-    } else {
-      Message.info('请选择一张图片');
+  async function startTask() {
+    const res = await window.api.startTask();
+    if (res.code !== 0) {
+      Message.error(res.message || '水印生成开启失败');
     }
   }
 
   // 监听文件放入，然后执行水印生成等后续操作
   function onFileDrop() {
-    window.addEventListener('drop', (e) => {
+    window.addEventListener('drop', async (e) => {
       e.preventDefault();
       e.stopPropagation();
 
+      const _fileInfoList = [];
       const files = e.dataTransfer.files;
+      console.log(files.length);
+
       for (let i = 0; i < files.length; i++) {
         const file = files.item(i);
-        fileUrlList.push({
+        if (!file.type.startsWith('image/')) {
+          Message.error(`${file.name} 文件非图片文件`);
+          continue;
+        }
+
+        _fileInfoList.push({
           name: file.name,
           path: file.path,
         });
       }
-      fileUrlList = fileUrlList;
+
+      const res = await window.api.addTask(_fileInfoList);
+      if (res.code !== 0) {
+        Message.error(`图片添加失败${res.message}`);
+        return;
+      }
+
+      fileInfoList.unshift(...res.data);
+      fileInfoList = fileInfoList;
 
       if ($config.options?.iot) {
-        generatePictureFrames();
+        startTask();
       }
     });
 
@@ -116,9 +115,9 @@
     });
   }
 
-  function onFileUrlListChange(_: IFileInfo[]) {
+  function onFileInfoListChange(_: IFileInfo[]) {
     if ($config.options?.iot) {
-      generatePictureFrames();
+      startTask();
     }
   }
 </script>
@@ -126,23 +125,24 @@
 <Header />
 
 <div id="root">
-  <input type="file" id="path" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
+  <input type="file" id="path" accept="image/*" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
 
   <div class="body">
     <div class="content">
-      <Actions activeCount={fileUrlList.length} />
+      <Actions {fileInfoList} />
     </div>
 
     <div class="button-wrap">
-      {#if !processing}
-        <label for="path" class="button grass">选择图片</label>
-        <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
-        <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
-        <div class="button grass" on:click={() => { showParamSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
-        <div class="button grass" on:click={() => { showTempSetting = true; }} on:keypress role="button" tabindex="-1">模板设置</div>
-      {:else}
-        印框生成中...
-      {/if}
+      <label for="path" class="button grass">添加图片</label>
+      <div class="button grass" on:click={startTask} on:keypress role="button" tabindex="-1">
+        {#if processing}
+          处理中...
+        {:else}
+          生成印框
+        {/if}
+      </div>
+      <div class="button grass" on:click={() => { showParamSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
+      <div class="button grass" on:click={() => { showTempSetting = true; }} on:keypress role="button" tabindex="-1">模板设置</div>
     </div>
   </div>
 

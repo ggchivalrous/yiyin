@@ -106,7 +106,7 @@ export class ExifTool {
 
     if (exif.DateTimeOriginal) {
       const [date, hour] = exif.DateTimeOriginal.split(' ');
-      exif.DateTimeOriginal = formatDate('yyyy-MM-dd hh:mm:ss', new Date(`${date.replaceAll(':', '/')} ${hour}`));
+      exif.DateTimeOriginal = formatDate('yyyy/MM/dd hh:mm:ss', new Date(`${date.replaceAll(':', '/')} ${hour}`));
     }
 
     if (exif.WhiteBalance) {
@@ -181,7 +181,7 @@ export class ExifTool {
         time += -hour * 3600;
       }
 
-      exif.DateTimeOriginal = formatDate('yyyy-MM-dd hh:mm:ss', time * 1e3);
+      exif.DateTimeOriginal = formatDate('yyyy/MM/dd hh:mm:ss', time * 1e3);
     }
 
     if (exif.WhiteBalance) {

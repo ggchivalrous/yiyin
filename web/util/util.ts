@@ -109,3 +109,20 @@ export const createCanvas = (w: number, h: number) => {
   _canvas.height = h;
   return _canvas;
 };
+
+export const smoothIncrement = (start: number, end: number, duration: number, callback: (v: number) => void) => {
+  const increment = (end - start) / duration;
+  let current = start;
+  let flag = false;
+
+  function calcNextInc() {
+    current += increment;
+    callback(Math.min(end, Math.round(current)));
+    if (current < end && !flag) {
+      requestAnimationFrame(calcNextInc);
+    }
+  }
+
+  calcNextInc();
+  return () => { flag = true; };
+};

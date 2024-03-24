@@ -29,9 +29,11 @@ interface EventMap {
 export class ImageTool extends Event {
   private isInit: boolean;
 
-  private id: string;
+  readonly id: string;
 
-  private path: string;
+  readonly path: string;
+
+  readonly name: string;
 
   private outputOpt: IConfig['options'];
 
@@ -64,6 +66,7 @@ export class ImageTool extends Event {
     super();
 
     this.path = path;
+    this.name = name;
     this.outputOpt = opt.outputOption;
     this.id = md5(`${md5(path)}${Math.random()}${Date.now()}`);
 
@@ -203,11 +206,14 @@ export class ImageTool extends Event {
           left: 0,
         }));
 
-        tryCatch(() => {
-          for (const { buf } of this.material.text) {
-            fs.writeFileSync(join(`${this.outputFileNames.base}_${Date.now() + Math.random()}.png`), buf);
-          }
-        }, null, (e) => console.log(e));
+        if (import.meta.env.DEV) {
+          tryCatch(() => {
+            for (const { buf } of this.material.text) {
+              fs.writeFileSync(join(`${this.outputFileNames.base}_${Date.now() + Math.random()}.png`), buf);
+            }
+          }, null, (e) => log.error('文字图片写入异常', e));
+        }
+
         clearTimeout(timer);
         genTextImgQueue.off(handler);
         r(true);
@@ -423,18 +429,22 @@ export class ImageTool extends Event {
     const textButtomOffset = bgHeight * 0.027;
 
     // 主图上下间隔最小间隔
-    let mainImgOffset = mainImgTopOffset * 2;
     let contentTop = Math.ceil(mainImgTopOffset);
+    let mainImgOffset = contentTop * 2;
 
     // 阴影宽度
     if (opt.shadow_show) {
       const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 6) / 100));
-      const mainImgOffsetTop = Math.max(mainImgTopOffset, shadowHeight);
-      mainImgOffset = mainImgOffsetTop * 2 * (3 / 4);
+      const mainImgOffsetTop = Math.max(contentTop, shadowHeight);
       contentTop = Math.ceil(mainImgOffsetTop);
+      mainImgOffset = contentTop * 2;
     }
 
-    mainImgOffset += this.material.text.length ? textButtomOffset : mainImgTopOffset;
+    // 有文字时文字与主图的间隔要小于主图对顶部的间隔，并且底部间隔使用文字对底部的间隔
+    if (this.material.text.length) {
+      mainImgOffset *= 3 / 4;
+      mainImgOffset += textButtomOffset;
+    }
 
     // 文本高度
     const textH = this.material.text.reduce((n, i) => {
