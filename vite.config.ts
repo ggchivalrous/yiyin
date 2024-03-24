@@ -47,7 +47,7 @@ export default defineConfig(async ({ command }) => {
   const exiftoolPath = join(env.DIST_ELECTRON, 'exiftool');
 
   env.PUBLIC = isServe ? join(__dirname, 'web/public') : env.WEB;
-  env.EXIFTOOL = join(exiftoolPath, 'exiftool');
+  env.EXIFTOOL = env.DIST_ELECTRON;
 
   fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
   if (!fs.existsSync(electronOutDir)) {

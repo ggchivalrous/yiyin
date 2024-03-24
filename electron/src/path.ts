@@ -11,6 +11,7 @@ const paths = {
   public: env.VITE_PUBLIC,
   logger: join(app.getPath('userData'), 'logs'),
   logo: '',
+  exiftool: join(isDev ? env.VITE_EXIFTOOL : app.getAppPath(), 'exiftool/exiftool'),
 };
 
 paths.public = isDev ? env.VITE_PUBLIC : paths.web;
