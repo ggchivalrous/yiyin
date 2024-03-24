@@ -50,7 +50,7 @@
     </ActionItem>
     <ActionItem title="字体">
       <svelte:fragment slot="popup">只对文本生效，指定该文本字体</svelte:fragment>
-      <FontSelect fontMap={$config.fontMap} bind:value={conf.font} />
+      <FontSelect fontMap={$config.fontMap} bind:value={conf.font} clearable />
     </ActionItem>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { tryAsyncCatch, usePromise } from '@/common/utils';
+import { arrToObj, tryAsyncCatch, usePromise } from '@/common/utils';
 
 export const toRoman = (num: number) => {
   const romanNumerals = [
@@ -91,12 +91,27 @@ export interface IFontInfo {
   path: string
 }
 
+const loadFonts: FontFace[] = [...(document.fonts as any).keys()];
+
 // 导入字体
 export async function importFont(arr: IFontInfo[]) {
+  const fontPromise: Promise<any>[] = [];
+
   for (const i of arr) {
+    if (!i.path) continue;
+    const fontRecord = arrToObj(loadFonts, 'family');
+    if (fontRecord[i.name]) continue;
+
     console.log('%s 字体加载....', i.name);
     const font = new FontFace(i.name, `url('${i.path}')`);
-    const _font = await font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
+    const _font = font.load().catch((e) => console.log('%s 字体加载失败', i.name, e));
+
+    fontPromise.push(_font);
+    loadFonts.push(font);
+  }
+
+  for (const font of fontPromise) {
+    const _font = await font;
     if (_font) {
       (document.fonts as any).add(_font);
     }

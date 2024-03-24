@@ -87,7 +87,7 @@
       />
     </FormItem>
     <FormItem label="字体文件">
-      <Input class="font-input-file grass" type="file" on:change={onFileChange} />
+      <input class="font-input-file grass" type="file" on:change={onFileChange} />
     </FormItem>
   </Form>
 

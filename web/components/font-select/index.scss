@@ -18,6 +18,10 @@
     background-color: var(--active-color);
     color: white;
   }
+
+  input {
+    font-family: inherit !important;
+  }
 }
 
 .db-select-dropdown__list {

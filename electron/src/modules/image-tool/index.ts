@@ -126,6 +126,7 @@ export class ImageTool extends Event {
   }
 
   async genWatermark() {
+    this.progress = 1;
     log.info('【%s】初始化基础数据', this.id);
     await this.init();
     this.progress = 10;
