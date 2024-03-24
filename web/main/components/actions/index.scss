@@ -56,6 +56,13 @@
   }
 
   .app-action-right-wrap {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .img-wrap {
+    height: 100%;
     padding: 0 15px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -98,6 +105,17 @@
         font-size: 12px;
         color: #8f9094;
       }
+    }
+  }
+
+  .task-action {
+    margin-top: 10px;
+    display: flex;
+    justify-content: right;
+
+    .button {
+      flex-shrink: 0;
+      padding: 4px 10px !important;
     }
   }
 

@@ -161,13 +161,21 @@
     navigator.clipboard.writeText(JSON.stringify(imgInfoRecord[id].exif, null, 2));
     return Message.success('相机信息已复制到粘贴板');
   }
+
+  async function clearImgInfo() {
+    const res = await window.api.drainQueue();
+    if (res.code !== 0) {
+      Message.error(`清空失败！${res.message || ''}`);
+      return;
+    }
+
+    Message.success('清空成功');
+    fileInfoList = [];
+  }
 </script>
 
 <div class="app-action-wrap">
   <div class="app-action-left-wrap">
-    <ActionItem {labelWidth} title="图片数量">{fileInfoList.length}</ActionItem>
-    <ActionItem {labelWidth} title="完成数量">{handleCount}</ActionItem>
-
     <ActionItem {labelWidth} title="输出目录">
       <svelte:fragment slot="popup">图片输出目录，点击可以打开目录</svelte:fragment>
       <span class="db-icon-setting output-setting" on:click|stopPropagation={changeOutputPath} on:keypress role="button" tabindex="-1"></span>
@@ -252,49 +260,53 @@
     </ActionItem>
   </div>
 
-  <div class="app-action-right-wrap grass-inset">
-    <div class="img-list">
-      {#each fileInfoList as i (i.id)}
-        {@const record = imgInfoRecord[i.id]}
-        {#key i.id}
-        <div class="img-item grass">
-          <div class="img-item-head">
-            <span class="img-name">{i.name}</span>
-            {#if record.faild}
-              <i class="db-icon-error error"></i>
-            {:else if record.progress < 100}
-              <span
-                style="font-weight: bold;"
-                class={ record.progress === 100 ? 'success' : ''}
-              >{record.progress}%</span>
-            {:else}
-              <i class="db-icon-success success"></i>
-            {/if}
-          </div>
-          <div class="img-item-info">
-            相机信息:
-            {#await getExitInfo(i.id, i.path)}
-              <i class="db-icon-loading"></i>
-            {:then v}
-              {#if v}
-                <i class="db-icon-success success"></i>
-                <i class="icon db-icon-document-copy" on:click={() => cpExif(i.id)} on:keypress role="button" tabindex="-1"></i>
-              {:else}
+  <div class="app-action-right-wrap">
+    <div class="img-wrap grass-inset">
+      <div class="img-list">
+        {#each fileInfoList as i (i.id)}
+          {@const record = imgInfoRecord[i.id]}
+          {#key i.id}
+          <div class="img-item grass">
+            <div class="img-item-head">
+              <span class="img-name">{i.name}</span>
+              {#if record.faild}
                 <i class="db-icon-error error"></i>
+              {:else if record.progress < 100}
+                <span
+                  style="font-weight: bold;"
+                  class={ record.progress === 100 ? 'success' : ''}
+                >{record.progress}%</span>
+              {:else}
+                <i class="db-icon-success success"></i>
               {/if}
-            {/await}
-          </div>
+            </div>
+            <div class="img-item-info">
+              相机信息:
+              {#await getExitInfo(i.id, i.path)}
+                <i class="db-icon-loading"></i>
+              {:then v}
+                {#if v}
+                  <i class="db-icon-success success"></i>
+                  <i class="icon db-icon-document-copy" on:click={() => cpExif(i.id)} on:keypress role="button" tabindex="-1"></i>
+                {:else}
+                  <i class="db-icon-error error"></i>
+                {/if}
+              {/await}
+            </div>
 
-          <div class="img-item-faild-msg">
-            {record.faildMsg}
+            <div class="img-item-faild-msg">
+              {record.faildMsg}
+            </div>
           </div>
-        </div>
-        {/key}
-      {/each}
+          {/key}
+        {/each}
+      </div>
     </div>
 
     <div class="task-action">
-
+      <ActionItem title="图片数量">{fileInfoList.length}</ActionItem>
+      <ActionItem title="完成数量">{handleCount}</ActionItem>
+      <div class="button" on:click={clearImgInfo} on:keypress role="button" tabindex="-1">清空</div>
     </div>
   </div>
 </div>

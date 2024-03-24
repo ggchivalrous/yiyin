@@ -64,7 +64,7 @@
         return;
       }
 
-      fileInfoList.unshift(...res.data);
+      fileInfoList.unshift(...res.data.reverse());
       fileSelectDom.value = '';
       fileInfoList = fileInfoList;
     }
@@ -105,7 +105,7 @@
         return;
       }
 
-      fileInfoList.unshift(...res.data);
+      fileInfoList.unshift(...res.data.reverse());
       fileInfoList = fileInfoList;
 
       if ($config.options?.iot) {
@@ -147,7 +147,7 @@
 
   <div class="body">
     <div class="content">
-      <Actions {fileInfoList} />
+      <Actions bind:fileInfoList={fileInfoList} />
     </div>
 
     <div class="button-wrap">
