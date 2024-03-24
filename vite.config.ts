@@ -134,7 +134,6 @@ export default defineConfig(async ({ command }) => {
       rollupOptions: {
         input: {
           main: join(__dirname, './web/main/index.html'),
-          mask: join(__dirname, './web/mask/index.html'),
         },
       },
     },
