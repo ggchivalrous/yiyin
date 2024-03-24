@@ -17,8 +17,11 @@ export class ExifTool {
 
   private path: string;
 
+  private commonFilePath: string;
+
   constructor(path: string) {
     this.path = path;
+    this.commonFilePath = path.replace(/[^/\w.-]/g, (match) => `\\${match}`);
     this.hasExiftool = fs.existsSync(exiftoolPath);
     this.init();
   }
@@ -61,7 +64,7 @@ export class ExifTool {
   }
 
   private exiftoolParse(): Exif {
-    const res = execSync(`${exiftoolPath} ${this.path}`);
+    const res = execSync(`${exiftoolPath} ${this.commonFilePath}`);
     const text = res.toString();
     const strList = text.split('\n');
     const kvList = strList.map((i) => {

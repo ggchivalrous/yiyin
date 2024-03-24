@@ -195,7 +195,7 @@ export class ImageTool extends Event {
     const [p, r, j] = usePromise();
     let timer: NodeJS.Timeout;
 
-    const handler: Parameters<typeof genTextImgQueue.on>[number] = async ({ id, textImgList }) => {
+    const handler: Parameters<typeof genTextImgQueue.on>[number] = async ({ id, textImgList = [] }) => {
       if (id === this.id) {
         this.material.text = textImgList.map((i) => ({
           path: '',

@@ -78,12 +78,12 @@ async function fillTempFieldInfo(
         const wImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-w.svg`;
         const bImg = `file://${logoPath}/${exif.oriExif.Make.toLowerCase()}-b.svg`;
 
-        if (await loadImage(wImg).catch((e) => e)) {
+        if (await loadImage(wImg).catch(() => false)) {
           tempFieldInfo[field].wImg = wImg;
           tempFieldInfo[field].type = 'img';
         }
 
-        if (await loadImage(bImg).catch((e) => e)) {
+        if (await loadImage(bImg).catch(() => false)) {
           tempFieldInfo[field].bImg = bImg;
           tempFieldInfo[field].type = 'img';
         }
