@@ -1,0 +1,66 @@
+.custom-param-setting-action-item {
+  width: 100%;
+
+  &.flex {
+    display: flex;
+    align-items: center;
+  }
+
+  .config-head {
+    height: 35px;
+    display: flex;
+    align-items: center;
+
+    .config-title {
+      display: inline-block;
+      font-weight: bold;
+      margin-right: 8px;
+      
+      &.left {
+        text-align: left;
+      }
+
+      &.right {
+        text-align: right;
+      }
+    }
+  }
+
+  .config-content {
+    flex: 1;
+    height: 35px;
+    display: flex;
+    align-items: center;
+
+    .config-value {
+      flex: 1;
+      font-size: 13px;
+      padding: 0 6px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    
+    .config-value img {
+      display: inline-block;
+      height: 12px;
+    }
+    
+    .config-value img:last-of-type {
+      margin-left: 10px;
+    }
+    
+    .icon {
+      color: var(--text-color);
+      padding: 0 4px;
+    }
+    
+    .icon:hover {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--active-color);
+    }
+  }
+}
+

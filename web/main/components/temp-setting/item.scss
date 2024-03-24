@@ -1,0 +1,31 @@
+.temp-setting-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 35px;
+  padding: 0 14px;
+  box-sizing: border-box;
+
+  .config-value {
+    flex: 1;
+    font-size: 13px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-weight: bold;
+  }
+  
+  .icon {
+    color: var(--text-color);
+    padding: 0 4px;
+  }
+  
+  .icon:hover {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--active-color);
+  }
+}
+

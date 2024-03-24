@@ -2,17 +2,15 @@
 import { Message } from '@ggchivalrous/db-ui';
 import { writable } from 'svelte/store';
 
-import type { IConfig, IFieldInfoItem } from '../main/interface';
+import type { IConfig } from '../main/interface';
 
 let initConfig = false;
 let loadConfig = false;
 
 export const config = writable<IConfig>({
   options: {
+    iot: false,
     landscape: false,
-    ext_show: true,
-    model_show: true,
-    brand_show: true,
     solid_bg: false,
     origin_wh_output: true,
     radius: 2.1,
@@ -28,37 +26,30 @@ export const config = writable<IConfig>({
   },
   fontMap: {},
   fontDir: '',
-  templateFieldInfo: {
-    Force: getDefOptionItem(true),
-    Make: getDefOptionItem(''),
-    Model: getDefOptionItem(''),
-    ExposureTime: getDefOptionItem(''),
-    FNumber: getDefOptionItem(''),
-    ISO: getDefOptionItem(''),
-    FocalLength: getDefOptionItem(''),
-    ExposureProgram: getDefOptionItem(''),
-    DateTimeOriginal: getDefOptionItem(0),
-    LensModel: getDefOptionItem(''),
-    LensMake: getDefOptionItem(''),
-    PersonalSign: getDefOptionItem(''),
-  },
+  tempFields: [],
+  customTempFields: [],
+  temps: [],
   output: '',
   staticDir: '',
 });
+
+function onConfigUpdate(v: IConfig, newConf: any) {
+  v.options = newConf.options;
+  v.output = newConf.output;
+  v.fontMap = newConf.font.map;
+  v.fontDir = newConf.font.dir;
+  v.tempFields = newConf.tempFields;
+  v.customTempFields = newConf.customTempFields;
+  v.temps = newConf.temps;
+  v.staticDir = newConf.staticDir;
+  return v;
+}
 
 export async function getConfig() {
   loadConfig = true;
   const defConf = await window.api.getConfig();
   if (defConf.code === 0) {
-    config.update((v) => {
-      v.options = defConf.data.options;
-      v.output = defConf.data.output;
-      v.fontMap = defConf.data.font.map;
-      v.fontDir = defConf.data.font.dir;
-      v.templateFieldInfo = defConf.data.templateFieldInfo;
-      v.staticDir = defConf.data.staticDir;
-      return v;
-    });
+    config.update((v) => onConfigUpdate(v, defConf.data));
     console.log('配置信息:', defConf.data);
     config.subscribe((v) => console.log('使用配置信息:', v))();
   }
@@ -72,20 +63,13 @@ export async function resetConfig() {
     return;
   }
 
-  config.update((v) => {
-    v.options = res.data.options;
-    v.output = res.data.output;
-    v.fontMap = res.data.font.map;
-    v.fontDir = res.data.font.dir;
-    v.templateFieldInfo = res.data.templateFieldInfo;
-    v.staticDir = res.data.staticDir;
-    return v;
-  });
+  config.update((v) => onConfigUpdate(v, res.data));
   Message.success({ message: '重置成功' });
 }
 
-export const staticInfo = writable({
-  webDir: '',
+export const pathInfo = writable({
+  public: '',
+  logo: '',
 });
 
 config.subscribe(async (v) => {
@@ -106,31 +90,11 @@ config.subscribe(async (v) => {
 
 getConfig().then(() => { initConfig = true; });
 
-function getDefOptionItem<T>(defV: T): IFieldInfoItem<T> {
-  return {
-    use: false,
-    value: defV,
-    type: 'text',
-    bImg: '',
-    wImg: '',
-    param: {
-      use: false,
-      bold: false,
-      italic: false,
-      size: 0,
-      font: '',
-    },
-  };
-}
-
-async function getStaticInfo() {
-  const info = await window.api.staticInfo();
+async function getPathInfo() {
+  const info = await window.api.pathInfo();
   if (info.code === 0) {
-    staticInfo.update((d) => {
-      d.webDir = info.data.webDir;
-      return d;
-    });
+    pathInfo.set(info.data);
   }
 }
 
-getStaticInfo();
+getPathInfo();

@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_WEB: string
   readonly VITE_PUBLIC: string
   readonly VITE_VERSION: string
+  readonly VITE_EXIFTOOL: string
 }
 
 interface ImportMeta {

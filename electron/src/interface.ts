@@ -1,6 +1,10 @@
-import { OutputSetting } from '@modules/tools/image';
+import type { OutputOption } from '@modules/image-tool/interface';
+
+import type { ITemp } from '@/common/const/def-temps';
 
 export interface IConfig {
+  version: string
+
   /**
    * 配置文件存放路径
    */
@@ -35,12 +39,19 @@ export interface IConfig {
   /**
    * 参数信息
    */
-  options: OutputSetting
+  options: OutputOption
 
   /**
-   * 模板字段信息
+   * 模版字段列表
    */
-  templateFieldInfo: TTemplateFieldInfo
+  tempFields: IFieldInfoItem<any>[]
+
+  customTempFields: IFieldInfoItem<any>[]
+
+  /**
+   * 模板
+   */
+  temps: ITemp[]
 
   versionUpdateInfo: {
     checkDate: number
@@ -49,18 +60,38 @@ export interface IConfig {
   }
 }
 
-export type TTemplateFieldInfo = Record<string, IFieldInfoItem<any>>
-
-export interface IFontParam {
-  use: boolean
+export interface IFont {
   bold: boolean
   italic: boolean
   size: number
   font: string
+  caseType: 'lowcase' | 'upcase' | 'default'
+}
+
+export interface IPosition {
+  top: number
+  bottom: number
+  left: number
+  right: number
+}
+
+export interface IFontParam extends Partial<IFont> {
+  use?: boolean
 }
 
 export interface IFieldInfoItem<T = string> {
   use?: boolean
+
+  forceUse?: boolean
+
+  /**
+   * 是否显示
+   */
+  show?: boolean
+
+  key: string
+
+  name: string
 
   /**
    * 文本
@@ -85,22 +116,7 @@ export interface IFieldInfoItem<T = string> {
   /**
    * 显示参数
    */
-  param: IFontParam
-}
-
-export interface ICameraInfo {
-  Force: IFieldInfoItem<boolean>
-  Make: IFieldInfoItem
-  Model: IFieldInfoItem
-  ExposureTime: IFieldInfoItem
-  FNumber: IFieldInfoItem
-  ISO: IFieldInfoItem
-  FocalLength: IFieldInfoItem
-  ExposureProgram: IFieldInfoItem
-  DateTimeOriginal: IFieldInfoItem<number>
-  LensModel: IFieldInfoItem
-  LensMake: IFieldInfoItem
-  PersonalSign: IFieldInfoItem
+  font: IFontParam
 }
 
 export interface IReleaseData {

@@ -1,18 +1,36 @@
 <script lang="ts">
-  import FontDialog from '@components/font-dialog';
+  import { FontDialog } from '@components';
   import { Message, Option, Select } from '@ggchivalrous/db-ui';
+  import frederickathegreat from '@web/assets/font/FrederickatheGreat.ttf';
+  import neoneon from '@web/assets/font/Neoneon.otf';
+  import qiantuxiaotu from '@web/assets/font/千图小兔体.ttf';
+  import chunfengkai from '@web/assets/font/春风楷.ttf';
+  import { importFont } from '@web/util/util';
   import { createEventDispatcher } from 'svelte';
   import './index.scss';
 
   export let fontMap: Record<string, string> = {};
   export let value = '';
+  export let clearable = false;
 
-  const defFont = { name: 'PingFang SC', fileName: '' };
+  const defActiveFont = { name: 'PingFang SC', fileName: '' };
+  const defFont = [
+    defActiveFont,
+    { name: '春风楷', fileName: chunfengkai },
+    { name: '千图小兔', fileName: qiantuxiaotu },
+    { name: 'FrederickatheGreat', fileName: frederickathegreat },
+    { name: 'Neoneon', fileName: neoneon },
+  ];
   const dispatch = createEventDispatcher();
-  let fontList = [defFont];
+  let fontList = [...defFont];
   let visible = false;
 
   $: listenFontMapChange(fontMap);
+
+  importFont(defFont.map((i) => ({
+    name: i.name,
+    path: i.fileName,
+  })));
 
   function addFont() {
     visible = true;
@@ -44,19 +62,19 @@
         });
       }
 
-      fontList = [defFont, ...list];
-      if ((!_fontMap[value] && value !== defFont.name) || !value) {
-        value = defFont.name;
+      fontList = [...defFont, ...list];
+      if ((!_fontMap[value] && value !== defActiveFont.name) || !value) {
+        value = defActiveFont.name;
       }
     }
   }
 </script>
 
-<Select size="mini" bind:value class="no-drag grass font-select">
+<Select size="mini" bind:value {clearable} class="no-drag grass font-select" style="font-family: {value}">
   <div class="button add-font" on:click={addFont} on:keypress role="button" tabindex="-1">+</div>
   {#each fontList as i}
     <Option value={i.name}>
-      <span class="font-name">{i.name}</span>
+      <span class="font-name" style:font-family={i.name}>{i.name}</span>
       {#if i.fileName}
         <span class="font-del" on:click|preventDefault|capture|stopPropagation={() => delFont(i.name)} on:keypress role="button" tabindex="-1">x</span>
       {/if}

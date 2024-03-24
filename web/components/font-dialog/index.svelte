@@ -54,7 +54,7 @@
           arr.pop();
         }
 
-        fontForm.name = arr.join('.');
+        fontForm.name = formatFontName(arr.join('.'));
       }
     }
   }
@@ -64,6 +64,15 @@
       fontForm.isAutoName = false;
     }
   }
+
+  function onNameInput(v) {
+    fontForm.name = formatFontName(v.detail);
+  }
+
+  function formatFontName(v) {
+    const match = v.match(/([\u4e00-\u9fa5a-zA-Z_]+)/);
+    return match ? match[0] : '';
+  }
 </script>
 
 <Dialog bind:visible width="400px" class="font-dialog">
@@ -71,9 +80,10 @@
     <FormItem label="字体名称">
       <Input
         type="text"
-        bind:value={fontForm.name}
+        value={fontForm.name}
         placeholder="Enter name..."
         on:change={onNameChange}
+        on:input={onNameInput}
       />
     </FormItem>
     <FormItem label="字体文件">
@@ -82,7 +92,7 @@
   </Form>
 
   <footer class="modal-footer">
-    <button class="grass button" on:click={close}>取消</button>
-    <button class="grass button" on:click={onFormSubmit}>添加</button>
+    <div class="grass button" on:click={close} on:keypress role="button" tabindex="-1">取消</div>
+    <div class="grass button" on:click={onFormSubmit} on:keypress role="button" tabindex="-1">添加</div>
   </footer>
 </Dialog>

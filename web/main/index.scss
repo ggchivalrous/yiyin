@@ -2,31 +2,9 @@
   -webkit-app-region: no-drag;
 }
 
-.button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  display: inline-block;
-  cursor: pointer;
-  user-select: none;
-  font-size: 14px;
-  margin-left: 10px;
-
-  &:hover {
-    box-shadow: inset var(--whiteShadow), inset var(--blackShadow);
-  }
-
-  &:active {
-    box-shadow: var(--whiteShadow), var(--blackShadow);
-  }
-
-  &:first-child {
-    margin-left: 0px;
-  }
-}
-
 #root {
   width: 100vw;
-  height: calc(100vh - 48px);
+  height: calc(100vh - 62px);
   background-position: center center;
   background-size: 100% 100%;
   padding: 0 20px;
@@ -45,6 +23,7 @@
   }
 
   .content {
+    height: 340px;
     display: flex;
   }
 
@@ -73,33 +52,3 @@
   }
 }
 
-
-.input {
-  background-color: transparent;
-  background-image: none;
-  border-radius: 4px;
-  border: 1px solid #cacdd4;
-  box-sizing: border-box;
-  display: inline-block;
-  font-size: inherit;
-  height: 20px;
-  width: 90px;
-  outline: none;
-  padding: 0 4px;
-  text-align: center;
-}
-
-.mini-input {
-  background-color: transparent;
-  background-image: none;
-  border-radius: 4px;
-  border: 1px solid #cacdd4;
-  box-sizing: border-box;
-  display: inline-block;
-  font-size: inherit;
-  height: 20px;
-  width: 90px;
-  outline: none;
-  padding: 0 4px;
-  text-align: center;
-}

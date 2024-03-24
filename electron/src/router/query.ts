@@ -3,12 +3,10 @@ import path from 'node:path';
 
 import { config, getConfig, storeConfig } from '@config';
 import { Router } from '@modules/router';
-import { Image } from '@modules/tools/image';
 import routerConfig from '@root/router-config';
+import paths from '@src/path';
 import { md5 } from '@utils';
 import { BrowserWindow, app } from 'electron';
-
-import { webDir } from '@/electron/main/create-window';
 
 const r = new Router();
 
@@ -17,7 +15,9 @@ r.listen(routerConfig.getConfig, async () => config);
 r.listen(routerConfig.setConfig, async (data: any) => {
   storeConfig({
     options: Object.assign(config.options, data.options),
-    templateFieldInfo: Object.assign(config.templateFieldInfo, data.templateFieldInfo),
+    tempFields: data.tempFields,
+    customTempFields: data.customTempFields,
+    temps: data.temps,
   });
   return config;
 });
@@ -30,12 +30,6 @@ r.listen(routerConfig.resetConfig, async () => {
 r.listen(routerConfig.miniSize, async () => BrowserWindow.getFocusedWindow().minimize());
 
 r.listen(routerConfig.closeApp, async () => app.quit());
-
-r.listen(routerConfig.getExitInfo, async (imgPath: string) => {
-  const img = new Image(imgPath, '');
-  const info = img.getOriginExifInfo();
-  return info || false;
-});
 
 r.listen(routerConfig.getFontList, async () => config.font.map);
 
@@ -86,8 +80,19 @@ r.listen(routerConfig.uploadExifImg, async (data: any) => {
   return false;
 });
 
-r.listen(routerConfig.staticInfo, async () => ({
-  webDir,
+r.listen(routerConfig.pathInfo, async () => ({
+  ...paths,
 }));
+
+r.listen(routerConfig.logoList, async () => {
+  if (fs.existsSync(paths.logo)) {
+    const logoList = fs.readdirSync(paths.logo);
+    return logoList
+      .filter((i) => !i.startsWith('.'))
+      .map((i) => path.join(paths.logo, i));
+  }
+
+  return [];
+});
 
 export default r;

@@ -1,14 +1,18 @@
 import { release } from 'node:os';
 
+import { ImageTool } from '@modules/image-tool';
 import { Logger } from '@modules/logger';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
 import { image, open, query } from '@router';
+import { genMainImgShadowQueue, genTextImgQueue, imageToolQueue } from '@src/common/queue';
 import { config, storeConfig } from '@src/config';
-import { hasNewVersion } from '@utils';
+import { hasNewVersion, cpObj } from '@utils';
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
 
+const isDev = import.meta.env.DEV;
 const log = new Logger('App');
+const imgToolLog = new Logger('ImgToolQueue');
 
 export default class Application {
   win: BrowserWindow;
@@ -50,6 +54,12 @@ export default class Application {
       }
     });
 
+    app.on('before-quit', async () => {
+      await genMainImgShadowQueue.close();
+      await genTextImgQueue.close();
+      await imageToolQueue.close();
+    });
+
     await app.whenReady();
     this.isInit = true;
   }
@@ -75,6 +85,21 @@ export default class Application {
 
     this.win.on('ready-to-show', () => {
       this.checkAssetsUpdate();
+    });
+
+    imageToolQueue.on(async (imgTool) => {
+      if (imgTool) {
+        await imgTool.genWatermark().catch((e: Error) => {
+          this.win.webContents.send(routerConfig.on.faildTask, {
+            id: imgTool.id,
+            msg: e.message,
+          });
+        });
+      }
+    });
+
+    imageToolQueue.onerror((t, e) => {
+      imgToolLog.error('队列执行异常 类型[%s]', t, e);
     });
   }
 
@@ -118,8 +143,8 @@ export default class Application {
 
   private async createDefWin() {
     const opts: BrowserWindowConstructorOptions = {
-      width: 680,
-      height: 490,
+      width: 700 + (isDev ? 500 : 0),
+      height: 610,
       title: '壹印',
       frame: false,
       webPreferences: {

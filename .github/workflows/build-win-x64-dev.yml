@@ -1,4 +1,4 @@
-name: Build Release
+name: Build Dev Windows
 on:
   repository_dispatch:
   workflow_dispatch:

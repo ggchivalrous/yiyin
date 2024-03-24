@@ -7,6 +7,7 @@ import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
 
 import pkg from './package.json';
+import installExiftool from './scripts/install-exiftool';
 
 const electronOutDir = join(__dirname, 'dist-electron');
 const electronPkg = join(electronOutDir, 'package.json');
@@ -30,7 +31,7 @@ function objToEnvStr(obj: Record<string, any>) {
   return arr.join('\n');
 }
 
-export default defineConfig(({ command }) => {
+export default defineConfig(async ({ command }) => {
   const port = 5173;
   const isServe = command === 'serve';
   const isBuild = command === 'build';
@@ -43,18 +44,28 @@ export default defineConfig(({ command }) => {
     URL: isServe ? `http://localhost:${port}` : '',
   };
 
-  env.PUBLIC = isServe ? join(__dirname, 'public') : env.WEB;
-  fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
+  const exiftoolPath = join(env.DIST_ELECTRON, 'exiftool');
 
+  env.PUBLIC = isServe ? join(__dirname, 'web/public') : env.WEB;
+  env.EXIFTOOL = join(exiftoolPath, 'exiftool');
+
+  fs.writeFileSync(join(__dirname, '.env.local'), objToEnvStr(env));
   if (!fs.existsSync(electronOutDir)) {
     fs.mkdirSync(electronOutDir);
   }
 
+  // electron输出目录添加package文件
   fs.writeFileSync(electronPkg, JSON.stringify({
     ...pkg,
     main: 'main/index.js',
     type: 'commonjs',
   }, null, 2));
+
+  // 安装exiftool工具
+  if (!fs.existsSync(exiftoolPath)) {
+    fs.mkdirSync(exiftoolPath);
+  }
+  await installExiftool(exiftoolPath);
 
   return {
     root: 'web',
@@ -131,6 +142,7 @@ export default defineConfig(({ command }) => {
       alias: {
         '@web': resolve(__dirname, 'web'),
         '@components': resolve(__dirname, 'web/components'),
+        '@common': resolve(__dirname, 'common'),
         '@web-utils': resolve(__dirname, 'web/util'),
         ...electronAlias,
       },

@@ -58,14 +58,16 @@ async function start() {
   console.log('Release=%s Tag=%s', release.data.name, release.data.tag_name);
   console.log('文件列表:', files);
 
-  for (const file of files) {
-    const filePath = path.join(__dirname, 'dist', file);
-    const state = fs.statSync(filePath);
-
-    if (!state.isFile() || file.endsWith('.blockmap') || file.endsWith('.yml')) {
-      continue;
+  const file = files.find((i) => {
+    switch (os.platform()) {
+      case 'darwin': return i.endsWith('.dmg');
+      case 'win32': return i.endsWith('.exe');
+      default: return false;
     }
+  });
 
+  if (file) {
+    const filePath = path.join(__dirname, 'dist', file);
     await updateReleaseAsset(releaseId, filePath, file);
   }
 }

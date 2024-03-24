@@ -1,16 +1,13 @@
 import { join } from 'node:path';
 
-import { BrowserWindow, app, shell } from 'electron';
-
-const isDev = import.meta.env.DEV;
-export const preload = join(isDev ? import.meta.env.VITE_DIST_ELECTRON : app.getAppPath(), 'preload/index.js');
-export const webDir = join(isDev ? import.meta.env.VITE_WEB : app.getAppPath(), 'web');
+import paths from '@src/path';
+import { BrowserWindow, shell } from 'electron';
 
 export const createWindow = async (path: string, opts: Electron.BrowserWindowConstructorOptions) => {
   const win = new BrowserWindow({
     ...opts,
     webPreferences: {
-      preload,
+      preload: paths.preload,
       ...opts?.webPreferences,
       nodeIntegration: true,
     },
@@ -18,11 +15,13 @@ export const createWindow = async (path: string, opts: Electron.BrowserWindowCon
 
   if (import.meta.env.DEV) {
     win.loadURL(join(import.meta.env.VITE_URL, path, 'index.html'));
-    if (opts.show !== false) {
-      win.webContents.openDevTools();
-    }
+    win.on('ready-to-show', () => {
+      if (opts.show !== false) {
+        win.webContents.openDevTools();
+      }
+    });
   } else {
-    win.loadFile(join(webDir, path, 'index.html'));
+    win.loadFile(join(paths.web, path, 'index.html'));
   }
 
   // 使用浏览器而不是应用程序打开所有链接

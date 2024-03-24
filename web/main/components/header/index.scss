@@ -1,6 +1,6 @@
 .app-header {
   display: flex;
-  background-color: var(--bg-color);
+  background-color: transparent;
   justify-content: space-between;
   -webkit-app-region: drag;
   padding: 10px;
@@ -17,21 +17,13 @@
   }
 
   .app-header-close {
-    padding: 4px 12px;
+    padding: 7px 12px !important;
     cursor: pointer;
   }
 
   .app-header-show {
-    padding: 4px 12px;
+    padding: 8px 12px !important;
     cursor: pointer;
-  }
-
-  .app-header-reset {
-    padding: 4px 6px;
-
-    .icon {
-      display: inline-block;
-    }
   }
 
   .app-header-button {
@@ -39,11 +31,40 @@
     width: 32px;
     height: 32px;
     text-align: center;
-  }
+    padding: 7px 12px !important;
+    cursor: pointer;
+    margin-left: 10px !important;
 
-  .app-header-star {
-    padding: 0 0;
-    line-height: 32px;
+    &.app-header-reset {
+      padding: 7px 6px !important;
+  
+      .icon {
+        display: inline-block;
+      }
+    }
+
+    &.app-header-star {
+      padding: 0 0 !important;
+      line-height: 32px;
+      margin-left: 0 !important;
+    }
+  }
+}
+
+.help-wrap {
+  width: 300px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .help-list {
+    overflow-y: auto;
+
+    .db-collapse-item__content {
+      padding-right: 15px;
+      text-align: justify;
+    }
   }
 }
 
@@ -55,7 +76,17 @@
   }
 }
 
+.help-popover {
+  left: 10px !important;
+
+  .popper__arrow {
+    left: 54px !important;
+  }
+}
+
 .app-header-star-content {
+  width: 360px;
+
   .star-item {
     padding: 10px 0;
     text-align: center;
@@ -70,9 +101,31 @@
       margin-top: 10px;
     }
 
-    .zanshang {
-      width: 250px;
+    .star-item-head {
+      text-align: center;
+      margin-bottom: 4px;
+      font-weight: bold;
     }
+
+    .star-item-content {
+      text-align: center;
+    }
+
+    .zan-item {
+      display: inline-block;
+
+      &:first-of-type {
+        margin-right: 8px;
+      }
+
+      .zanshang {
+        border-radius: 4px;
+        display: block;
+        width: 170px;
+        margin-bottom: 8px;
+      }
+    }
+
   }
 
   .group-chat {

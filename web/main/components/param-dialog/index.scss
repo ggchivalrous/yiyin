@@ -1,0 +1,66 @@
+.custom-param-dialog {
+  footer {
+    margin-top: 20px;
+    text-align: right;
+
+    .button {
+      padding: 5px 20px;
+    }
+  }
+
+  .base-switch-wrap {
+    display: flex;
+
+    .action-item {
+      flex-grow: 1;
+      width: auto;
+    }
+  }
+
+  .form-item {
+    padding: 8px 0;
+
+    .form-item-label {
+      height: 35px;
+      font-weight: bold;
+      opacity: .8;
+      display: flex;
+      align-items: center;
+
+      &.title {
+        font-size: 16px;
+        opacity: 1;
+      }
+
+      label {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        margin-left: 10px;
+      }
+    }
+
+    .form-item-content {
+      padding-left: 10px;
+    }
+
+    .db-icon-upload {
+      font-size: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .form-item-img {
+      height: 18px;
+    }
+  }
+
+  .img-wrap {
+    display: flex;
+
+    .img-item {
+      flex: 1;
+      height: 50px;
+    }
+  }
+}

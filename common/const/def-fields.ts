@@ -1,0 +1,17 @@
+export const exifFields: { key: string, name: string, value: '' }[] = [
+  { key: 'PersonalSign', name: '个性签名', value: '' },
+  { key: 'Make', name: 'Logo', value: '' },
+  { key: 'Model', name: '型号', value: '' },
+  { key: 'LensMake', name: '镜头Logo', value: '' },
+  { key: 'LensModel', name: '镜头型号', value: '' },
+  { key: 'ExposureTime', name: '快门', value: '' },
+  { key: 'FNumber', name: '光圈', value: '' },
+  { key: 'ISO', name: 'ISO', value: '' },
+  { key: 'FocalLength', name: '焦距', value: '' },
+  { key: 'FocalLengthIn35mmFormat', name: '等效焦距', value: '' },
+  { key: 'ExposureProgram', name: '档位', value: '' },
+  { key: 'DateTimeOriginal', name: '拍摄日期', value: '' },
+  { key: 'ExposureCompensation', name: '曝光补偿', value: '' },
+  { key: 'MeteringMode', name: '测光模式', value: '' },
+  { key: 'WhiteBalance', name: '白平衡', value: '' },
+];

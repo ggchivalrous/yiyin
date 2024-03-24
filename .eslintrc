@@ -63,6 +63,7 @@
     "no-bitwise": "off",
     "import/no-relative-packages": "off",
     "guard-for-in": "off",
-    "@typescript-eslint/type-annotation-spacing": "error"
+    "@typescript-eslint/type-annotation-spacing": "error",
+    "brace-style": "off"
   }
 }

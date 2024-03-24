@@ -1,70 +1,141 @@
 <script lang="ts">
-  import { Message as toast } from '@ggchivalrous/db-ui';
-  import { Modal, clipboard, initializeStores } from '@skeletonlabs/skeleton';
-  import { config } from '@web/store/config';
-  import { tick } from 'svelte';
   import './index.scss';
+  import { Message } from '@ggchivalrous/db-ui';
+  import { ImageTool } from '@web/modules/image-tool';
+  import type { ImageToolOption } from '@web/modules/image-tool/interface';
+  import { TextTool } from '@web/modules/text-tool';
+  import type { TextToolOption } from '@web/modules/text-tool/interface';
+  import { config } from '@web/store/config';
+  import { importFont } from '@web/util/util';
+  import type { IFontInfo } from '@web/util/util';
 
-  import { Actions, CustomParamSetting, Footer, Header } from './components';
+  import { Actions, ParamSetting, Footer, Header, TempSetting } from './components';
   import type { IFileInfo, TInputEvent } from './interface';
 
-  initializeStores();
-
-  let fileUrlList: IFileInfo[] = [];
-  let processing = false;
+  let fileInfoList: IFileInfo[] = [];
+  const processing = false;
   let fileSelectDom: HTMLInputElement = null;
-  let clipboardDom: HTMLDivElement = null;
+  let showParamSetting = false;
+  let showTempSetting = false;
+  let fontList: IFontInfo[] = [];
 
-  let imgExif = '';
-  let showSetting = false;
+  $: onFileInfoListChange(fileInfoList);
+  $: onFontMap($config.fontMap);
+  $: importFont(fontList);
+
+  onFileDrop();
+
+  window.api['on:genTextImg'](async (data: TextToolOption & { id: string }) => {
+    const textTool = new TextTool(data.exif, data);
+    const textImgList = await textTool.genTextImg().catch((e) => {
+      console.log(e);
+    });
+
+    window.api.genTextImg({
+      id: data.id,
+      textImgList,
+    });
+  });
+
+  window.api['on:genMainImgShadow'](async (data: ImageToolOption & { id: string }) => {
+    const tool = new ImageTool(data);
+    const _data = await tool.genMainImgShadow();
+    window.api.genMainImgShadow({
+      id: data.id,
+      data: _data,
+    });
+  });
 
   async function onFileChange(ev: TInputEvent) {
     if (ev.currentTarget && ev.currentTarget.type === 'file') {
       const files = ev.currentTarget.files;
-      fileUrlList = [];
+      const _fileUrlList: IFileInfo[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        fileUrlList.push({
+        _fileUrlList.push({
           path: files[i].path,
           name: files[i].name,
         });
       }
-    }
-  }
 
-  async function generatePictureFrames() {
-    if (processing) return;
-
-    if (fileUrlList.length) {
-      processing = true;
-      const res = await window.api.startTask({
-        fileUrlList,
-        output: $config.output,
-        option: $config.options,
-      });
-
+      const res = await window.api.addTask(_fileUrlList);
       if (res.code !== 0) {
-        console.log(res);
+        Message.error(`图片添加失败${res.message}`);
+        return;
       }
 
-      fileUrlList = [];
+      fileInfoList.unshift(...res.data.reverse());
       fileSelectDom.value = '';
-      processing = false;
+      fileInfoList = fileInfoList;
     }
   }
 
-  async function getExitInfo() {
-    if (fileUrlList.length) {
-      const info = await window.api.getExitInfo(fileUrlList[0].path);
+  async function startTask() {
+    const res = await window.api.startTask();
+    if (res.code !== 0) {
+      Message.error(res.message || '水印生成开启失败');
+    }
+  }
 
-      if (info.code === 0) {
-        imgExif = JSON.stringify(info.data, null, 2);
-        await tick();
-        clipboardDom.click();
-        toast.success('复制成功');
+  // 监听文件放入，然后执行水印生成等后续操作
+  function onFileDrop() {
+    window.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const _fileInfoList = [];
+      const files = e.dataTransfer.files;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files.item(i);
+        if (!file.type.startsWith('image/')) {
+          Message.error(`${file.name} 文件非图片文件`);
+          continue;
+        }
+
+        _fileInfoList.push({
+          name: file.name,
+          path: file.path,
+        });
       }
-    } else {
-      toast.info('请选择一张图片');
+
+      const res = await window.api.addTask(_fileInfoList);
+      if (res.code !== 0) {
+        Message.error(`图片添加失败${res.message}`);
+        return;
+      }
+
+      fileInfoList.unshift(...res.data.reverse());
+      fileInfoList = fileInfoList;
+
+      if ($config.options?.iot) {
+        startTask();
+      }
+    });
+
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
+
+  function onFileInfoListChange(_: IFileInfo[]) {
+    if ($config.options?.iot) {
+      startTask();
+    }
+  }
+
+  function onFontMap(fontMap: Record<string, string>) {
+    if (fontMap) {
+      const list = [];
+      for (const key in fontMap) {
+        list.push({
+          name: key,
+          path: `file://${$config.fontDir}/${fontMap[key]}`,
+        });
+      }
+
+      fontList = list;
     }
   }
 </script>
@@ -72,29 +143,28 @@
 <Header />
 
 <div id="root">
-  <input type="file" id="path" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
+  <input type="file" id="path" accept="image/*" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
 
   <div class="body">
     <div class="content">
-      <Actions activeCount={fileUrlList.length} />
+      <Actions bind:fileInfoList={fileInfoList} />
     </div>
 
     <div class="button-wrap">
-      {#if !processing}
-        <label for="path" class="button grass">选择图片</label>
-        <div class="button grass" on:click={generatePictureFrames} on:keypress role="button" tabindex="-1">生成印框</div>
-        <div class="button grass" on:click={getExitInfo} on:keypress role="button" tabindex="-1">相机信息</div>
-        <div style="display: none;" use:clipboard={imgExif} bind:this={clipboardDom}></div>
-        <div class="button grass" on:click={() => { showSetting = true; }} on:keypress role="button" tabindex="-1">自定义参数</div>
-      {:else}
-        印框生成中...
-      {/if}
+      <label for="path" class="button grass">添加图片</label>
+      <div class="button grass" on:click={startTask} on:keypress role="button" tabindex="-1">
+        {#if processing}
+          处理中...
+        {:else}
+          生成印框
+        {/if}
+      </div>
+      <div class="button grass" on:click={() => { showParamSetting = true; }} on:keypress role="button" tabindex="-1">参数设置</div>
+      <div class="button grass" on:click={() => { showTempSetting = true; }} on:keypress role="button" tabindex="-1">模板设置</div>
     </div>
   </div>
 
   <Footer />
-
-  <CustomParamSetting bind:visible={showSetting} />
+  <ParamSetting bind:visible={showParamSetting} />
+  <TempSetting bind:visible={showTempSetting} />
 </div>
-
-<Modal />
