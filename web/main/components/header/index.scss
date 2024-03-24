@@ -26,25 +26,45 @@
     cursor: pointer;
   }
 
-  .app-header-reset {
-    padding: 7px 6px !important;
-    margin-left: 10px !important;
-
-    .icon {
-      display: inline-block;
-    }
-  }
-
   .app-header-button {
     display: inline-block;
     width: 32px;
     height: 32px;
     text-align: center;
-  }
+    padding: 7px 12px !important;
+    cursor: pointer;
+    margin-left: 10px !important;
 
-  .app-header-star {
-    padding: 0 0 !important;
-    line-height: 32px;
+    &.app-header-reset {
+      padding: 7px 6px !important;
+  
+      .icon {
+        display: inline-block;
+      }
+    }
+
+    &.app-header-star {
+      padding: 0 0 !important;
+      line-height: 32px;
+      margin-left: 0 !important;
+    }
+  }
+}
+
+.help-wrap {
+  width: 300px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .help-list {
+    overflow-y: auto;
+
+    .db-collapse-item__content {
+      padding-right: 15px;
+      text-align: justify;
+    }
   }
 }
 
@@ -53,6 +73,14 @@
 
   .popper__arrow {
     left: 8px !important;
+  }
+}
+
+.help-popover {
+  left: 10px !important;
+
+  .popper__arrow {
+    left: 54px !important;
   }
 }
 
