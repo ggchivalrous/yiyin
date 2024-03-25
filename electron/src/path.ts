@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import os from 'os';
 
 import { app } from 'electron';
 
@@ -11,7 +12,7 @@ const paths = {
   public: env.VITE_PUBLIC,
   logger: join(app.getPath('userData'), 'logs'),
   logo: '',
-  exiftool: join(isDev ? env.VITE_DIST_ELECTRON : app.getAppPath(), 'exiftool/exiftool'),
+  exiftool: join(isDev ? env.VITE_DIST_ELECTRON : app.getAppPath(), 'exiftool', os.platform() === 'win32' ? 'exiftool.exe' : 'exiftool'),
 };
 
 paths.public = isDev ? env.VITE_PUBLIC : paths.web;

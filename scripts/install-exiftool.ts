@@ -40,7 +40,7 @@ function installWinExiftool(outDir: string) {
   tryCatch(() => {
     const admzip = new AdmZip(WindowsExifToolPath);
     admzip.extractAllTo(outDir);
-    fs.renameSync(path.join(outDir, 'exiftool(-k).exe'), path.join(outDir, 'exiftool'));
+    fs.renameSync(path.join(outDir, 'exiftool(-k).exe'), path.join(outDir, 'exiftool.exe'));
     r(true);
   }, null, () => r(false));
 
