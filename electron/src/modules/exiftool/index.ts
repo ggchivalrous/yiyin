@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 
 import { Logger } from '@modules/logger';
@@ -21,7 +21,7 @@ export class ExifTool {
 
   constructor(path: string) {
     this.path = path;
-    this.commonFilePath = path.replace(/[^/\w.-]/g, (match) => `\\${match}`);
+    this.commonFilePath = path.replace(/[\s]/g, (match) => `\\${match}`);
     this.hasExiftool = fs.existsSync(paths.exiftool);
     this.init();
   }
@@ -64,7 +64,7 @@ export class ExifTool {
   }
 
   private exiftoolParse(): Exif {
-    const res = execSync(`${paths.exiftool} ${this.commonFilePath}`);
+    const res = execFileSync(paths.exiftool, [this.commonFilePath]);
     const text = res.toString();
     const strList = text.split('\n');
     const kvList = strList.map((i) => {
