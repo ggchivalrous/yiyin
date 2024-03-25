@@ -44,8 +44,6 @@ export default defineConfig(async ({ command }) => {
     URL: isServe ? `http://localhost:${port}` : '',
   };
 
-  const exiftoolPath = join(env.DIST_ELECTRON, 'exiftool');
-
   env.PUBLIC = isServe ? join(__dirname, 'web/public') : env.WEB;
   env.EXIFTOOL = env.DIST_ELECTRON;
 
@@ -61,11 +59,8 @@ export default defineConfig(async ({ command }) => {
     type: 'commonjs',
   }, null, 2));
 
-  // 安装exiftool工具
-  if (!fs.existsSync(exiftoolPath)) {
-    fs.mkdirSync(exiftoolPath);
-  }
-  await installExiftool(exiftoolPath);
+  // exiftool工具打包进来
+  await installExiftool(env.DIST_ELECTRON);
 
   return {
     root: 'web',
