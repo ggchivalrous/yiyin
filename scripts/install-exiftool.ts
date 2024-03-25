@@ -4,9 +4,10 @@ import os from 'os';
 import path from 'path';
 import zlib from 'zlib';
 
+import AdmZip from 'adm-zip';
 import tar from 'tar';
 
-import { usePromise } from '../common/utils';
+import { tryCatch, usePromise } from '../common/utils';
 
 const platform = os.platform();
 const __dirname = path.parse(import.meta.url.slice(platform === 'win32' ? 8 : 7)).dir;
@@ -14,7 +15,6 @@ const WindowsExifToolPath = path.join(__dirname, '../static/windows-exiftool.zip
 const CommondExifToolPath = path.join(__dirname, '../static/commond-exiftool.tar.gz');
 
 export default async (outPath: string) => {
-  const [promise, r] = usePromise();
   const outDir = path.join(outPath, 'exiftool');
   const exiftoolCommodPath = path.join(outDir, 'exiftool');
 
@@ -23,39 +23,55 @@ export default async (outPath: string) => {
   }
 
   if (fs.existsSync(exiftoolCommodPath)) {
-    r(true);
-    return promise;
+    return;
   }
 
-  const exiftoolPath = platform === 'win32' ? WindowsExifToolPath : CommondExifToolPath;
-  fs.createReadStream(exiftoolPath)
-    .pipe(platform === 'win32' ? zlib.createUnzip() : zlib.createGunzip())
+  if (platform === 'win32') {
+    await installWinExiftool(outDir);
+  }
+  else {
+    await installCommondExiftool(outDir);
+  }
+};
+
+function installWinExiftool(outDir: string) {
+  const [p, r] = usePromise();
+
+  tryCatch(() => {
+    const admzip = new AdmZip(WindowsExifToolPath);
+    admzip.extractAllTo(outDir);
+    fs.renameSync(path.join(outDir, 'exiftool(-k).exe'), path.join(outDir, 'exiftool'));
+    r(true);
+  }, null, () => r(false));
+
+  return p;
+}
+
+function installCommondExiftool(outDir: string) {
+  const [p, r] = usePromise();
+
+  fs.createReadStream(CommondExifToolPath)
+    .pipe(zlib.createGunzip())
+    .pipe(tar.extract({ cwd: outDir }))
     .on('error', (e) => {
       console.log('Exiftool模块解压异常', e);
       r(false);
     })
-    .pipe(
-      platform === 'darwin'
-        ? tar.extract({ cwd: outDir })
-        : fs.createWriteStream(exiftoolCommodPath),
-    )
     .on('finish', () => {
       console.log('Exiftool工具解压完成');
 
       // mac的压缩包套了一层文件夹，需要将文件夹的内容全部复制到上一层
       const fileList = fs.readdirSync(outDir);
-      if (fileList.length === 1) {
-        const filePath = path.join(outDir, fileList[0]);
-        if (fs.statSync(filePath)?.isDirectory()) {
-          cpDirAllFile(filePath, outDir);
-        }
+      const filePath = path.join(outDir, fileList[0]);
+      if (fs.statSync(filePath)?.isDirectory()) {
+        cpDirAllFile(filePath, outDir);
       }
 
       r(true);
     });
 
-  return promise;
-};
+  return p;
+}
 
 function cpDirAllFile(origin: string, target: string) {
   if (!fs.statSync(origin).isDirectory()) return;
