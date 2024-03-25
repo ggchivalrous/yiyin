@@ -1,13 +1,12 @@
 import { release } from 'node:os';
 
-import { ImageTool } from '@modules/image-tool';
 import { Logger } from '@modules/logger';
 import { createWindow } from '@root/main/create-window';
 import routerConfig from '@root/router-config';
 import { image, open, query } from '@router';
 import { genMainImgShadowQueue, genTextImgQueue, imageToolQueue } from '@src/common/queue';
 import { config, storeConfig } from '@src/config';
-import { hasNewVersion, cpObj } from '@utils';
+import { hasNewVersion } from '@utils';
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
 
 const isDev = import.meta.env.DEV;

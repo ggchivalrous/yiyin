@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -12,11 +13,16 @@ const __dirname = path.parse(import.meta.url.slice(platform === 'win32' ? 8 : 7)
 const WindowsExifToolPath = path.join(__dirname, '../static/windows-exiftool.zip');
 const CommondExifToolPath = path.join(__dirname, '../static/commond-exiftool.tar.gz');
 
-export default (outputPath: string) => {
+export default async (outPath: string) => {
   const [promise, r] = usePromise();
+  const outDir = path.join(outPath, 'exiftool');
+  const exiftoolCommodPath = path.join(outDir, 'exiftool');
 
-  const _outputPath = path.join(outputPath, 'exiftool');
-  if (fs.existsSync(_outputPath)) {
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir);
+  }
+
+  if (fs.existsSync(exiftoolCommodPath)) {
     r(true);
     return promise;
   }
@@ -30,18 +36,18 @@ export default (outputPath: string) => {
     })
     .pipe(
       platform === 'darwin'
-        ? tar.extract({ cwd: outputPath })
-        : fs.createWriteStream(_outputPath),
+        ? tar.extract({ cwd: outDir })
+        : fs.createWriteStream(exiftoolCommodPath),
     )
     .on('finish', () => {
       console.log('Exiftool工具解压完成');
 
       // mac的压缩包套了一层文件夹，需要将文件夹的内容全部复制到上一层
-      const fileList = fs.readdirSync(outputPath);
+      const fileList = fs.readdirSync(outDir);
       if (fileList.length === 1) {
-        const filePath = path.join(outputPath, fileList[0]);
+        const filePath = path.join(outDir, fileList[0]);
         if (fs.statSync(filePath)?.isDirectory()) {
-          cpDirAllFile(filePath, outputPath);
+          cpDirAllFile(filePath, outDir);
         }
       }
 
