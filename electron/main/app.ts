@@ -142,7 +142,7 @@ export default class Application {
 
   private async createDefWin() {
     const opts: BrowserWindowConstructorOptions = {
-      width: 700 + (isDev ? 500 : 0),
+      width: 800 + (isDev ? 500 : 0),
       height: 610,
       title: '壹印',
       frame: false,
