@@ -55,9 +55,7 @@ export class TextTool {
 
           if (fieldTemp.type === 'text') {
             slotInfo.value = `${fieldTemp.value}`.trim();
-            if (slotInfo.value) {
-              slotInfoList.push(slotInfo);
-            }
+            slotInfoList.push(slotInfo.value ? slotInfo : '');
             continue;
           }
 
@@ -70,23 +68,21 @@ export class TextTool {
             slotInfo.value = await loadImage(fieldTemp.wImg);
           }
 
-          if (slotInfo.value) {
-            slotInfoList.push(slotInfo);
-          }
+          slotInfoList.push(slotInfo.value ? slotInfo : '');
         }
 
         const _arr = text.trim().split('{---}');
 
         if (
           (_arr.length === 1 && !_arr[0].trim())
-          || (_arr.length > 1 && !slotInfoList.length)
+          || (_arr.length > 1 && !slotInfoList.filter(Boolean).length)
         ) continue;
 
         for (let j = 0; j < _arr.length; j++) {
-          if (slotInfoList[j]?.value) {
-            textList.push(_arr[j], slotInfoList[j]);
-          } else {
+          if (typeof slotInfoList[j] === 'string' || !(slotInfoList[j] as any)?.value) {
             textList.push(_arr[j]);
+          } else {
+            textList.push(_arr[j], slotInfoList[j]);
           }
         }
       } else {

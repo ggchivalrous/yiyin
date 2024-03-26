@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { arrToObj } from '@common/utils';
   import { FontDialog } from '@components';
   import { Message, Option, Select } from '@ggchivalrous/db-ui';
   import frederickathegreat from '@web/assets/font/FrederickatheGreat.ttf';
@@ -13,6 +14,7 @@
   export let value = '';
   export let clearable = false;
 
+  const dispatch = createEventDispatcher();
   const defActiveFont = { name: 'PingFang SC', fileName: '' };
   const defFont = [
     defActiveFont,
@@ -21,7 +23,7 @@
     { name: 'FrederickatheGreat', fileName: frederickathegreat },
     { name: 'Neoneon', fileName: neoneon },
   ];
-  const dispatch = createEventDispatcher();
+  const defFontRecord = arrToObj(defFont, 'name');
   let fontList = [...defFont];
   let visible = false;
 
@@ -63,7 +65,9 @@
       }
 
       fontList = [...defFont, ...list];
-      if ((!_fontMap[value] && value !== defActiveFont.name) || !value) {
+
+      // 选择的字体已经被删除了，则改为默认字体
+      if ((!_fontMap[value] && !defFontRecord[value]) || !value) {
         value = defActiveFont.name;
       }
     }
