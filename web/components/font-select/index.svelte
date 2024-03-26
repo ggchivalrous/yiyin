@@ -15,16 +15,20 @@
   export let clearable = false;
 
   const dispatch = createEventDispatcher();
-  const defActiveFont = { name: 'PingFang SC', fileName: '' };
+  const defActiveFont = { name: 'PingFang SC', fileName: '', type: 'default' };
   const defFont = [
     defActiveFont,
-    { name: '春风楷', fileName: chunfengkai },
-    { name: '千图小兔', fileName: qiantuxiaotu },
-    { name: 'FrederickatheGreat', fileName: frederickathegreat },
-    { name: 'Neoneon', fileName: neoneon },
+    { name: '春风楷', fileName: chunfengkai, type: 'default' },
+    { name: '千图小兔', fileName: qiantuxiaotu, type: 'default' },
+    { name: 'FrederickatheGreat', fileName: frederickathegreat, type: 'default' },
+    { name: 'Neoneon', fileName: neoneon, type: 'default' },
   ];
   const defFontRecord = arrToObj(defFont, 'name');
-  let fontList = [...defFont];
+  let fontList: {
+    name: string
+    fileName: string
+    type?: string
+  }[] = [...defFont];
   let visible = false;
 
   $: listenFontMapChange(fontMap);
@@ -54,22 +58,25 @@
   }
 
   function listenFontMapChange(_fontMap: typeof fontMap) {
-    if (Object.keys(_fontMap).length) {
-      const list = [];
+    if (!Object.keys(_fontMap).length) {
+      fontList = [...defFont];
+      return;
+    }
 
-      for (const key in _fontMap) {
-        list.push({
-          name: key,
-          fileName: _fontMap[key],
-        });
-      }
+    const list = [];
 
-      fontList = [...defFont, ...list];
+    for (const key in _fontMap) {
+      list.push({
+        name: key,
+        fileName: _fontMap[key],
+      });
+    }
 
-      // 选择的字体已经被删除了，则改为默认字体
-      if ((!_fontMap[value] && !defFontRecord[value]) || !value) {
-        value = defActiveFont.name;
-      }
+    fontList = [...defFont, ...list];
+
+    // 选择的字体已经被删除了，则改为默认字体
+    if ((!_fontMap[value] && !defFontRecord[value]) || !value) {
+      value = defActiveFont.name;
     }
   }
 </script>
@@ -79,7 +86,7 @@
   {#each fontList as i}
     <Option value={i.name}>
       <span class="font-name" style:font-family={i.name}>{i.name}</span>
-      {#if i.fileName}
+      {#if i.type !== 'default'}
         <span class="font-del" on:click|preventDefault|capture|stopPropagation={() => delFont(i.name)} on:keypress role="button" tabindex="-1">x</span>
       {/if}
     </Option>
