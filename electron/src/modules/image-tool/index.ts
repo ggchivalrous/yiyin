@@ -360,6 +360,8 @@ export class ImageTool extends Event {
 
   private delCacheFile() {
     for (const k in this.outputFileNames) {
+      if (k === 'composite') continue;
+
       const _path = (this.outputFileNames as any)[k];
       if (fs.existsSync(_path)) {
         tryCatch(() => fs.rmSync(_path));
