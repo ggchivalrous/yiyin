@@ -158,6 +158,8 @@ export class ImageTool extends Event {
     log.info('【%s】图片合成...', this.id);
     await this.composite();
     this.progress = 100;
+
+    this.delCacheFile();
   }
 
   async genBgImg() {
@@ -354,6 +356,15 @@ export class ImageTool extends Event {
     })
       .toFormat('jpeg')
       .toFile(toFilePath);
+  }
+
+  private delCacheFile() {
+    for (const k in this.outputFileNames) {
+      const _path = (this.outputFileNames as any)[k];
+      if (fs.existsSync(_path)) {
+        tryCatch(() => fs.rmSync(_path));
+      }
+    }
   }
 
   async genMainImgShadow() {

@@ -110,7 +110,6 @@ export function getConfig(def = false) {
     } else {
       Object.assign(_config, {
         output: fileConfig.output || _config.output,
-        cacheDir: fileConfig.cacheDir || _config.cacheDir,
         options: Object.assign(_config.options, fileConfig.options),
         versionUpdateInfo: Object.assign(_config.versionUpdateInfo, fileConfig.versionUpdateInfo),
         tempFields: fileConfig.tempFields || _config.tempFields,
