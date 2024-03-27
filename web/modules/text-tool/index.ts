@@ -156,7 +156,7 @@ export class TextTool {
 
         _textInfo.h = Math.ceil(info.actualBoundingBoxAscent);
         _textInfo.w = Math.ceil(_textInfo.h * (i.value.width / i.value.height));
-        _textInfo.y = roundDecimalPlaces(baseline - _textInfo.h, 2);
+        _textInfo.y = roundDecimalPlaces(baseline - _textInfo.h + _textInfo.h * 0.02, 2);
       } else {
         _textInfo.type = 'text';
         if (typeof i === 'object') {
@@ -236,7 +236,7 @@ export class TextTool {
     const maxFontParam: IFontParam = { ...defFont };
 
     for (const font of fontList) {
-      if (font.font && font.use) {
+      if (font.use) {
         if (!maxFontParam.bold && font.bold) {
           maxFontParam.bold = true;
         }

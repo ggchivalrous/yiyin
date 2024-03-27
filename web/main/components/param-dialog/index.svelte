@@ -117,7 +117,7 @@
   <div class="form-item">
     <div class="form-item-label title">字体参数</div>
     <div class="form-item-content">
-      <FontSetting bind:conf={form.param} />
+      <FontSetting bind:conf={form.font} />
     </div>
   </div>
 
@@ -137,8 +137,7 @@
 
       <ActionItem title="类型">
         <svelte:fragment slot="popup">使用何种类型作为内容显示<br>支持: 文本、图片</svelte:fragment>
-        <Switch bind:value={form.type} inactiveValue="text" activeValue="img"/>
-        <span style="margin-left: 4px; font-weight: bold;">{form.type === 'text' ? '文本' : '图片'}</span>
+        <Switch bind:value={form.type} inactiveValue="text" activeValue="img" inactiveText="文本" activeText="图片"/>
       </ActionItem>
 
       {#if form.type === 'text'}

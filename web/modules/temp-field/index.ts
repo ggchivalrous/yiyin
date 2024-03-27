@@ -70,6 +70,9 @@ async function fillTempFieldInfo(
       const _k = field as keyof typeof exif._;
       const _info: IFieldInfoItem = {
         ...info,
+        type: 'text',
+        bImg: '',
+        wImg: '',
         value: exif._[_k]?.() || '',
       };
       tempFieldInfo[field] = JSON.parse(JSON.stringify(_info));

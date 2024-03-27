@@ -82,12 +82,14 @@ export class ExifTool {
   }
 
   private formatExiftoolParseInfo(record: Record<string, string>): Exif {
+    const FNumber = Number.isNaN(+record.FNumber) ? '' : `${+record.FNumber}`;
+
     const exif: Exif = {
       Make: record.Make || '',
       Model: record.CameraModelName || '',
       LensMake: record.LensMake || '',
       LensModel: record.LensModel || '',
-      FNumber: `${+record.FNumber}` || '',
+      FNumber: FNumber || '',
       ISO: record.ISO || '',
       FocalLength: record.FocalLength?.split('.')[0] || '',
       FocalLengthIn35mmFormat: record.FocalLengthIn35mmFormat?.split(' ')[0] || record.FocalLength?.split('.')[0] || '',
