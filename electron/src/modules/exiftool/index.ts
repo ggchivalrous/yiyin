@@ -101,6 +101,10 @@ export class ExifTool {
       MeteringMode: record.MeteringMode || '',
     };
 
+    if (exif.ExposureTime.includes('undef')) {
+      exif.ExposureTime = '';
+    }
+
     if (exif.ExposureProgram) {
       if (exif.ExposureProgram === 'Not Defined') {
         exif.ExposureProgram = 'Auto';
@@ -111,7 +115,12 @@ export class ExifTool {
 
     if (exif.DateTimeOriginal) {
       const [date, hour] = exif.DateTimeOriginal.split(' ');
-      exif.DateTimeOriginal = formatDate('yyyy/MM/dd hh:mm:ss', new Date(`${date.replaceAll(':', '/')} ${hour}`));
+      const d = new Date(`${date.replaceAll(':', '/')} ${hour}`);
+      if (Number.isNaN(d.getTime())) {
+        exif.DateTimeOriginal = '';
+      } else {
+        exif.DateTimeOriginal = formatDate('yyyy/MM/dd hh:mm:ss', d);
+      }
     }
 
     if (exif.WhiteBalance) {
@@ -132,7 +141,7 @@ export class ExifTool {
         case 'average': exif.MeteringMode = '平均测光'; break;
         case 'center-weighted': exif.MeteringMode = '中央重点测光'; break;
         case 'highlight-weighted ': exif.MeteringMode = '斑马测光'; break;
-        default: break;
+        default: exif.MeteringMode = ''; break;
       }
     }
 
@@ -151,19 +160,19 @@ export class ExifTool {
       Model: record.Model || '',
       LensMake: record.LensMake || '',
       LensModel: record.LensModel || '',
-      FNumber: `${record.FNumber}` || '',
-      ISO: `${record.ISO}` || '',
-      FocalLength: `${record.FocalLength}` || '',
-      FocalLengthIn35mmFormat: `${record.FocalLengthIn35mmFormat}` || '',
+      FNumber: `${record.FNumber || ''}`,
+      ISO: `${record.ISO || ''}`,
+      FocalLength: `${record.FocalLength || ''}`,
+      FocalLengthIn35mmFormat: `${record.FocalLengthIn35mmFormat || record.FocalLength || ''}`,
       ExposureTime: record.ExposureTime || '',
       DateTimeOriginal: record.DateTimeOriginal || '',
-      ExposureCompensation: `${record.ExposureCompensation}` || '',
+      ExposureCompensation: `${record.ExposureCompensation || ''}`,
       WhiteBalance: record.WhiteBalance || '',
       ExposureProgram: record.ExposureProgram || '',
       MeteringMode: '',
     };
 
-    if (+exif.ExposureTime < 1) {
+    if (exif.ExposureTime && !Number.isNaN(+exif.ExposureTime) && +exif.ExposureTime < 1) {
       exif.ExposureTime = `1/${Math.round(1 / +exif.ExposureTime)}`;
     }
 
