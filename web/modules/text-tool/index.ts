@@ -115,16 +115,31 @@ export class TextTool {
       return null;
     }
 
+    let totalText = '';
+    let textValIsAllText = true;
+    const textFonts: IFontParam[] = [];
+
+    for (const textItem of textList) {
+      if (typeof textItem !== 'string') {
+        textFonts.push(textItem.font);
+        if (typeof textItem.value === 'string') {
+          totalText += textItem.value;
+        } else {
+          textValIsAllText = false;
+        }
+        continue;
+      }
+
+      totalText += textItem;
+    }
+
     const textInfoList: TextInfo[] = [];
     const { can, ctx } = this.genCanvas(0, 0);
     const defFont = this.getFont(opts.font);
-    const maxFontParam = this.getMaxFontParam(
-      textList.map((i) => typeof i !== 'string' && i.font).filter(Boolean),
-      opts.font,
-    );
+    const maxFontParam = this.getMaxFontParam(textFonts, opts.font);
 
     ctx.font = this.getFont(maxFontParam);
-    const textInfo = ctx.measureText('QOSyYtl709');
+    const textInfo = ctx.measureText(textValIsAllText ? totalText : 'QOSyYtl709');
     const defTextMargin = opts.bgHeight * 0.004;
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
     const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + defTextMargin);

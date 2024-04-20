@@ -174,6 +174,7 @@ export class ImageTool extends Event {
     }
 
     this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2);
+    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2);
   }
 
   async genMainImg() {

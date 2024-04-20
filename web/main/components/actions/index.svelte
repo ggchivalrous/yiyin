@@ -103,10 +103,10 @@
   }
 
   const numReg = /-{0,1}\d+\.{0,1}\d{0,3}/;
-  function onNumInput(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number) {
+  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number) {
     let _v = v.currentTarget.value;
-
     const match = _v.match(numReg);
+
     if (match && match.length) {
       _v = match[0];
     }
@@ -118,18 +118,6 @@
 
     ($config.options[key] as number) = num;
     v.currentTarget.value = `${num}`;
-  }
-
-  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options']) {
-    const match = `${$config.options[key]}`.match(numReg);
-
-    if (match && match.length) {
-      ($config.options[key] as number) = +match[0];
-    } else {
-      ($config.options[key] as number) = 0;
-    }
-
-    v.currentTarget.value = $config.options[key] as string;
   }
 
   function switchBgRate() {
@@ -186,9 +174,9 @@
       <svelte:fragment slot="popup">
         指定圆角的大小，不指定则为直角
         <br>
-        设置的值为图片高度的百分比，例如: 1，则为0.01%
+        取值范围: 0 - 50
         <br>
-        (默认使用图片高度的 0.021%)
+        默认值: 2.1
       </svelte:fragment>
       <Switch bind:value={$config.options.radius_show} />
       <input
@@ -196,8 +184,7 @@
         type="text"
         value={$config.options.radius}
         style="width: 103px;"
-        on:input={(v) => onNumInput(v, 'radius', 30, 0)}
-        on:change={(v) => onNumInputChange(v, 'radius')}
+        on:change={(v) => onNumInputChange(v, 'radius', 50, 0)}
       />
     </ActionItem>
 
@@ -215,8 +202,7 @@
         type="text"
         value={$config.options.shadow}
         style="width: 103px;"
-        on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
-        on:change={(v) => onNumInputChange(v, 'shadow')}
+        on:change={(v) => onNumInputChange(v, 'shadow', 50, 0)}
       />
     </ActionItem>
 
