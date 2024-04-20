@@ -170,6 +170,36 @@
       <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress role="button" tabindex="-1">{outputDirName}</span>
     </ActionItem>
 
+    <ActionItem {labelWidth} title="主图占比">
+      <svelte:fragment slot="popup">
+        指定主图对背景宽度的占比（可以调节左右边框的宽度）
+        <br>
+        默认主图占背景的90%
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.main_img_w_rate}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'main_img_w_rate', 100, 1)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="文本间距">
+      <svelte:fragment slot="popup">
+        指定文本上下间距（临时性功能，后续会去掉）
+        <br>
+        默认0.4
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.text_margin}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'text_margin', 10000, 0)}
+      />
+    </ActionItem>
+
     <ActionItem {labelWidth} title="圆角大小">
       <svelte:fragment slot="popup">
         指定圆角的大小，不指定则为直角

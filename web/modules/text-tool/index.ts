@@ -140,7 +140,7 @@ export class TextTool {
 
     ctx.font = this.getFont(maxFontParam);
     const textInfo = ctx.measureText(textValIsAllText ? totalText : 'QOSyYtl709');
-    const defTextMargin = opts.bgHeight * 0.004;
+    const defTextMargin = opts.bgHeight * ((this.opt.options.text_margin || 0) / 100);
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
     const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + defTextMargin);
 

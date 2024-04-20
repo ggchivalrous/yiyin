@@ -37,6 +37,8 @@ export const DefaultConfig: IConfig = {
       h: 0,
     },
     font: 'PingFang SC',
+    main_img_w_rate: 90,
+    text_margin: 0.4,
   },
 
   tempFields: [getDefOptionItem('')],

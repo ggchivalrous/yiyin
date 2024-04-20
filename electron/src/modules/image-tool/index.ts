@@ -423,8 +423,9 @@ export class ImageTool extends Event {
     }
 
     // 如果重置后，宽度太窄，则等比扩大宽高
-    if (this.sizeInfo.w / resetWidth > 0.9) {
-      resetWidth = Math.ceil(this.sizeInfo.w / 0.9);
+    const mainImgWidthRate = (this.outputOpt.main_img_w_rate || 90) / 100;
+    if (this.sizeInfo.w / resetWidth > mainImgWidthRate) {
+      resetWidth = Math.ceil(this.sizeInfo.w / mainImgWidthRate);
       resetHeight = Math.ceil(resetWidth / whRate);
     }
 
@@ -449,9 +450,8 @@ export class ImageTool extends Event {
 
     // 阴影宽度
     if (opt.shadow_show) {
-      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 6) / 100));
-      const mainImgOffsetTop = Math.max(contentTop, shadowHeight);
-      contentTop = Math.ceil(mainImgOffsetTop);
+      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 0) / 100));
+      contentTop = Math.ceil(shadowHeight);
       mainImgOffset = contentTop * 2;
     }
 

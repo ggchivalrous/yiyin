@@ -55,6 +55,16 @@ export interface OutputOption {
    * 选中的字体
    */
   font: string
+
+  /**
+   * 主图默认宽度占比
+   */
+  main_img_w_rate: number
+
+  /**
+   * 文字上下间隔
+   */
+  text_margin: number
 }
 
 export interface OutputFilePaths {
