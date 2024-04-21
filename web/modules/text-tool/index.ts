@@ -235,8 +235,6 @@ export class TextTool {
     }, 30);
 
     can.width += 30;
-    ctx.fillStyle = '#666';
-    ctx.fillRect(0, 0, can.width, can.height);
 
     for (const info of textInfoList) {
       if (info.type === 'text') {
