@@ -141,20 +141,29 @@
       fontList = list;
     }
   }
+
+  async function getGuideIconPath(arr: string[]) {
+    const data = await window.api.pathJoin(arr);
+    if (data.code === 0) {
+      return data.data.replaceAll('\\', '\\\\');
+    }
+    return '';
+  }
 </script>
 
 <Header />
 
 <div id="root">
-  <div class="guide">
-    <i style="background-image: url('file://{$pathInfo.public}/img/guide.svg');"></i>
-    白嫖指南(●°u°●)​ 」
-  </div>
-
-  <div class="desc">
-    <i style="background-image: url('file://{$pathInfo.public}/img/guide.svg');"></i>
-    萌新指北(｡･ω･｡)
-  </div>
+  {#await getGuideIconPath([$pathInfo.public, '/img/guide.svg']) then path}
+    <div class="guide">
+      <i style="background-image: url('file://{path}');"></i>
+      白嫖指南(●°u°●)​ 」
+    </div>
+    <div class="desc">
+      <i style="background-image: url('file://{path}');"></i>
+      萌新指北(｡･ω･｡)
+    </div>
+  {/await}
 
   <input type="file" id="path" accept="image/*" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
 
