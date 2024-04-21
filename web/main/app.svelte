@@ -129,11 +129,13 @@
     if (fontMap) {
       const list = [];
       for (const key in fontMap) {
-        const path = await window.api.pathJoin([$config.fontDir, fontMap[key]]);
-        list.push({
-          name: key,
-          path: `file://${path}`,
-        });
+        const data = await window.api.pathJoin([$config.fontDir, fontMap[key]]);
+        if (data.code === 0) {
+          list.push({
+            name: key,
+            path: `file://${data.data.replaceAll('\\', '\\\\')}`,
+          });
+        }
       }
 
       fontList = list;
