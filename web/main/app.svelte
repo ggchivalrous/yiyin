@@ -1,6 +1,7 @@
 <script lang="ts">
   import './index.scss';
   import { Message } from '@ggchivalrous/db-ui';
+  import guide from '@web/assets/img/guide.svg';
   import { ImageTool } from '@web/modules/image-tool';
   import type { ImageToolOption } from '@web/modules/image-tool/interface';
   import { TextTool } from '@web/modules/text-tool';
@@ -125,14 +126,17 @@
     }
   }
 
-  function onFontMap(fontMap: Record<string, string>) {
+  async function onFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
       for (const key in fontMap) {
-        list.push({
-          name: key,
-          path: `file://${$config.fontDir}/${fontMap[key]}`,
-        });
+        const data = await window.api.pathJoin([$config.fontDir, fontMap[key]]);
+        if (data.code === 0) {
+          list.push({
+            name: key,
+            path: `file://${data.data.replaceAll('\\', '\\\\')}`,
+          });
+        }
       }
 
       fontList = list;
@@ -143,6 +147,16 @@
 <Header />
 
 <div id="root">
+  <div class="guide">
+    <i style="background-image: url({guide});"></i>
+    白嫖指南(●°u°●)​ 」
+  </div>
+
+  <div class="desc">
+    <i style="background-image: url({guide});"></i>
+    萌新指北(｡･ω･｡)
+  </div>
+
   <input type="file" id="path" accept="image/*" bind:this={fileSelectDom} on:change={onFileChange} multiple class="hide" />
 
   <div class="body">

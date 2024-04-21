@@ -79,10 +79,19 @@ export class TextTool {
         ) continue;
 
         for (let j = 0; j < _arr.length; j++) {
-          if (typeof slotInfoList[j] === 'string' || !(slotInfoList[j] as any)?.value) {
-            textList.push(_arr[j]);
+          const slotInfo = slotInfoList[j];
+          let commonText = _arr[j];
+
+          if (i.font.caseType === 'lowcase') {
+            commonText = commonText.toLowerCase();
+          } else if (i.font.caseType === 'upcase') {
+            commonText = commonText.toUpperCase();
+          }
+
+          if (typeof slotInfo === 'string' || !(slotInfo as any)?.value) {
+            textList.push(commonText);
           } else {
-            textList.push(_arr[j], slotInfoList[j]);
+            textList.push(commonText, slotInfo);
           }
         }
       } else {
@@ -91,6 +100,7 @@ export class TextTool {
 
       if (textList.length) {
         imgFileInfoList.push(this.createTextImg(textList, {
+          verticalAlign: i.verticalAlign,
           font: i.font,
           height: i.height,
           bgHeight: this.opt.bgHeight,
@@ -115,19 +125,44 @@ export class TextTool {
       return null;
     }
 
+    let totalText = '';
+    let textValIsAllText = true;
+    const textFonts: IFontParam[] = [];
+
+    for (const textItem of textList) {
+      if (typeof textItem !== 'string') {
+        textFonts.push(textItem.font);
+        if (typeof textItem.value === 'string') {
+          let v = textItem.value;
+
+          if (textItem.font.use) {
+            if (textItem.font.caseType === 'lowcase') {
+              v = v.toLowerCase();
+            } else if (textItem.font.caseType === 'upcase') {
+              v = v.toUpperCase();
+            }
+          }
+
+          totalText += v;
+        } else {
+          textValIsAllText = false;
+        }
+        continue;
+      }
+
+      totalText += textItem;
+    }
+
     const textInfoList: TextInfo[] = [];
     const { can, ctx } = this.genCanvas(0, 0);
     const defFont = this.getFont(opts.font);
-    const maxFontParam = this.getMaxFontParam(
-      textList.map((i) => typeof i !== 'string' && i.font).filter(Boolean),
-      opts.font,
-    );
+    const maxFontParam = this.getMaxFontParam(textFonts, opts.font);
 
     ctx.font = this.getFont(maxFontParam);
-    const textInfo = ctx.measureText('QOSyYtl709');
-    const defTextMargin = opts.bgHeight * 0.004;
+    const textInfo = ctx.measureText(textValIsAllText ? totalText : 'QOSyYtl709');
+    const defTextMargin = opts.bgHeight * ((this.opt.options.text_margin || 0) / 100);
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
-    const baseline = Math.ceil(textInfo.actualBoundingBoxAscent + defTextMargin);
+    const baseline = Math.ceil(textInfo.actualBoundingBoxAscent);
 
     // TODO: 后续去掉默认的50高度，采用文本模板高度定义
     can.height = opts.height || Math.ceil(Math.max(textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent + defTextMargin * 2, maxFontParam.size));
@@ -138,6 +173,7 @@ export class TextTool {
       if (isStartOrEnd && typeof i === 'string' && !i.trim()) return n;
 
       const _textInfo: TextInfo = {
+        color: opts.font.color,
         font: defFont,
         value: '',
         type: 'img',
@@ -148,20 +184,34 @@ export class TextTool {
       };
 
       if (typeof i === 'object' && i.value instanceof Image) {
+        const font = this.mergeFontParam(opts.font, i.font);
         _textInfo.value = i.value;
-        _textInfo.font = this.getFont(opts.font, this.mergeFontParam(opts.font, i.font));
+        _textInfo.font = this.getFont(opts.font, font);
 
         ctx.font = _textInfo.font;
         const info = ctx.measureText('QSOPNYuiyl90');
 
         _textInfo.h = Math.ceil(info.actualBoundingBoxAscent);
         _textInfo.w = Math.ceil(_textInfo.h * (i.value.width / i.value.height));
-        _textInfo.y = roundDecimalPlaces(baseline - _textInfo.h + _textInfo.h * 0.02, 2);
+
+        if (opts.verticalAlign === 'center') {
+          _textInfo.y = roundDecimalPlaces((can.height - _textInfo.h) / 2, 2);
+        } else {
+          _textInfo.y = roundDecimalPlaces((can.height - baseline) / 2 + _textInfo.h * 0.03, 2);
+        }
       } else {
         _textInfo.type = 'text';
         if (typeof i === 'object') {
-          _textInfo.font = this.getFont(opts.font, this.mergeFontParam(opts.font, i.font));
-          _textInfo.value = i.value;
+          const font = this.mergeFontParam(opts.font, i.font);
+          _textInfo.color = i.font.color || opts.font.color;
+          _textInfo.font = this.getFont(opts.font, font);
+          _textInfo.value = i.value as string;
+
+          if (font.caseType === 'lowcase') {
+            _textInfo.value = _textInfo.value.toLowerCase();
+          } else if (font.caseType === 'upcase') {
+            _textInfo.value = _textInfo.value.toUpperCase();
+          }
         } else {
           _textInfo.value = i;
         }
@@ -171,7 +221,12 @@ export class TextTool {
 
         _textInfo.h = Math.ceil(info.actualBoundingBoxAscent + info.actualBoundingBoxDescent);
         _textInfo.w = Math.max(Math.ceil(info.actualBoundingBoxLeft + info.actualBoundingBoxRight), info.width);
-        _textInfo.y = roundDecimalPlaces(baseline - 3);
+
+        if (opts.verticalAlign === 'center') {
+          _textInfo.y = roundDecimalPlaces(_textInfo.h + (can.height - _textInfo.h) / 2, 2);
+        } else {
+          _textInfo.y = roundDecimalPlaces(baseline + (can.height - baseline) / 2, 2);
+        }
       }
       textInfoList.push(_textInfo);
 
@@ -180,11 +235,13 @@ export class TextTool {
     }, 30);
 
     can.width += 30;
+    ctx.fillStyle = '#666';
+    ctx.fillRect(0, 0, can.width, can.height);
 
     for (const info of textInfoList) {
       if (info.type === 'text') {
         ctx.font = info.font;
-        ctx.fillStyle = opts.font.color || '#000';
+        ctx.fillStyle = info.color || opts.font.color || '#000';
         ctx.fillText(info.value as string, info.x, info.y);
       } else {
         ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);

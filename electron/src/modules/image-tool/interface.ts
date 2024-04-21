@@ -21,6 +21,11 @@ export interface OutputOption {
   solid_bg: false
 
   /**
+   * 纯色背景颜色
+   */
+  solid_color: string
+
+  /**
    * 背景比例
    */
   bg_rate: {
@@ -55,6 +60,16 @@ export interface OutputOption {
    * 选中的字体
    */
   font: string
+
+  /**
+   * 主图默认宽度占比
+   */
+  main_img_w_rate: number
+
+  /**
+   * 文字上下间隔
+   */
+  text_margin: number
 }
 
 export interface OutputFilePaths {

@@ -11,7 +11,7 @@
     <slot name="title">{title}</slot>
   </span>
   {#if $$slots.popup}
-    <Popover trigger="hover" >
+    <Popover trigger="hover">
       <slot name="popup"></slot>
       <i slot="reference" class="db-icon-question icon" />
     </Popover>

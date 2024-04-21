@@ -19,6 +19,7 @@ export default {
   genTextImg: 'genTextImg',
   genMainImgShadow: 'genMainImgShadow',
   drainQueue: 'drainQueue',
+  pathJoin: 'pathJoin',
   open: {
     selectPath: 'open:selectPath',
     dir: 'open:dir',

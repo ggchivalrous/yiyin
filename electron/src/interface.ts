@@ -66,6 +66,7 @@ export interface IFont {
   size: number
   font: string
   caseType: 'lowcase' | 'upcase' | 'default'
+  color: string
 }
 
 export interface IPosition {

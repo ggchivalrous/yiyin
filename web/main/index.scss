@@ -19,6 +19,7 @@
   }
 
   .body {
+    margin-top: 20px;
     flex: 1;
   }
 
@@ -52,3 +53,39 @@
   }
 }
 
+.guide {
+  position: fixed;
+  top: 36px;
+  left: 20px;
+  font-weight: bold;
+  color: #8f9094;
+
+  i {
+    margin-bottom: -14px;
+    display: inline-block;
+    width: 50px;
+    height: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+}
+
+.desc {
+  position: fixed;
+  top: 60px;
+  left: 106px;
+  font-weight: bold;
+  color: #8f9094;
+
+  i {
+    margin-bottom: -24px;
+    display: inline-block;
+    width: 50px;
+    height: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    transform: rotateX(180deg);
+  }
+}

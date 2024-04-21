@@ -27,7 +27,7 @@ r.listen(routerConfig.resetConfig, async () => {
   return config;
 });
 
-r.listen(routerConfig.miniSize, async () => BrowserWindow.getFocusedWindow().minimize());
+r.listen(routerConfig.miniSize, async () => BrowserWindow.getFocusedWindow()?.minimize?.());
 
 r.listen(routerConfig.closeApp, async () => app.quit());
 
@@ -94,5 +94,7 @@ r.listen(routerConfig.logoList, async () => {
 
   return [];
 });
+
+r.listen(routerConfig.pathJoin, async (data: string[]) => path.join(...data));
 
 export default r;

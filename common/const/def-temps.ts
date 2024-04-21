@@ -1,4 +1,4 @@
-import type { IPosition } from '@src/interface';
+import type { IFont, IPosition } from '@src/interface';
 
 export interface ITemp {
   key: string
@@ -7,14 +7,9 @@ export interface ITemp {
   use: boolean
   type: 'system' | 'custom'
   height?: number
-  font: {
-    size: number
-    color?: string
-    font: string
-    bold: boolean
-    italic: boolean
-  }
+  font: IFont
   position?: IPosition
+  verticalAlign: 'center' | 'baseline'
 }
 
 export const defTemps: ITemp[] = [
@@ -24,11 +19,14 @@ export const defTemps: ITemp[] = [
     temp: '{Make} {Model}',
     use: true,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 3,
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
   {
@@ -37,11 +35,14 @@ export const defTemps: ITemp[] = [
     temp: '{FocalLengthIn35mmFormat}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: true,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 2.2,
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
   {
@@ -50,11 +51,14 @@ export const defTemps: ITemp[] = [
     temp: '{FocalLength}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: false,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 2.2,
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
 ];
@@ -66,12 +70,15 @@ export function getDefTemp(d?: ITemp): ITemp {
     temp: '',
     use: false,
     type: 'custom',
+    verticalAlign: 'baseline',
     ...d,
     font: {
       size: 2.2,
       font: '',
       bold: false,
       italic: false,
+      color: '',
+      caseType: 'default',
       ...d?.font,
     },
     position: {

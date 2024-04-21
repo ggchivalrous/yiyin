@@ -15,6 +15,7 @@ export interface IFont {
   size: number
   font: string
   caseType: 'lowcase' | 'upcase' | 'default'
+  color: string
 }
 
 export interface IFontParam extends Partial<IFont> {
@@ -32,13 +33,12 @@ export interface ISlotInfo {
   font: IFieldInfoItem['font']
 }
 
-export interface ITextOption {
-  height: ITemp['height']
-  font: ITemp['font']
+export interface ITextOption extends Pick<ITemp, 'height' | 'font' | 'verticalAlign'> {
   bgHeight: number
 }
 
 export interface TextInfo {
+  color: string
   font: string
   value: string | HTMLImageElement
   type: 'text' | 'img'

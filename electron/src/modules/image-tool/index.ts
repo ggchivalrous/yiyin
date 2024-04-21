@@ -174,6 +174,7 @@ export class ImageTool extends Event {
     }
 
     this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2);
+    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2);
   }
 
   async genMainImg() {
@@ -346,12 +347,7 @@ export class ImageTool extends Event {
         channels: 3,
         width,
         height,
-        background: typeof color === 'string' ? color : {
-          r: 255,
-          g: 255,
-          b: 255,
-          ...color,
-        },
+        background: (typeof color === 'string' ? color : this.outputOpt.solid_color) || '#fff',
       },
     })
       .toFormat('jpeg')
@@ -422,8 +418,9 @@ export class ImageTool extends Event {
     }
 
     // 如果重置后，宽度太窄，则等比扩大宽高
-    if (this.sizeInfo.w / resetWidth > 0.9) {
-      resetWidth = Math.ceil(this.sizeInfo.w / 0.9);
+    const mainImgWidthRate = (this.outputOpt.main_img_w_rate || 90) / 100;
+    if (this.sizeInfo.w / resetWidth > mainImgWidthRate) {
+      resetWidth = Math.ceil(this.sizeInfo.w / mainImgWidthRate);
       resetHeight = Math.ceil(resetWidth / whRate);
     }
 
@@ -448,9 +445,8 @@ export class ImageTool extends Event {
 
     // 阴影宽度
     if (opt.shadow_show) {
-      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 6) / 100));
-      const mainImgOffsetTop = Math.max(contentTop, shadowHeight);
-      contentTop = Math.ceil(mainImgOffsetTop);
+      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 0) / 100));
+      contentTop = Math.ceil(shadowHeight);
       mainImgOffset = contentTop * 2;
     }
 

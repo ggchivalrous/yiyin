@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { arrToObj } from '@common/utils';
   import { ActionItem } from '@components';
-  import { Message, Switch } from '@ggchivalrous/db-ui';
+  import { Message, Switch, ColorPicker } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
   import { smoothIncrement } from '@web/util/util';
 
@@ -103,10 +103,10 @@
   }
 
   const numReg = /-{0,1}\d+\.{0,1}\d{0,3}/;
-  function onNumInput(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number) {
+  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number) {
     let _v = v.currentTarget.value;
-
     const match = _v.match(numReg);
+
     if (match && match.length) {
       _v = match[0];
     }
@@ -118,18 +118,6 @@
 
     ($config.options[key] as number) = num;
     v.currentTarget.value = `${num}`;
-  }
-
-  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options']) {
-    const match = `${$config.options[key]}`.match(numReg);
-
-    if (match && match.length) {
-      ($config.options[key] as number) = +match[0];
-    } else {
-      ($config.options[key] as number) = 0;
-    }
-
-    v.currentTarget.value = $config.options[key] as string;
   }
 
   function switchBgRate() {
@@ -182,13 +170,43 @@
       <span class="open-file-line" on:click={() => openDir($config.output)} on:keypress role="button" tabindex="-1">{outputDirName}</span>
     </ActionItem>
 
+    <ActionItem {labelWidth} title="主图占比">
+      <svelte:fragment slot="popup">
+        指定主图对背景宽度的占比（可以调节左右边框的宽度）
+        <br>
+        默认主图占背景的90%
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.main_img_w_rate}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'main_img_w_rate', 100, 1)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="文本间距">
+      <svelte:fragment slot="popup">
+        指定文本上下间距（临时性功能，后续会去掉）
+        <br>
+        默认0.4
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.text_margin}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'text_margin', 10000, 0)}
+      />
+    </ActionItem>
+
     <ActionItem {labelWidth} title="圆角大小">
       <svelte:fragment slot="popup">
         指定圆角的大小，不指定则为直角
         <br>
-        设置的值为图片高度的百分比，例如: 1，则为0.01%
+        取值范围: 0 - 50
         <br>
-        (默认使用图片高度的 0.021%)
+        默认值: 2.1
       </svelte:fragment>
       <Switch bind:value={$config.options.radius_show} />
       <input
@@ -196,8 +214,7 @@
         type="text"
         value={$config.options.radius}
         style="width: 103px;"
-        on:input={(v) => onNumInput(v, 'radius', 30, 0)}
-        on:change={(v) => onNumInputChange(v, 'radius')}
+        on:change={(v) => onNumInputChange(v, 'radius', 50, 0)}
       />
     </ActionItem>
 
@@ -207,7 +224,7 @@
         <br>
         设置的值为图片高度的百分比，例如: 1，则为0.01%
         <br>
-        (默认使用图片高度的 0.06%)
+        默认值：6
       </svelte:fragment>
       <Switch bind:value={$config.options.shadow_show} />
       <input
@@ -215,8 +232,7 @@
         type="text"
         value={$config.options.shadow}
         style="width: 103px;"
-        on:input={(v) => onNumInput(v, 'shadow', 50, 0)}
-        on:change={(v) => onNumInputChange(v, 'shadow')}
+        on:change={(v) => onNumInputChange(v, 'shadow', 50, 0)}
       />
     </ActionItem>
 
@@ -225,8 +241,6 @@
         指定输出的图片的宽高比(该比例只生效于背景，对原图不生效)
         <br>
         该选项生效后影响以下选项效果：
-        <br>
-        <b>原宽高输出：</b>失效
         <br>
         <b>横屏输出：</b>失效
       </svelte:fragment>
@@ -239,6 +253,9 @@
     <ActionItem {labelWidth} title="纯色背景">
       <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
       <Switch bind:value={$config.options.solid_bg} />
+      {#if $config.options.solid_bg}
+        <ColorPicker bind:value={$config.options.solid_color} size="mini"/>
+      {/if}
     </ActionItem>
 
     <ActionItem {labelWidth} title="横屏输出">
