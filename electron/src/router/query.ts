@@ -95,4 +95,6 @@ r.listen(routerConfig.logoList, async () => {
   return [];
 });
 
+r.listen(routerConfig.pathJoin, async (data: string[]) => path.join(...data));
+
 export default r;

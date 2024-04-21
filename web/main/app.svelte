@@ -125,13 +125,14 @@
     }
   }
 
-  function onFontMap(fontMap: Record<string, string>) {
+  async function onFontMap(fontMap: Record<string, string>) {
     if (fontMap) {
       const list = [];
       for (const key in fontMap) {
+        const path = await window.api.pathJoin([$config.fontDir, fontMap[key]]);
         list.push({
           name: key,
-          path: `file://${$config.fontDir}/${fontMap[key]}`,
+          path: `file://${path}`,
         });
       }
 
