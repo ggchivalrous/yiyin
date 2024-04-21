@@ -127,7 +127,7 @@
   </ActionItem>
 
   <ActionItem title="图片对齐">
-    <svelte:fragment slot="popup">指定使用图片内容时的垂直方向对齐方式</svelte:fragment>
+    <svelte:fragment slot="popup">指定图片内容和文字内容的垂直对齐方式，默认时文字基线对齐</svelte:fragment>
     <Radio bind:value={form.verticalAlign} label="baseline">基线对齐</Radio>
     <Radio bind:value={form.verticalAlign} label="center">居中对齐</Radio>
   </ActionItem>

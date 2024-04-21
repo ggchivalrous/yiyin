@@ -242,8 +242,6 @@
         <br>
         该选项生效后影响以下选项效果：
         <br>
-        <b>原宽高输出：</b>失效
-        <br>
         <b>横屏输出：</b>失效
       </svelte:fragment>
       <Switch bind:value={$config.options.bg_rate_show} on:change={onBGRateChange} />
