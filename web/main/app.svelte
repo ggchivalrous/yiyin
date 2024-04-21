@@ -1,12 +1,11 @@
 <script lang="ts">
   import './index.scss';
   import { Message } from '@ggchivalrous/db-ui';
-  import guide from '@web/assets/img/guide.svg';
   import { ImageTool } from '@web/modules/image-tool';
   import type { ImageToolOption } from '@web/modules/image-tool/interface';
   import { TextTool } from '@web/modules/text-tool';
   import type { TextToolOption } from '@web/modules/text-tool/interface';
-  import { config } from '@web/store/config';
+  import { config, pathInfo } from '@web/store/config';
   import { importFont } from '@web/util/util';
   import type { IFontInfo } from '@web/util/util';
 
@@ -148,12 +147,12 @@
 
 <div id="root">
   <div class="guide">
-    <i style="background-image: url('{guide}');"></i>
+    <i style="background-image: url('file://{$pathInfo.public}/img/guide.svg');"></i>
     白嫖指南(●°u°●)​ 」
   </div>
 
   <div class="desc">
-    <i style="background-image: url('{guide}');"></i>
+    <i style="background-image: url('file://{$pathInfo.public}/img/guide.svg');"></i>
     萌新指北(｡･ω･｡)
   </div>
 
