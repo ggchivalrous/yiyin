@@ -148,12 +148,12 @@
 
 <div id="root">
   <div class="guide">
-    <i style="background-image: url({guide});"></i>
+    <i style="background-image: url('{guide}');"></i>
     白嫖指南(●°u°●)​ 」
   </div>
 
   <div class="desc">
-    <i style="background-image: url({guide});"></i>
+    <i style="background-image: url('{guide}');"></i>
     萌新指北(｡･ω･｡)
   </div>
 
