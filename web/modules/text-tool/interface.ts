@@ -15,6 +15,7 @@ export interface IFont {
   size: number
   font: string
   caseType: 'lowcase' | 'upcase' | 'default'
+  color: string
 }
 
 export interface IFontParam extends Partial<IFont> {
@@ -39,6 +40,7 @@ export interface ITextOption {
 }
 
 export interface TextInfo {
+  color: string
   font: string
   value: string | HTMLImageElement
   type: 'text' | 'img'

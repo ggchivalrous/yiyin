@@ -26,6 +26,7 @@ export const DefaultConfig: IConfig = {
     iot: false,
     landscape: false,
     solid_bg: false,
+    solid_color: '#fff',
     origin_wh_output: false,
     radius: 2.1,
     radius_show: true,
@@ -74,6 +75,7 @@ function getDefOptionItem<T>(defV?: T, key = '', name = ''): IFieldInfoItem<T> {
       size: 0,
       font: '',
       caseType: 'default',
+      color: '',
     },
   };
 }

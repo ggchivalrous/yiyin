@@ -1,4 +1,4 @@
-import type { IPosition } from '@src/interface';
+import type { IFont, IPosition } from '@src/interface';
 
 export interface ITemp {
   key: string
@@ -7,13 +7,7 @@ export interface ITemp {
   use: boolean
   type: 'system' | 'custom'
   height?: number
-  font: {
-    size: number
-    color?: string
-    font: string
-    bold: boolean
-    italic: boolean
-  }
+  font: IFont
   position?: IPosition
 }
 
@@ -29,6 +23,8 @@ export const defTemps: ITemp[] = [
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
   {
@@ -42,6 +38,8 @@ export const defTemps: ITemp[] = [
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
   {
@@ -55,6 +53,8 @@ export const defTemps: ITemp[] = [
       font: '',
       bold: true,
       italic: false,
+      color: '',
+      caseType: 'default',
     },
   },
 ];
@@ -72,6 +72,8 @@ export function getDefTemp(d?: ITemp): ITemp {
       font: '',
       bold: false,
       italic: false,
+      color: '',
+      caseType: 'default',
       ...d?.font,
     },
     position: {

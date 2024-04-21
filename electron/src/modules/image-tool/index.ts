@@ -347,12 +347,7 @@ export class ImageTool extends Event {
         channels: 3,
         width,
         height,
-        background: typeof color === 'string' ? color : {
-          r: 255,
-          g: 255,
-          b: 255,
-          ...color,
-        },
+        background: (typeof color === 'string' ? color : this.outputOpt.solid_color) || '#fff',
       },
     })
       .toFormat('jpeg')

@@ -79,10 +79,19 @@ export class TextTool {
         ) continue;
 
         for (let j = 0; j < _arr.length; j++) {
-          if (typeof slotInfoList[j] === 'string' || !(slotInfoList[j] as any)?.value) {
-            textList.push(_arr[j]);
+          const slotInfo = slotInfoList[j];
+          let commonText = _arr[j];
+
+          if (i.font.caseType === 'lowcase') {
+            commonText = commonText.toLowerCase();
+          } else if (i.font.caseType === 'upcase') {
+            commonText = commonText.toUpperCase();
+          }
+
+          if (typeof slotInfo === 'string' || !(slotInfo as any)?.value) {
+            textList.push(commonText);
           } else {
-            textList.push(_arr[j], slotInfoList[j]);
+            textList.push(commonText, slotInfo);
           }
         }
       } else {
@@ -123,7 +132,17 @@ export class TextTool {
       if (typeof textItem !== 'string') {
         textFonts.push(textItem.font);
         if (typeof textItem.value === 'string') {
-          totalText += textItem.value;
+          let v = textItem.value;
+
+          if (textItem.font.use) {
+            if (textItem.font.caseType === 'lowcase') {
+              v = v.toLowerCase();
+            } else if (textItem.font.caseType === 'upcase') {
+              v = v.toUpperCase();
+            }
+          }
+
+          totalText += v;
         } else {
           textValIsAllText = false;
         }
@@ -153,6 +172,7 @@ export class TextTool {
       if (isStartOrEnd && typeof i === 'string' && !i.trim()) return n;
 
       const _textInfo: TextInfo = {
+        color: opts.font.color,
         font: defFont,
         value: '',
         type: 'img',
@@ -163,8 +183,9 @@ export class TextTool {
       };
 
       if (typeof i === 'object' && i.value instanceof Image) {
+        const font = this.mergeFontParam(opts.font, i.font);
         _textInfo.value = i.value;
-        _textInfo.font = this.getFont(opts.font, this.mergeFontParam(opts.font, i.font));
+        _textInfo.font = this.getFont(opts.font, font);
 
         ctx.font = _textInfo.font;
         const info = ctx.measureText('QSOPNYuiyl90');
@@ -175,8 +196,16 @@ export class TextTool {
       } else {
         _textInfo.type = 'text';
         if (typeof i === 'object') {
-          _textInfo.font = this.getFont(opts.font, this.mergeFontParam(opts.font, i.font));
-          _textInfo.value = i.value;
+          const font = this.mergeFontParam(opts.font, i.font);
+          _textInfo.color = i.font.color || opts.font.color;
+          _textInfo.font = this.getFont(opts.font, font);
+          _textInfo.value = i.value as string;
+
+          if (font.caseType === 'lowcase') {
+            _textInfo.value = _textInfo.value.toLowerCase();
+          } else if (font.caseType === 'upcase') {
+            _textInfo.value = _textInfo.value.toUpperCase();
+          }
         } else {
           _textInfo.value = i;
         }
@@ -199,7 +228,7 @@ export class TextTool {
     for (const info of textInfoList) {
       if (info.type === 'text') {
         ctx.font = info.font;
-        ctx.fillStyle = opts.font.color || '#000';
+        ctx.fillStyle = info.color || opts.font.color || '#000';
         ctx.fillText(info.value as string, info.x, info.y);
       } else {
         ctx.drawImage(info.value as HTMLImageElement, info.x, info.y, info.w, info.h);

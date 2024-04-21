@@ -114,6 +114,26 @@ body {
     }
   }
 
+  .db-radio {
+    margin-right: 5px;
+
+    .db-radio__label {
+      padding-left: 5px;
+    }
+
+    .db-radio__input.is-checked {
+      .db-radio__inner {
+        background: var(--active-color);
+        border-color: var(--text-color);
+        border: none;
+      }
+      
+      +.db-radio__label {
+        color: var(--text-color);
+      }
+    }
+  }
+
   .grass {
     @include grass();
   }

@@ -1,7 +1,7 @@
 <script lang='ts'>
   import { arrToObj } from '@common/utils';
   import { ActionItem } from '@components';
-  import { Message, Switch } from '@ggchivalrous/db-ui';
+  import { Message, Switch, ColorPicker } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
   import { smoothIncrement } from '@web/util/util';
 
@@ -224,7 +224,7 @@
         <br>
         设置的值为图片高度的百分比，例如: 1，则为0.01%
         <br>
-        (默认使用图片高度的 0.06%)
+        默认值：6
       </svelte:fragment>
       <Switch bind:value={$config.options.shadow_show} />
       <input
@@ -255,6 +255,9 @@
     <ActionItem {labelWidth} title="纯色背景">
       <svelte:fragment slot="popup">使用纯色背景，默认使用图片模糊做背景</svelte:fragment>
       <Switch bind:value={$config.options.solid_bg} />
+      {#if $config.options.solid_bg}
+        <ColorPicker bind:value={$config.options.solid_color} size="mini"/>
+      {/if}
     </ActionItem>
 
     <ActionItem {labelWidth} title="横屏输出">

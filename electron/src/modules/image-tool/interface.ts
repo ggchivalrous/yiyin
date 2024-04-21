@@ -21,6 +21,11 @@ export interface OutputOption {
   solid_bg: false
 
   /**
+   * 纯色背景颜色
+   */
+  solid_color: string
+
+  /**
    * 背景比例
    */
   bg_rate: {
