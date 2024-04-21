@@ -53,6 +53,11 @@
         font-weight: bold;
       }
     }
+
+    .action-item {
+      height: 36px;
+      box-sizing: border-box;
+    }
   }
 
   .app-action-right-wrap {
@@ -123,10 +128,5 @@
   .switch {
     transform: rotate(90deg);
     cursor: pointer;
-  }
-
-  .action-item {
-    height: 36px;
-    box-sizing: border-box;
   }
 }

@@ -9,6 +9,7 @@ export interface ITemp {
   height?: number
   font: IFont
   position?: IPosition
+  verticalAlign: 'center' | 'baseline'
 }
 
 export const defTemps: ITemp[] = [
@@ -18,6 +19,7 @@ export const defTemps: ITemp[] = [
     temp: '{Make} {Model}',
     use: true,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 3,
       font: '',
@@ -33,6 +35,7 @@ export const defTemps: ITemp[] = [
     temp: '{FocalLengthIn35mmFormat}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: true,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 2.2,
       font: '',
@@ -48,6 +51,7 @@ export const defTemps: ITemp[] = [
     temp: '{FocalLength}mm f/{FNumber} {ExposureTime}s ISO{ISO}',
     use: false,
     type: 'system',
+    verticalAlign: 'baseline',
     font: {
       size: 2.2,
       font: '',
@@ -66,6 +70,7 @@ export function getDefTemp(d?: ITemp): ITemp {
     temp: '',
     use: false,
     type: 'custom',
+    verticalAlign: 'baseline',
     ...d,
     font: {
       size: 2.2,

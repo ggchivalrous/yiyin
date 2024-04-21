@@ -33,9 +33,7 @@ export interface ISlotInfo {
   font: IFieldInfoItem['font']
 }
 
-export interface ITextOption {
-  height: ITemp['height']
-  font: ITemp['font']
+export interface ITextOption extends Pick<ITemp, 'height' | 'font' | 'verticalAlign'> {
   bgHeight: number
 }
 

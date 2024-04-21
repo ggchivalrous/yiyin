@@ -2,7 +2,7 @@
   import './dialog.scss';
   import { arrToObj, cpObj, matchAnyStrFields, matchFields } from '@common/utils';
   import { ActionItem, FontSetting, FieldSelect } from '@components';
-  import { Dialog, Input, Switch } from '@ggchivalrous/db-ui';
+  import { Dialog, Input, Switch, Radio } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
   import { md5 } from '@web/util/md5';
     import { tick } from 'svelte';
@@ -115,18 +115,22 @@
     <Input class="text-input" bind:value={form.name} />
   </ActionItem>
 
-  <div class="form-item">
-    <ActionItem title="模板内容">
-      <svelte:fragment slot="popup">
-        定义该模板显示内容
-        <br>
-        注意：内容长度不能过长否则文字会被截断或输出异常
-      </svelte:fragment>
-      <Input bind:input={tempInputDom} class="text-input" type="text" value={replaceFieldTemp} on:input={onInputTemp}>
-        <FieldSelect slot="append" on:change={onFieldSelect} />
-      </Input>
-    </ActionItem>
-  </div>
+  <ActionItem title="模板内容">
+    <svelte:fragment slot="popup">
+      定义该模板显示内容
+      <br>
+      注意：内容长度不能过长否则文字会被截断或输出异常
+    </svelte:fragment>
+    <Input bind:input={tempInputDom} class="text-input" type="text" value={replaceFieldTemp} on:input={onInputTemp}>
+      <FieldSelect slot="append" on:change={onFieldSelect} />
+    </Input>
+  </ActionItem>
+
+  <ActionItem title="图片对齐">
+    <svelte:fragment slot="popup">指定使用图片内容时的垂直方向对齐方式</svelte:fragment>
+    <Radio bind:value={form.verticalAlign} label="baseline">基线对齐</Radio>
+    <Radio bind:value={form.verticalAlign} label="center">居中对齐</Radio>
+  </ActionItem>
 
   <div class="form-item">
     <div class="form-item-label title">字体参数</div>
