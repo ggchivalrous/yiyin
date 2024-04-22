@@ -99,7 +99,7 @@
       ]
     },
     "win": {
-      "icon": "./icon/icon.png",
+      "icon": "./icon/icon.ico",
       "target": [
         "nsis"
       ]
