@@ -8,17 +8,24 @@ import { exifFields, defTemps, getDefTemp } from '@/common/const';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
 
 const needResetVer = ['1.5.0'];
+const appPath = app.getAppPath();
+const userDataPath = tryCatch(() => app.getPath('userData'), appPath);
+const desktopPath = tryCatch(() => app.getPath('desktop'), userDataPath);
+
+function getPath(name: Parameters<typeof app.getPath>[0]) {
+  return tryCatch(() => app.getPath(name), desktopPath, () => {});
+}
 
 export const DefaultConfig: IConfig = {
   version: import.meta.env.VITE_VERSION,
-  dir: path.join(app.getPath('userData'), 'config.json'),
-  output: path.join(app.getPath('pictures'), 'watermark'),
-  cacheDir: path.join(app.getPath('temp'), 'yiyin'),
-  staticDir: path.join(app.getPath('userData'), 'static'),
+  dir: path.join(userDataPath, 'config.json'),
+  output: path.join(getPath('pictures'), 'watermark'),
+  cacheDir: path.join(getPath('temp'), 'yiyin'),
+  staticDir: path.join(userDataPath, 'static'),
 
   font: {
-    path: path.join(app.getPath('userData'), 'font.json'),
-    dir: path.join(app.getPath('userData'), 'font'),
+    path: path.join(userDataPath, 'font.json'),
+    dir: path.join(userDataPath, 'font'),
     map: {},
   },
 
