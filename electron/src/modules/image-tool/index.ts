@@ -436,7 +436,7 @@ export class ImageTool extends Event {
   calcContentHeight() {
     const opt = this.outputOpt;
     const bgHeight = this.material.bg.h;
-    const mainImgTopOffset = bgHeight * 0.036;
+    const mainImgTopOffset = bgHeight * (opt.mini_top_bottom_margin / 100);
     const textButtomOffset = bgHeight * 0.027;
 
     // 主图上下间隔最小间隔
@@ -446,7 +446,7 @@ export class ImageTool extends Event {
     // 阴影宽度
     if (opt.shadow_show) {
       const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 0) / 100));
-      contentTop = Math.ceil(shadowHeight);
+      contentTop = Math.max(contentTop, Math.ceil(shadowHeight));
       mainImgOffset = contentTop * 2;
     }
 

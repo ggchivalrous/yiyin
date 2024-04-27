@@ -9,7 +9,7 @@
 
   import './index.scss';
 
-  export let labelWidth = '80px';
+  export let labelWidth = '90px';
   export let fileInfoList: IFileInfo[] = [];
 
   let handleCount = 0;
@@ -198,6 +198,25 @@
         value={$config.options.text_margin}
         style="width: 103px;"
         on:change={(v) => onNumInputChange(v, 'text_margin', 10000, 0, 2)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="最小上下边距">
+      <svelte:fragment slot="popup">
+        指定水印上下边距的最小值，默认情况使用阴影宽度作为上下边距
+        <br>
+        设置最小上下边距，将会从它和阴影之间取最大值
+        <br>
+        按照背景高度比例换算，值为 0-100
+        <br>
+        默认：0
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.mini_top_bottom_margin}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'mini_top_bottom_margin', 100, 0, 2)}
       />
     </ActionItem>
 

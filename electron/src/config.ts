@@ -42,6 +42,7 @@ export const DefaultConfig: IConfig = {
     main_img_w_rate: 90,
     text_margin: 0.4,
     quality: 100,
+    mini_top_bottom_margin: 0,
   },
 
   tempFields: [getDefOptionItem('')],
