@@ -197,7 +197,7 @@ export class TextTool {
         if (opts.verticalAlign === 'center') {
           _textInfo.y = roundDecimalPlaces((can.height - _textInfo.h) / 2, 2);
         } else {
-          _textInfo.y = roundDecimalPlaces((can.height - baseline) / 2 + _textInfo.h * 0.03, 2);
+          _textInfo.y = roundDecimalPlaces(baseline - _textInfo.h + _textInfo.h * 0.03 + (can.height - baseline) / 2, 2);
         }
       } else {
         _textInfo.type = 'text';
