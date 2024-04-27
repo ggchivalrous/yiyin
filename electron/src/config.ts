@@ -2,19 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import type { IFieldInfoItem, IConfig } from '@src/interface';
-import { app } from 'electron';
+
+import { userDataPath, getPath } from './path';
 
 import { exifFields, defTemps, getDefTemp } from '@/common/const';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
 
 const needResetVer = ['1.5.0'];
-const appPath = app.getAppPath();
-const userDataPath = tryCatch(() => app.getPath('userData'), appPath);
-const desktopPath = tryCatch(() => app.getPath('desktop'), userDataPath);
-
-function getPath(name: Parameters<typeof app.getPath>[0]) {
-  return tryCatch(() => app.getPath(name), desktopPath, () => {});
-}
 
 export const DefaultConfig: IConfig = {
   version: import.meta.env.VITE_VERSION,
@@ -47,6 +41,7 @@ export const DefaultConfig: IConfig = {
     font: 'PingFang SC',
     main_img_w_rate: 90,
     text_margin: 0.4,
+    quality: 100,
   },
 
   tempFields: [getDefOptionItem('')],

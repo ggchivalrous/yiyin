@@ -70,6 +70,11 @@ export interface OutputOption {
    * 文字上下间隔
    */
   text_margin: number
+
+  /**
+   * 输出质量
+   */
+  quality: number
 }
 
 export interface OutputFilePaths {

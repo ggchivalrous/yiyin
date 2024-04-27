@@ -292,7 +292,7 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat('jpeg', { quality: 100 })
+      .toFormat('jpeg', { quality: this.outputOpt.quality || 100 })
       .toFile(this.outputFileNames.composite);
 
     log.info('【%s】图片合成完毕，输出到文件: ', this.id, this.outputFileNames.composite);
