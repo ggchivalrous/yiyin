@@ -10,8 +10,8 @@ on:
 
 jobs:
   build:
-    name: macOS-latest
-    runs-on: macOS-latest
+    name: macos-latest
+    runs-on: macos-latest
     permissions:
       contents: write
       packages: write
