@@ -5,7 +5,7 @@ import { format } from 'util';
 
 import { setLoggerConfig, closeAllLogger } from '@modules/logger';
 import paths from '@src/path';
-import { formatDate } from '@utils';
+import { formatDate, tryCatch } from '@utils';
 import { app } from 'electron';
 
 const isDev = import.meta.env.DEV;
@@ -44,7 +44,10 @@ process.on('uncaughtExceptionMonitor', (e) => {
 });
 
 function onError(type: string, e: Error) {
-  const logPath = path.join(app.getPath('userData'), 'logs');
+  const appPath = app.getAppPath();
+  const userDataPath = tryCatch(() => app.getPath('userData'), appPath);
+  const logPath = path.join(userDataPath, 'logs');
+
   if (!fs.existsSync(logPath)) {
     fs.mkdirSync(logPath);
   }

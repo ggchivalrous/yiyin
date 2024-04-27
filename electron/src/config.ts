@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import type { IFieldInfoItem, IConfig } from '@src/interface';
-import { app } from 'electron';
+
+import { userDataPath, getPath } from './path';
 
 import { exifFields, defTemps, getDefTemp } from '@/common/const';
 import { arrToObj, normalize, tryCatch } from '@/common/utils';
@@ -11,14 +12,14 @@ const needResetVer = ['1.5.0'];
 
 export const DefaultConfig: IConfig = {
   version: import.meta.env.VITE_VERSION,
-  dir: path.join(app.getPath('userData'), 'config.json'),
-  output: path.join(app.getPath('pictures'), 'watermark'),
-  cacheDir: path.join(app.getPath('temp'), 'yiyin'),
-  staticDir: path.join(app.getPath('userData'), 'static'),
+  dir: path.join(userDataPath, 'config.json'),
+  output: path.join(getPath('pictures'), 'watermark'),
+  cacheDir: path.join(getPath('temp'), 'yiyin'),
+  staticDir: path.join(userDataPath, 'static'),
 
   font: {
-    path: path.join(app.getPath('userData'), 'font.json'),
-    dir: path.join(app.getPath('userData'), 'font'),
+    path: path.join(userDataPath, 'font.json'),
+    dir: path.join(userDataPath, 'font'),
     map: {},
   },
 
@@ -40,6 +41,8 @@ export const DefaultConfig: IConfig = {
     font: 'PingFang SC',
     main_img_w_rate: 90,
     text_margin: 0.4,
+    quality: 100,
+    mini_top_bottom_margin: 0,
   },
 
   tempFields: [getDefOptionItem('')],

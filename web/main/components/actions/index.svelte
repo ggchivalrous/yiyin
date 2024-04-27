@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import { arrToObj } from '@common/utils';
+  import { arrToObj, roundDecimalPlaces } from '@common/utils';
   import { ActionItem } from '@components';
   import { Message, Switch, ColorPicker } from '@ggchivalrous/db-ui';
   import { config } from '@web/store/config';
@@ -9,7 +9,7 @@
 
   import './index.scss';
 
-  export let labelWidth = '80px';
+  export let labelWidth = '90px';
   export let fileInfoList: IFileInfo[] = [];
 
   let handleCount = 0;
@@ -103,7 +103,7 @@
   }
 
   const numReg = /-{0,1}\d+\.{0,1}\d{0,3}/;
-  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number) {
+  function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number, decimal?: number) {
     let _v = v.currentTarget.value;
     const match = _v.match(numReg);
 
@@ -116,6 +116,7 @@
     else if (num < min) num = min;
     else if (num > max) num = max;
 
+    num = typeof decimal === 'number' ? roundDecimalPlaces(num, decimal) : num;
     ($config.options[key] as number) = num;
     v.currentTarget.value = `${num}`;
   }
@@ -181,7 +182,7 @@
         type="text"
         value={$config.options.main_img_w_rate}
         style="width: 103px;"
-        on:change={(v) => onNumInputChange(v, 'main_img_w_rate', 100, 1)}
+        on:change={(v) => onNumInputChange(v, 'main_img_w_rate', 100, 1, 0)}
       />
     </ActionItem>
 
@@ -196,7 +197,26 @@
         type="text"
         value={$config.options.text_margin}
         style="width: 103px;"
-        on:change={(v) => onNumInputChange(v, 'text_margin', 10000, 0)}
+        on:change={(v) => onNumInputChange(v, 'text_margin', 10000, 0, 2)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="最小上下边距">
+      <svelte:fragment slot="popup">
+        指定水印上下边距的最小值，默认情况使用阴影宽度作为上下边距
+        <br>
+        设置最小上下边距，将会从它和阴影之间取最大值
+        <br>
+        按照背景高度比例换算，值为 0-100
+        <br>
+        默认：0
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.mini_top_bottom_margin}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'mini_top_bottom_margin', 100, 0, 2)}
       />
     </ActionItem>
 
@@ -214,7 +234,7 @@
         type="text"
         value={$config.options.radius}
         style="width: 103px;"
-        on:change={(v) => onNumInputChange(v, 'radius', 50, 0)}
+        on:change={(v) => onNumInputChange(v, 'radius', 50, 0, 1)}
       />
     </ActionItem>
 
@@ -232,7 +252,22 @@
         type="text"
         value={$config.options.shadow}
         style="width: 103px;"
-        on:change={(v) => onNumInputChange(v, 'shadow', 50, 0)}
+        on:change={(v) => onNumInputChange(v, 'shadow', 50, 0, 1)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title="输出质量">
+      <svelte:fragment slot="popup">
+        指定输出质量，只允许整数
+        <br>
+        默认值：100
+      </svelte:fragment>
+      <input
+        class="input"
+        type="text"
+        value={$config.options.quality}
+        style="width: 103px;"
+        on:change={(v) => onNumInputChange(v, 'quality', 100, 1, 0)}
       />
     </ActionItem>
 

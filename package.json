@@ -1,6 +1,6 @@
 {
   "name": "yiyin",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "license": "MIT",
   "type": "module",
   "main": "dist-electron/main/index.js",
