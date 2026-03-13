@@ -80,6 +80,14 @@
     "mac": {
       "icon": "./icon/icon.icns",
       "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
       "identity": null
     },
     "dmg": {
