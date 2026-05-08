@@ -51,6 +51,16 @@ r.listen(routerConfig.genTextImg, async (data: any) => genTextImgQueue.add(data)
 
 r.listen(routerConfig.genMainImgShadow, async (data: any) => genMainImgShadowQueue.add(data))
 
+r.listen<{ path: string, name: string }, string>(routerConfig.genPreview, async (fileInfo) => {
+  const tool = new ImageTool(fileInfo.path, fileInfo.name, {
+    cachePath: config.cacheDir,
+    outputOption: cpObj(config.options),
+    outputPath: cpObj(config.output),
+  })
+
+  return await tool.genPreview()
+})
+
 r.listen<string>(routerConfig.getExitInfo, async (imgPath) => {
   const tool = new ExifTool(imgPath)
   return tool.parse()

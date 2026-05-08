@@ -9,8 +9,61 @@
 
   import './index.scss'
 
-  export let labelWidth = '90px'
   export let fileInfoList: IFileInfo[] = []
+
+  let selectedId = ''
+  let previewUrl = ''
+  let previewLoading = false
+  let previewTimer: NodeJS.Timeout
+
+  $: {
+      if (fileInfoList.length) {
+        if (!selectedId || !fileInfoList.find(i => i.id === selectedId)) {
+          selectedId = fileInfoList[0].id
+        }
+      }
+      else {
+        selectedId = ''
+        previewUrl = ''
+      }
+    }
+
+  $: {
+    // 当配置发生变化时，如果预览开启，则更新预览
+    if ($config && $config.options.preview_show && selectedId) {
+      clearTimeout(previewTimer)
+      previewTimer = setTimeout(updatePreview, 300)
+    }
+  }
+
+  async function updatePreview() {
+    const file = fileInfoList.find(i => i.id === selectedId)
+    if (!file) return
+
+    previewLoading = true
+    try {
+      const res = await window.api.genPreview({ path: file.path, name: file.name })
+      if (res.code === 0) {
+        previewUrl = res.data
+      }
+      else {
+        console.error('预览生成失败:', res.message)
+        previewUrl = ''
+      }
+    }
+    catch (e) {
+      console.error('预览生成失败:', e)
+    }
+    finally {
+      previewLoading = false
+    }
+  }
+
+  function selectImage(id: string) {
+    selectedId = id
+  }
+
+  const labelWidth = '110px'
 
   let handleCount = 0
   let outputDirName = ''
@@ -337,15 +390,43 @@
       </svelte:fragment>
       <Switch bind:value={$config.options.iot} />
     </ActionItem>
+
+    <ActionItem {labelWidth} title='实时预览'>
+      <svelte:fragment slot='popup'>
+        开启后点击列表图片可实时预览水印效果
+      </svelte:fragment>
+      <Switch bind:value={$config.options.preview_show} />
+    </ActionItem>
   </div>
 
   <div class='app-action-right-wrap'>
+    {#if $config.options.preview_show && selectedId}
+      <div class='preview-wrap grass-inset'>
+        {#if previewLoading}
+          <div class='preview-loading'>
+            <i class='db-icon-loading icon-loading'></i>
+            生成预览中...
+          </div>
+        {:else if previewUrl}
+          <img class='preview-img' src={previewUrl} alt='预览图' />
+        {:else}
+          <div class='preview-placeholder'>预览图生成失败</div>
+        {/if}
+      </div>
+    {/if}
+
     <div class='img-wrap grass-inset'>
       <div class='img-list'>
         {#each fileInfoList as i (i.id)}
           {@const record = imgInfoRecord[i.id]}
           {#key i.id}
-            <div class='img-item grass'>
+            <div
+              class='img-item grass {selectedId === i.id ? 'selected' : ''}'
+              on:click={() => selectImage(i.id)}
+              on:keypress
+              role='button'
+              tabindex='-1'
+            >
               <div class='img-item-head'>
                 <span class='img-name'>{i.name}</span>
                 {#if record.faild}

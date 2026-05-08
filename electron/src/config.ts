@@ -44,6 +44,7 @@ export const DefaultConfig: IConfig = {
     quality: 100,
     mini_top_bottom_margin: 0,
     bg_blur: 100,
+    preview_show: false,
   },
 
   tempFields: [getDefOptionItem('')],

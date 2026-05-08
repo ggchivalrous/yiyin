@@ -29,6 +29,7 @@ export const config = writable<IConfig>({
     },
     bg_blur: 100,
     solid_color: '#fff',
+    preview_show: false,
   },
   fontMap: {},
   fontDir: '',

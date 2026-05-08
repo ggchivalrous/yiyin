@@ -165,6 +165,20 @@ export class ImageTool extends Event {
     this.delCacheFile()
   }
 
+  async genPreview() {
+    log.info('【%s】生成预览图...', this.id)
+    await this.init()
+    this.clacBgImgSize()
+    await this.genTextImg()
+    await this.genMainImg()
+    this.calcContentHeight()
+    await this.genBgImg()
+    await this.genMainImgShadow()
+    const res = await this.composite(true)
+    this.delCacheFile()
+    return res
+  }
+
   async genBgImg() {
     const toFilePath: string = this.outputFileNames.bg
     this.clacBgImgSize(this.contentH)
@@ -249,7 +263,7 @@ export class ImageTool extends Event {
     return p
   }
 
-  async composite() {
+  async composite(isPreview = false) {
     const composite: sharp.OverlayOptions[] = []
 
     // 主图
@@ -283,7 +297,7 @@ export class ImageTool extends Event {
       composite.push(...textCompositeList)
     }
 
-    await sharp({
+    const output = sharp({
       create: {
         channels: 3,
         width: this.material.bg.w,
@@ -297,8 +311,14 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat('jpeg', { quality: this.outputOpt.quality || 100 })
-      .toFile(this.outputFileNames.composite)
+      .toFormat('jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
+
+    if (isPreview) {
+      const buf = await output.toBuffer()
+      return `data:image/jpeg;base64,${buf.toString('base64')}`
+    }
+
+    await output.toFile(this.outputFileNames.composite)
 
     log.info('【%s】图片合成完毕，输出到文件: ', this.id, this.outputFileNames.composite)
     return true
