@@ -1,0 +1,191 @@
+name: Build Beta & Release
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: '创建 Release (勾选后需填写标签)'
+        required: false
+        default: false
+        type: boolean
+      release_tag:
+        description: 'Release 标签 (例如: v1.2.3)'
+        required: false
+        type: string
+      release_name:
+        description: 'Release 名称 (留空则使用标签)'
+        required: false
+        type: string
+      prerelease:
+        description: '标记为预发布版本'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        arch: [x64, arm64]
+    runs-on: ${{ matrix.os }}
+    
+    env:
+      Project_Name: yiyin
+       
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Determine Build Configuration
+        id: config
+        shell: bash
+        run: |
+          if [[ "${{ github.event.inputs.create_release }}" == "true" ]]; then
+            echo "BUILD_CONFIG=Release" >> $GITHUB_ENV
+            echo "ARTIFACT_NAME=release" >> $GITHUB_ENV
+          else
+            echo "BUILD_CONFIG=Debug" >> $GITHUB_ENV
+            echo "ARTIFACT_NAME=debug" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Package
+        shell: bash
+        run: |
+          npm run build
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            npx electron-builder --win --${{ matrix.arch }} -p never
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            npx electron-builder --mac --${{ matrix.arch }} -p never
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare and Zip Artifacts
+        shell: pwsh
+        run: |
+          $osName = if ("${{ runner.os }}" -eq "Windows") { "win" } else { "mac" }
+          $zipName = "${{ env.Project_Name }}-$osName-${{ matrix.arch }}-${{ env.ARTIFACT_NAME }}.zip"
+          
+          # Find the generated installer in dist folder
+          if ("${{ runner.os }}" -eq "Windows") {
+            $files = Get-ChildItem -Path dist/*.exe
+          } else {
+            $files = Get-ChildItem -Path dist/*.dmg
+          }
+          
+          if ($files.Count -gt 0) {
+            $installerPath = $files[0].FullName
+            Compress-Archive -Path $installerPath -DestinationPath "$zipName"
+            "ZIP_PATH=$zipName" | Add-Content -Path $env:GITHUB_ENV
+            "ARTIFACT_DISPLAY_NAME=${{ env.Project_Name }}-$osName-${{ matrix.arch }}-${{ env.ARTIFACT_NAME }}" | Add-Content -Path $env:GITHUB_ENV
+          } else {
+            Write-Error "No installer found in dist folder"
+            exit 1
+          }
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.ARTIFACT_DISPLAY_NAME }}
+          path: ${{ env.ZIP_PATH }}
+          retention-days: 30
+
+  release:
+    needs: build
+    if: github.event.inputs.create_release == 'true' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository (with full history)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate release inputs
+        run: |
+          if [[ -z "${{ github.event.inputs.release_tag }}" ]]; then
+            echo "❌ 错误: 创建 Release 时必须提供 release_tag"
+            exit 1
+          fi
+          if [[ ! "${{ github.event.inputs.release_tag }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "❌ 错误: 标签格式不正确，请使用 vX.Y.Z 格式（例如 v1.2.3）"
+            exit 1
+          fi
+          if git tag --list | grep -q "^${{ github.event.inputs.release_tag }}$"; then
+            echo "❌ 错误: 标签 ${{ github.event.inputs.release_tag }} 已存在"
+            exit 1
+          fi
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "📝 首个版本，生成所有提交的更新日志"
+            git-cliff --unreleased --output RELEASE_NOTES.md
+          else
+            echo "📝 生成从 $PREVIOUS_TAG 到当前提交的更新日志"
+            git-cliff ${PREVIOUS_TAG}..HEAD --unreleased --output RELEASE_NOTES.md
+          fi
+          echo "📋 生成的 Release 说明："
+          cat RELEASE_NOTES.md
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ github.event.inputs.release_tag }}
+          git push origin ${{ github.event.inputs.release_tag }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release (draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: ${{ github.event.inputs.release_name || github.event.inputs.release_tag }}
+          body_path: RELEASE_NOTES.md
+          draft: true
+          prerelease: ${{ github.event.inputs.prerelease }}
+          files: ./artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        run: |
+          echo "🎉 Release 草稿创建成功！"
+          echo "  标签: ${{ github.event.inputs.release_tag }}"
+          echo "  名称: ${{ github.event.inputs.release_name || github.event.inputs.release_tag }}"
+          echo "  预发布: ${{ github.event.inputs.prerelease }}"
+          echo "🔗 查看地址: https://github.com/${{ github.repository }}/releases/tag/${{ github.event.inputs.release_tag }}"
