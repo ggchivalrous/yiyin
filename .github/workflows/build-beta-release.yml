@@ -48,8 +48,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 18
-          cache: 'npm'
+          node-version: 24
+          # cache: 'npm' 暂时不使用 lock 文件，故注释
 
       - name: Install dependencies
         run: npm install
