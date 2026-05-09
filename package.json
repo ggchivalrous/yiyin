@@ -18,7 +18,8 @@
     "make": "yarn build && electron-builder -p never",
     "push:release": "node release.js",
     "push:dev": "node dev.js",
-    "fix": "eslint --fix"
+    "fix": "eslint --fix",
+    "release": "auto-release"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^8.1.1",
     "@ggchivalrous/db-ui": "^1.3.1",
+    "@ggcv/auto-release": "^1.0.3",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/adm-zip": "^0.5.5",
     "@types/fluent-ffmpeg": "^2.1.21",
