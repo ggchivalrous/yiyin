@@ -15,7 +15,6 @@
   let previewUrl = ''
   let previewLoading = false
   let previewTimer: NodeJS.Timeout
-  let isGeneratingPreview = false
 
   $: {
       if (fileInfoList.length) {
@@ -33,10 +32,7 @@
     // 当配置发生变化时，如果预览开启，则更新预览
     if ($config && $config.options.preview_show && selectedId) {
       clearTimeout(previewTimer)
-      // 只有当没有预览生成中时才允许新的预览请求
-      if (!isGeneratingPreview) {
-        previewTimer = setTimeout(updatePreview, 300)
-      }
+      previewTimer = setTimeout(updatePreview, 300)
     }
   }
 
@@ -44,10 +40,6 @@
     const file = fileInfoList.find(i => i.id === selectedId)
     if (!file) return
 
-    // 如果已经在生成预览，则不重复生成
-    if (isGeneratingPreview) return
-
-    isGeneratingPreview = true
     previewLoading = true
     try {
       const res = await window.api.genPreview({ path: file.path, name: file.name })
@@ -64,11 +56,6 @@
     }
     finally {
       previewLoading = false
-      isGeneratingPreview = false
-      // 检查在生成预览过程中是否有新的配置变化，如果有则立即更新预览
-      if ($config && $config.options.preview_show && selectedId) {
-        previewTimer = setTimeout(updatePreview, 0)
-      }
     }
   }
 
