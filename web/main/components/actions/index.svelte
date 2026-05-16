@@ -34,19 +34,27 @@
       clearTimeout(previewTimer)
       previewTimer = setTimeout(updatePreview, 300)
     }
+    else {
+      clearTimeout(previewTimer)
+      previewUrl = ''
+    }
   }
 
   async function updatePreview() {
+    if (!$config.options.preview_show) return
     const file = fileInfoList.find(i => i.id === selectedId)
     if (!file) return
 
     previewLoading = true
     try {
       const res = await window.api.genPreview({ path: file.path, name: file.name })
-      if (res.code === 0) {
-        previewUrl = res.data
+      if (res && res.code === 0) {
+        // 如果在请求过程中预览被关闭了，就不更新了
+        if ($config.options.preview_show) {
+          previewUrl = res.data
+        }
       }
-      else {
+      else if (res) {
         console.error('预览生成失败:', res.message)
         previewUrl = ''
       }

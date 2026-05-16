@@ -30,6 +30,8 @@ interface EventMap {
 export class ImageTool extends Event {
   private isInit: boolean
 
+  private isCancelled = false
+
   readonly id: string
 
   readonly path: string
@@ -80,6 +82,11 @@ export class ImageTool extends Event {
       mask: `${baseFilePath}_mask.png`,
       composite: join(opt.outputPath, getFileName(opt.outputPath, name)),
     }
+  }
+
+  cancel() {
+    this.isCancelled = true
+    log.info('【%s】任务已取消', this.id)
   }
 
   async init() {
@@ -167,13 +174,21 @@ export class ImageTool extends Event {
 
   async genPreview() {
     log.info('【%s】生成预览图...', this.id)
+    if (this.isCancelled) return null
     await this.init()
+    if (this.isCancelled) return null
     this.clacBgImgSize()
+    if (this.isCancelled) return null
     await this.genTextImg()
+    if (this.isCancelled) return null
     await this.genMainImg()
+    if (this.isCancelled) return null
     this.calcContentHeight()
+    if (this.isCancelled) return null
     await this.genBgImg()
+    if (this.isCancelled) return null
     await this.genMainImgShadow()
+    if (this.isCancelled) return null
     const res = await this.composite(true)
     this.delCacheFile()
     return res
@@ -214,11 +229,18 @@ export class ImageTool extends Event {
   }
 
   async genTextImg() {
+    if (this.isCancelled) return
     const [p, r, j] = usePromise()
     let timer: NodeJS.Timeout
 
     const handler: Parameters<typeof genTextImgQueue.on>[number] = async ({ id, textImgList = [] }) => {
       if (id === this.id) {
+        if (this.isCancelled) {
+          clearTimeout(timer)
+          genTextImgQueue.off(handler)
+          r(false)
+          return
+        }
         this.material.text = textImgList.map(i => ({
           path: '',
           buf: Buffer.from(i.data.split(',')[1], 'base64'),
@@ -391,6 +413,7 @@ export class ImageTool extends Event {
   }
 
   async genMainImgShadow() {
+    if (this.isCancelled) return
     const [p, r, j] = usePromise()
     let timer: NodeJS.Timeout
 
@@ -402,6 +425,12 @@ export class ImageTool extends Event {
 
     const handler: Parameters<typeof genMainImgShadowQueue.on>[number] = async ({ id, data }) => {
       if (id === this.id) {
+        if (this.isCancelled) {
+          clearTimeout(timer)
+          genMainImgShadowQueue.off(handler)
+          r(false)
+          return
+        }
         fs.writeFileSync(this.outputFileNames.mask, Buffer.from(data.split(',')[1], 'base64'))
 
         if (rate !== 1) {
