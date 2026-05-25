@@ -17,16 +17,16 @@
   let previewTimer: NodeJS.Timeout
 
   $: {
-      if (fileInfoList.length) {
-        if (!selectedId || !fileInfoList.find(i => i.id === selectedId)) {
-          selectedId = fileInfoList[0].id
-        }
-      }
-      else {
-        selectedId = ''
-        previewUrl = ''
+    if (fileInfoList.length) {
+      if (!selectedId || !fileInfoList.some(i => i.id === selectedId)) {
+        selectedId = fileInfoList[0].id
       }
     }
+    else {
+      selectedId = ''
+      previewUrl = ''
+    }
+  }
 
   $: {
     // 当配置发生变化时，如果预览开启，则更新预览
@@ -370,7 +370,7 @@
         style='width: 30px;'
         on:change={v => onNumInputChange(v, 'bg_blur', 100, 0, 0)}
       />
-      <span style="font-size: 12px; margin-left: 2px;">%</span>
+      <span style='font-size: 12px; margin-left: 2px;'>%</span>
     </ActionItem>
 
     <ActionItem {labelWidth} title='纯色背景'>
@@ -408,66 +408,68 @@
   </div>
 
   <div class='app-action-right-wrap'>
-    {#if $config.options.preview_show && selectedId}
-      <div class='preview-wrap grass-inset'>
-        {#if previewLoading}
-          <div class='preview-loading'>
-            <i class='db-icon-loading icon-loading'></i>
-            生成预览中...
-          </div>
-        {:else if previewUrl}
-          <img class='preview-img' src={previewUrl} alt='预览图' />
-        {:else}
-          <div class='preview-placeholder'>预览图生成失败</div>
-        {/if}
-      </div>
-    {/if}
-
-    <div class='img-wrap grass-inset'>
-      <div class='img-list'>
-        {#each fileInfoList as i (i.id)}
-          {@const record = imgInfoRecord[i.id]}
-          {#key i.id}
-            <div
-              class='img-item grass {selectedId === i.id ? 'selected' : ''}'
-              on:click={() => selectImage(i.id)}
-              on:keypress
-              role='button'
-              tabindex='-1'
-            >
-              <div class='img-item-head'>
-                <span class='img-name'>{i.name}</span>
-                {#if record.faild}
-                  <i class='db-icon-error error'></i>
-                {:else if record.progress < 100}
-                  <span
-                    style='font-weight: bold;'
-                    class={record.progress === 100 ? 'success' : ''}
-                  >{record.progress}%</span>
-                {:else}
-                  <i class='db-icon-success success'></i>
-                {/if}
-              </div>
-              <div class='img-item-info'>
-                相机信息:
-                {#await getExitInfo(i.id, i.path)}
-                  <i class='db-icon-loading'></i>
-                {:then v}
-                  {#if v}
-                    <i class='db-icon-success success'></i>
-                    <i class='icon db-icon-document-copy' on:click={() => cpExif(i.id)} on:keypress role='button' tabindex='-1'></i>
-                  {:else}
-                    <i class='db-icon-error error'></i>
-                  {/if}
-                {/await}
-              </div>
-
-              <div class='img-item-faild-msg'>
-                {record.faildMsg}
-              </div>
+    <div class='image-list-wrap'>
+      {#if $config.options.preview_show && selectedId}
+        <div class='preview-wrap'>
+          {#if previewLoading}
+            <div class='preview-loading'>
+              <i class='db-icon-loading icon-loading'></i>
+              生成预览中...
             </div>
-          {/key}
-        {/each}
+          {:else if previewUrl}
+            <img class='preview-img' src={previewUrl} alt='预览图' />
+          {:else}
+            <div class='preview-placeholder'>预览图生成失败</div>
+          {/if}
+        </div>
+      {/if}
+
+      <div class='img-wrap grass-inset'>
+        <div class='img-list'>
+          {#each fileInfoList as i (i.id)}
+            {@const record = imgInfoRecord[i.id]}
+            {#key i.id}
+              <div
+                class='img-item {selectedId === i.id ? 'selected' : ''}'
+                on:click={() => selectImage(i.id)}
+                on:keypress
+                role='button'
+                tabindex='-1'
+              >
+                <div class='img-item-head'>
+                  <span class='img-name'>{i.name}</span>
+                  {#if record.faild}
+                    <i class='db-icon-error error'></i>
+                  {:else if record.progress < 100}
+                    <span
+                      style='font-weight: bold;'
+                      class={record.progress === 100 ? 'success' : ''}
+                    >{record.progress}%</span>
+                  {:else}
+                    <i class='db-icon-success success'></i>
+                  {/if}
+                </div>
+                <div class='img-item-info'>
+                  相机信息:
+                  {#await getExitInfo(i.id, i.path)}
+                    <i class='db-icon-loading'></i>
+                  {:then v}
+                    {#if v}
+                      <i class='db-icon-success success'></i>
+                      <i class='icon db-icon-document-copy' on:click={() => cpExif(i.id)} on:keypress role='button' tabindex='-1'></i>
+                    {:else}
+                      <i class='db-icon-error error'></i>
+                    {/if}
+                  {/await}
+                </div>
+
+                <div class='img-item-faild-msg'>
+                  {record.faildMsg}
+                </div>
+              </div>
+            {/key}
+          {/each}
+        </div>
       </div>
     </div>
 

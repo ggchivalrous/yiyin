@@ -42,8 +42,8 @@
   }
 
   .app-action-left-wrap {
-    width: 350px;
-    flex-basis: 350px;
+    width: 320px;
+    flex-basis: 320px;
     flex-grow: 0;
     overflow-y: auto;
     overflow-x: hidden;
@@ -72,17 +72,27 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    height: 470px;
+    overflow: hidden;
+
+    .image-list-wrap {
+      flex: 1;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
   }
 
   .preview-wrap {
     width: 100%;
-    height: 300px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.05);
 
     .preview-img {
       max-width: 100%;
@@ -90,7 +100,8 @@
       object-fit: contain;
     }
 
-    .preview-loading, .preview-placeholder {
+    .preview-loading,
+    .preview-placeholder {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -106,11 +117,17 @@
   }
 
   @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .img-wrap {
+    flex: 1;
+    min-width: 250px;
     height: 100%;
     padding: 0 15px;
     overflow-y: auto;
@@ -129,10 +146,10 @@
       cursor: pointer;
       border: 1px solid transparent;
       transition: all 0.2s;
+      @include grass();
 
       &.selected {
-        border-color: var(--active-color);
-        box-shadow: 0 0 8px var(--active-color);
+        @include grass-inset();
       }
 
       .img-item-head {
