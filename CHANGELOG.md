@@ -1,6 +1,40 @@
 # Changelog
 
 
+## v1.7.0
+
+[compare changes](https://github.com/ggchivalrous/yiyin/compare/v1.5.9...v1.7.0)
+
+### 🚀 Enhancements
+
+- 优化超长图白边问题 ([2b67c66](https://github.com/ggchivalrous/yiyin/commit/2b67c66))
+- 添加背景模糊程度设置 ([5eebc4b](https://github.com/ggchivalrous/yiyin/commit/5eebc4b))
+- 支持生成结果实时预览 ([0ebf176](https://github.com/ggchivalrous/yiyin/commit/0ebf176))
+- 修复预览区域位置，修改默认窗口高度 ([88e9cc7](https://github.com/ggchivalrous/yiyin/commit/88e9cc7))
+
+### 🩹 Fixes
+
+- **ci:** 更新 node 版本，禁用 npm 缓存 ([64183d9](https://github.com/ggchivalrous/yiyin/commit/64183d9))
+- 快速切换开关时多个预览图同时生成 ([8c60ace](https://github.com/ggchivalrous/yiyin/commit/8c60ace))
+- 快速切换开关时多个预览图同时生成" ([c63c6cb](https://github.com/ggchivalrous/yiyin/commit/c63c6cb))
+- 修复快速切换开关时多个预览图同时生成 ([4b0aece](https://github.com/ggchivalrous/yiyin/commit/4b0aece))
+
+### 💅 Refactors
+
+- 引入 eslint-config，格式化项目代码 ([cf001c0](https://github.com/ggchivalrous/yiyin/commit/cf001c0))
+- 重构 CI 工作流 ([5e5fe92](https://github.com/ggchivalrous/yiyin/commit/5e5fe92))
+
+### 🏡 Chore
+
+- 移除electron make配置 ([e483336](https://github.com/ggchivalrous/yiyin/commit/e483336))
+- 添加版本控制配置文件 ([49242af](https://github.com/ggchivalrous/yiyin/commit/49242af))
+- **release:** V1.6.0 ([1696fb9](https://github.com/ggchivalrous/yiyin/commit/1696fb9))
+
+### ❤️ Contributors
+
+- 云中君 <yunzhongjun@gitea.com>
+- Luminary ([@fengyec2](https://github.com/fengyec2))
+
 ## v1.6.0
 
 [compare changes](https://github.com/ggchivalrous/yiyin/compare/v1.4.4...v1.6.0)
