@@ -86,6 +86,11 @@ export interface OutputOption {
    * 背景模糊
    */
   bg_blur: number
+
+  /**
+   * 预览显示
+   */
+  preview_show: boolean
 }
 
 export interface OutputFilePaths {

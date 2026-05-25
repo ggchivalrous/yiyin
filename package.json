@@ -37,7 +37,7 @@
     "@types/tar": "^6.1.11",
     "adm-zip": "^0.5.12",
     "axios": "^1.6.5",
-    "electron": "24.2.0",
+    "electron": "^24.2.0",
     "electron-builder": "^24.6.3",
     "eslint": "^10.2.0",
     "eslint-plugin-format": "^2.0.1",

@@ -30,6 +30,8 @@ interface EventMap {
 export class ImageTool extends Event {
   private isInit: boolean
 
+  private isCancelled = false
+
   readonly id: string
 
   readonly path: string
@@ -80,6 +82,11 @@ export class ImageTool extends Event {
       mask: `${baseFilePath}_mask.png`,
       composite: join(opt.outputPath, getFileName(opt.outputPath, name)),
     }
+  }
+
+  cancel() {
+    this.isCancelled = true
+    log.info('【%s】任务已取消', this.id)
   }
 
   async init() {
@@ -165,6 +172,28 @@ export class ImageTool extends Event {
     this.delCacheFile()
   }
 
+  async genPreview() {
+    log.info('【%s】生成预览图...', this.id)
+    if (this.isCancelled) return null
+    await this.init()
+    if (this.isCancelled) return null
+    this.clacBgImgSize()
+    if (this.isCancelled) return null
+    await this.genTextImg()
+    if (this.isCancelled) return null
+    await this.genMainImg()
+    if (this.isCancelled) return null
+    this.calcContentHeight()
+    if (this.isCancelled) return null
+    await this.genBgImg()
+    if (this.isCancelled) return null
+    await this.genMainImgShadow()
+    if (this.isCancelled) return null
+    const res = await this.composite(true)
+    this.delCacheFile()
+    return res
+  }
+
   async genBgImg() {
     const toFilePath: string = this.outputFileNames.bg
     this.clacBgImgSize(this.contentH)
@@ -200,11 +229,18 @@ export class ImageTool extends Event {
   }
 
   async genTextImg() {
+    if (this.isCancelled) return
     const [p, r, j] = usePromise()
     let timer: NodeJS.Timeout
 
     const handler: Parameters<typeof genTextImgQueue.on>[number] = async ({ id, textImgList = [] }) => {
       if (id === this.id) {
+        if (this.isCancelled) {
+          clearTimeout(timer)
+          genTextImgQueue.off(handler)
+          r(false)
+          return
+        }
         this.material.text = textImgList.map(i => ({
           path: '',
           buf: Buffer.from(i.data.split(',')[1], 'base64'),
@@ -249,7 +285,7 @@ export class ImageTool extends Event {
     return p
   }
 
-  async composite() {
+  async composite(isPreview = false) {
     const composite: sharp.OverlayOptions[] = []
 
     // 主图
@@ -283,7 +319,7 @@ export class ImageTool extends Event {
       composite.push(...textCompositeList)
     }
 
-    await sharp({
+    const output = sharp({
       create: {
         channels: 3,
         width: this.material.bg.w,
@@ -297,8 +333,14 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat('jpeg', { quality: this.outputOpt.quality || 100 })
-      .toFile(this.outputFileNames.composite)
+      .toFormat('jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
+
+    if (isPreview) {
+      const buf = await output.toBuffer()
+      return `data:image/jpeg;base64,${buf.toString('base64')}`
+    }
+
+    await output.toFile(this.outputFileNames.composite)
 
     log.info('【%s】图片合成完毕，输出到文件: ', this.id, this.outputFileNames.composite)
     return true
@@ -371,6 +413,7 @@ export class ImageTool extends Event {
   }
 
   async genMainImgShadow() {
+    if (this.isCancelled) return
     const [p, r, j] = usePromise()
     let timer: NodeJS.Timeout
 
@@ -382,6 +425,12 @@ export class ImageTool extends Event {
 
     const handler: Parameters<typeof genMainImgShadowQueue.on>[number] = async ({ id, data }) => {
       if (id === this.id) {
+        if (this.isCancelled) {
+          clearTimeout(timer)
+          genMainImgShadowQueue.off(handler)
+          r(false)
+          return
+        }
         fs.writeFileSync(this.outputFileNames.mask, Buffer.from(data.split(',')[1], 'base64'))
 
         if (rate !== 1) {

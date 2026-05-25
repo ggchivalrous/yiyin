@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - name: Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 24
 
       - name: 拉取自身仓库代码
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: dev
 
@@ -38,7 +38,7 @@ jobs:
           yarn push:dev
 
       - name: Download artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
           name: app
           path: upload-dist

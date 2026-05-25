@@ -18,6 +18,7 @@ export default {
   logoList: 'logoList',
   genTextImg: 'genTextImg',
   genMainImgShadow: 'genMainImgShadow',
+  genPreview: 'genPreview',
   drainQueue: 'drainQueue',
   pathJoin: 'pathJoin',
   open: {
