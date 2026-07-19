@@ -15,7 +15,7 @@ import { mainApp } from '@src/common/app'
 import { genMainImgShadowQueue, genTextImgQueue } from '@src/common/queue'
 import { config } from '@src/config'
 import paths from '@src/path'
-import { getFileName, md5, tryCatch, usePromise } from '@utils'
+import { getFileName, getFormatExt, md5, tryCatch, usePromise } from '@utils'
 import fluentFfmpeg from 'fluent-ffmpeg'
 
 import sharp from 'sharp'
@@ -78,9 +78,9 @@ export class ImageTool extends Event {
     this.outputFileNames = {
       base: baseFilePath,
       bg: `${baseFilePath}_bg.jpg`,
-      main: `${baseFilePath}_main.jpg`,
+      main: `${baseFilePath}_main.webp`,
       mask: `${baseFilePath}_mask.png`,
-      composite: join(opt.outputPath, getFileName(opt.outputPath, name)),
+      composite: join(opt.outputPath, getFileName(opt.outputPath, name, getFormatExt(opt.outputOption.output_format))),
     }
   }
 
@@ -216,7 +216,7 @@ export class ImageTool extends Event {
     await sharp(this.path)
       .rotate()
       .withMetadata({ density: this.meta.density })
-      .toFormat('jpeg', { quality: 100 })
+      .webp({ lossless: true })
       .toFile(toFilePath)
 
     this.material.main.push({
@@ -333,11 +333,12 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat('jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
+      .toFormat(this.outputOpt.output_format || 'jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
 
     if (isPreview) {
       const buf = await output.toBuffer()
-      return `data:image/jpeg;base64,${buf.toString('base64')}`
+      const fmt = this.outputOpt.output_format || 'jpeg'
+      return `data:image/${fmt};base64,${buf.toString('base64')}`
     }
 
     await output.toFile(this.outputFileNames.composite)

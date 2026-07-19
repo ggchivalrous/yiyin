@@ -2,7 +2,7 @@
   import type { IConfig, IFileInfo, ImgInfo, TInputEvent } from '../../interface'
   import { arrToObj, roundDecimalPlaces } from '@common/utils'
   import { ActionItem } from '@components'
-  import { ColorPicker, Message, Switch } from '@ggchivalrous/db-ui'
+  import { ColorPicker, Message, Option, Select, Switch } from '@ggchivalrous/db-ui'
   import { config } from '@web/store/config'
 
   import { smoothIncrement } from '@web/util/util'
@@ -330,6 +330,20 @@
         style='width: 103px;'
         on:change={v => onNumInputChange(v, 'quality', 100, 1, 0)}
       />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='输出格式'>
+      <svelte:fragment slot='popup'>
+        选择导出的图片格式
+        <br>
+        <b>JPEG：</b>通用兼容性最好
+        <br>
+        <b>WebP：</b>同质量体积更小
+      </svelte:fragment>
+      <Select size='mini' bind:value={$config.options.output_format} class='no-drag grass' style='width: 103px;'>
+        <Option value='jpeg'>JPEG</Option>
+        <Option value='webp'>WebP</Option>
+      </Select>
     </ActionItem>
 
     <ActionItem {labelWidth} title='输出宽高比'>
