@@ -1,0 +1,99 @@
+name: Build Release (on push to release branch)
+
+# 推送到 release 分支时自动构建双平台安装包，并发布到 fork 的 Release
+# 产物同时作为 Artifact 上传（90 天），便于在 Actions 页面直接下载
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-latest 当前是 arm64 runner；如需 x64 用 macos-13
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+
+      - name: 安装依赖
+        run: yarn --frozen-lockfile
+
+      - name: 构建安装包
+        run: yarn make
+        env:
+          # macOS 无签名身份时跳过签名（identity: null 已在 package.json 配置）
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # electron 下载走镜像，避免网络问题
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
+      - name: 上传产物为 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yiyin-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.msi
+            dist/*.zip
+          if-no-files-found: warn
+          retention-days: 90
+
+  release:
+    name: Publish to GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release'
+
+    steps:
+      - name: 检出代码（取版本号）
+        uses: actions/checkout@v4
+
+      - name: 读取版本号
+        id: ver
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: 下载所有产物
+        uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: 列出产物
+        run: find assets -type f -exec ls -lh {} \;
+
+      - name: 发布到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: 壹印 ${{ steps.ver.outputs.tag }}
+          body: |
+            自动构建版本 ${{ steps.ver.outputs.tag }}
+
+            触发自 commit: ${{ github.sha }}
+
+            **安装说明：**
+            - macOS：下载 `.dmg`，首次打开需右键选择"打开"绕过 Gatekeeper（未签名）
+            - Windows：`.exe`（NSIS 安装程序）或 `.msi`（MSI 安装包）
+          files: assets/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
