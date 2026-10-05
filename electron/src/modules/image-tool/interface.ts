@@ -1,6 +1,14 @@
 import type { IConfig } from '@src/interface'
 import type { Buffer } from 'node:buffer'
 
+/**
+ * 参数（文本）显示位置
+ *
+ * - `bottom`: 显示在照片下方（默认）
+ * - `top`: 显示在照片上方
+ */
+export type TextPosition = 'top' | 'bottom'
+
 export interface ImageToolOption {
   outputOption: OutputOption
   cachePath: string
@@ -83,6 +91,23 @@ export interface OutputOption {
   mini_top_bottom_margin: number
 
   /**
+   * 参数（文本）显示位置
+   *
+   * @default 'bottom'
+   */
+  text_position: TextPosition
+
+  /**
+   * 底部留白
+   *
+   * 在内容最下方额外留出的空白，按背景高度比例换算，值为 0-100。
+   * 适合导出后做视频时在下方放字幕，避免字幕挡住照片。
+   *
+   * @default 0
+   */
+  bottom_margin: number
+
+  /**
    * 背景模糊
    */
   bg_blur: number
@@ -103,6 +128,16 @@ export interface OutputFilePaths {
    * 背景图文件路径
    */
   bg: string
+
+  /**
+   * 背景图模糊前的中间文件
+   */
+  bgSrc: string
+
+  /**
+   * 背景图模糊后的中间文件
+   */
+  bgBlur: string
 
   /**
    * 主图文件路径

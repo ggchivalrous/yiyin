@@ -13,6 +13,8 @@ export const config = writable<IConfig>({
     text_margin: 0.4,
     quality: 100,
     mini_top_bottom_margin: 0,
+    text_position: 'bottom',
+    bottom_margin: 0,
     iot: false,
     landscape: false,
     solid_bg: false,

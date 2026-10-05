@@ -163,6 +163,13 @@
     }
   }
 
+  function onTextPositionChange(e: CustomEvent<boolean>) {
+    config.update((d) => {
+      d.options.text_position = e.detail ? 'top' : 'bottom'
+      return d
+    })
+  }
+
   const numReg = /-?\d+\.?\d{0,3}/
   function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number, decimal?: number) {
     let _v = v.currentTarget.value
@@ -278,6 +285,36 @@
         value={$config.options.mini_top_bottom_margin}
         style='width: 103px;'
         on:change={v => onNumInputChange(v, 'mini_top_bottom_margin', 100, 0, 2)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='参数位置'>
+      <svelte:fragment slot='popup'>
+        指定相机参数显示在照片的上方还是下方
+        <br>
+        开启：参数显示在照片上方
+        <br>
+        关闭：参数显示在照片下方（默认）
+      </svelte:fragment>
+      <Switch value={$config.options.text_position === 'top'} on:change={onTextPositionChange} />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='底部留白'>
+      <svelte:fragment slot='popup'>
+        在图片最下方额外留出空白，方便做视频时在下方放字幕
+        <br>
+        按照背景高度比例换算，值为 0-100（例如 10 表示留出背景高度的 10%）
+        <br>
+        参数在照片上方时，增加的是照片与底边之间的距离
+        <br>
+        默认：0
+      </svelte:fragment>
+      <input
+        class='input'
+        type='text'
+        value={$config.options.bottom_margin}
+        style='width: 103px;'
+        on:change={v => onNumInputChange(v, 'bottom_margin', 100, 0, 2)}
       />
     </ActionItem>
 
