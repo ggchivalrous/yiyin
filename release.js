@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process'
+import { exec, execSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -29,7 +29,6 @@ function getReleaseTag() {
 
 // 查找指定 tag 的 release；不存在则创建（draft）
 async function ensureRelease(tag) {
-  const tagVersion = tag.replace(/^v/, '')
   console.log('查找 release:', tag, `(owner=${REPO_OWNER}, repo=${REPO_NAME})`)
 
   // 先尝试按 tag 获取
@@ -53,6 +52,9 @@ async function ensureRelease(tag) {
     owner: REPO_OWNER,
     repo: REPO_NAME,
     tag_name: tag,
+    // tag 不存在时按当前 checkout 的 commit 建 tag，避免 GitHub 默认
+    // 从默认分支 HEAD 建 tag，导致 tag 与产物来源不一致
+    target_commitish: execSync('git rev-parse HEAD').toString().trim(),
     name: `壹印 ${tag}`,
     body: `自动构建版本 ${tag}`,
     draft: true,

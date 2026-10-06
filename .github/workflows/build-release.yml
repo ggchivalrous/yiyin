@@ -1,11 +1,12 @@
-name: Build Release (on push to release branch)
+name: Build Release (on version tag)
 
-# 推送到 release 分支时自动构建双平台安装包，并发布到 fork 的 Release
+# auto-release 工具在本地完成 version bump + commit + tag + push 后，
+# 此处的 tag push 触发自动构建双平台安装包，并上传到对应的 GitHub Release。
 # 产物同时作为 Artifact 上传（90 天），便于在 Actions 页面直接下载
 on:
   push:
-    branches:
-      - release
+    tags:
+      - v*
   workflow_dispatch:
 
 permissions:
@@ -22,17 +23,19 @@ jobs:
         os: [macos-latest, windows-latest]
 
     steps:
-      - name: 检出代码
+      - name: 检出代码（带 tag，确保 version 正确）
         uses: actions/checkout@v4
+        with:
+          # 检出整个历史和 tag，auto-release 的 version bump commit 才在
+          fetch-depth: 0
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: yarn
 
       - name: 安装依赖
-        run: yarn --frozen-lockfile
+        run: yarn
 
       - name: 构建安装包
         run: yarn make
@@ -58,17 +61,16 @@ jobs:
     name: Publish to GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release'
 
     steps:
-      - name: 检出代码（取版本号）
+      - name: 检出代码（取版本号 + 读取 tag 已有的 release notes）
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 读取版本号
+      - name: 读取 tag 名（即版本号）
         id: ver
-        run: |
-          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-          echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        run: echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: 下载所有产物
         uses: actions/download-artifact@v4
@@ -79,15 +81,18 @@ jobs:
       - name: 列出产物
         run: find assets -type f -exec ls -lh {} \;
 
-      - name: 发布到 Release
+      - name: 发布到 Release（用触发 workflow 的 tag）
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
+          # tag 已存在时此字段被忽略；手动触发且 tag 尚不存在时，确保 tag
+          # 打在实际构建的 commit 上，而不是默认分支 HEAD
+          target_commitish: ${{ github.sha }}
           name: 壹印 ${{ steps.ver.outputs.tag }}
           body: |
             自动构建版本 ${{ steps.ver.outputs.tag }}
 
-            触发自 commit: ${{ github.sha }}
+            触发自 tag: ${{ steps.ver.outputs.tag }} (commit ${{ github.sha }})
 
             **安装说明：**
             - macOS：下载 `.dmg`，首次打开需右键选择"打开"绕过 Gatekeeper（未签名）
