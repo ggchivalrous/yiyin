@@ -22,6 +22,9 @@ import sharp from 'sharp'
 
 const log = new Logger('ImageTool')
 const NotInit = Symbol('未初始化')
+// libvips 的 WebP 编码器对任一边超过 16383 像素的图会报错（如全景长图），
+// 超限时中间主图回退为 PNG 无损，保证预览与导出可用
+const WEBP_MAX_EDGE = 16383
 
 interface EventMap {
   progress: (id: string, progress: number) => void
@@ -211,12 +214,16 @@ export class ImageTool extends Event {
   }
 
   async genMainImg() {
-    const toFilePath: string = this.outputFileNames.main
     if (!this.isInit) throw NotInit
+    if (Math.max(this.sizeInfo.w, this.sizeInfo.h) > WEBP_MAX_EDGE) {
+      this.outputFileNames.main = `${this.outputFileNames.base}_main.png`
+    }
+    const toFilePath: string = this.outputFileNames.main
+    const isPng = toFilePath.endsWith('.png')
     await sharp(this.path)
       .rotate()
       .withMetadata({ density: this.meta.density })
-      .webp({ lossless: true })
+      .toFormat(isPng ? 'png' : 'webp', isPng ? {} : { lossless: true })
       .toFile(toFilePath)
 
     this.material.main.push({
