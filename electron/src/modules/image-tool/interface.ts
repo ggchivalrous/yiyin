@@ -91,6 +91,16 @@ export interface OutputOption {
    * 预览显示
    */
   preview_show: boolean
+
+  /**
+   * 预览窗格占可用宽度的比例（0-1）
+   */
+  preview_pane_width_ratio: number
+
+  /**
+   * 预览窗格占可用高度的比例（0-1）
+   */
+  preview_pane_height_ratio: number
 }
 
 export interface OutputFilePaths {

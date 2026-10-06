@@ -72,27 +72,43 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 470px;
+    flex: 1;
+    min-height: 320px;
+    max-height: 100%;
     overflow: hidden;
 
     .image-list-wrap {
       flex: 1;
       display: flex;
       gap: 15px;
-      align-items: center;
-      justify-content: center;
+      align-items: stretch;
       overflow: hidden;
+      min-height: 0;
+
+      &.has-preview {
+        align-items: flex-start;
+      }
     }
+  }
+
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    max-height: 100%;
+    flex-shrink: 0;
   }
 
   .preview-wrap {
     width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
     overflow: hidden;
+    min-height: 0;
+    @include grass-inset(2px, 4px);
 
     .preview-img {
       max-width: 100%;
@@ -116,6 +132,125 @@
     }
   }
 
+  .preview-splitter {
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 3px;
+    background: transparent;
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+    touch-action: none;
+
+    &:hover,
+    &.hover {
+      background: rgba(19, 50, 94, 0.08);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      background: var(--black-shadow-color);
+      border-radius: 2px;
+      opacity: 0.35;
+      transition:
+        opacity 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    &.hover::before,
+    &:hover::before,
+    &.dragging::before {
+      opacity: 1;
+      background: var(--active-color);
+    }
+
+    &.dragging {
+      background: rgba(19, 50, 94, 0.08);
+      @include grass-inset(1px, 3px);
+    }
+
+    .splitter-tooltip {
+      position: absolute;
+      z-index: 2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
+      color: #fff;
+      background: rgba(19, 50, 94, 0.88);
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .preview-splitter-vertical {
+    width: 6px;
+    align-self: stretch;
+    cursor: col-resize;
+
+    &::before {
+      top: 8px;
+      bottom: 8px;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+    }
+
+    &.hover::before,
+    &.dragging::before {
+      width: 3px;
+    }
+
+    .splitter-tooltip {
+      top: 50%;
+      left: calc(100% + 10px);
+      transform: translateY(-50%);
+    }
+  }
+
+  .preview-splitter-horizontal {
+    width: 100%;
+    height: 6px;
+    cursor: row-resize;
+
+    &::before {
+      left: 8px;
+      right: 8px;
+      top: 50%;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+
+    &.hover::before,
+    &.dragging::before {
+      height: 3px;
+    }
+
+    .splitter-tooltip {
+      left: 50%;
+      top: calc(100% + 10px);
+      transform: translateX(-50%);
+    }
+  }
+
+  :global(body.preview-resizing),
+  :global(body.preview-resizing *) {
+    user-select: none !important;
+  }
+
+  :global(body.preview-resizing-x),
+  :global(body.preview-resizing-x *) {
+    cursor: col-resize !important;
+  }
+
+  :global(body.preview-resizing-y),
+  :global(body.preview-resizing-y *) {
+    cursor: row-resize !important;
+  }
+
   @keyframes rotate {
     from {
       transform: rotate(0deg);
@@ -127,8 +262,10 @@
 
   .img-wrap {
     flex: 1;
-    min-width: 250px;
+    min-width: 180px;
+    min-height: 120px;
     height: 100%;
+    align-self: stretch;
     padding: 0 15px;
     overflow-y: auto;
     overflow-x: hidden;

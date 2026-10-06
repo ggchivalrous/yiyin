@@ -4,6 +4,7 @@
   import { ActionItem } from '@components'
   import { ColorPicker, Message, Switch } from '@ggchivalrous/db-ui'
   import { config } from '@web/store/config'
+  import { onDestroy, onMount } from 'svelte'
 
   import { smoothIncrement } from '@web/util/util'
 
@@ -11,10 +12,163 @@
 
   export let fileInfoList: IFileInfo[] = []
 
+  const PREVIEW_MIN_WIDTH = 120
+  const PREVIEW_MAX_WIDTH = 720
+  const PREVIEW_MIN_RATIO = 0.15
+  const PREVIEW_MAX_RATIO = 0.75
+  const PREVIEW_MIN_HEIGHT = 160
+  const PREVIEW_MAX_HEIGHT = 560
+  const PREVIEW_MIN_HEIGHT_RATIO = 0.35
+  const PREVIEW_MAX_HEIGHT_RATIO = 0.92
+  const SPLITTER_SIZE = 6
+  const IMG_LIST_MIN_WIDTH = 180
+
   let selectedId = ''
   let previewUrl = ''
   let previewLoading = false
   let previewTimer: NodeJS.Timeout
+  let imageListWrapEl: HTMLDivElement
+  let previewWidth = 0
+  let previewHeight = 0
+  let isDragging = false
+  let hoveredSplitter: 'width' | 'height' | null = null
+  let resizeAxis: 'width' | 'height' = 'width'
+  let resizeObserver: ResizeObserver
+
+  function clamp(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value))
+  }
+
+  function getLayoutMetrics() {
+    if (!imageListWrapEl) {
+      return { availableWidth: 0, availableHeight: 0 }
+    }
+
+    const containerWidth = imageListWrapEl.clientWidth
+    const containerHeight = imageListWrapEl.clientHeight
+    const gapTotal = 15 * 2
+
+    return {
+      availableWidth: containerWidth - SPLITTER_SIZE - gapTotal - IMG_LIST_MIN_WIDTH,
+      availableHeight: containerHeight - SPLITTER_SIZE,
+    }
+  }
+
+  function clampPreviewWidth(width: number, availableWidth: number) {
+    const minW = Math.max(PREVIEW_MIN_WIDTH, availableWidth * PREVIEW_MIN_RATIO)
+    const maxW = Math.min(PREVIEW_MAX_WIDTH, availableWidth * PREVIEW_MAX_RATIO)
+    return clamp(width, minW, maxW)
+  }
+
+  function clampPreviewHeight(height: number, availableHeight: number) {
+    const minH = Math.max(PREVIEW_MIN_HEIGHT, availableHeight * PREVIEW_MIN_HEIGHT_RATIO)
+    const maxH = Math.min(PREVIEW_MAX_HEIGHT, availableHeight * PREVIEW_MAX_HEIGHT_RATIO)
+    return clamp(height, minH, maxH)
+  }
+
+  function applyPreviewSize() {
+    if (!imageListWrapEl || !$config.options.preview_show || isDragging) {
+      return
+    }
+
+    const { availableWidth, availableHeight } = getLayoutMetrics()
+    if (availableWidth <= 0 || availableHeight <= 0) {
+      return
+    }
+
+    const widthRatio = $config.options.preview_pane_width_ratio ?? 0.5
+    const heightRatio = $config.options.preview_pane_height_ratio ?? 0.85
+    previewWidth = clampPreviewWidth(availableWidth * widthRatio, availableWidth)
+    previewHeight = clampPreviewHeight(availableHeight * heightRatio, availableHeight)
+  }
+
+  function persistPreviewRatio() {
+    const { availableWidth, availableHeight } = getLayoutMetrics()
+
+    if (resizeAxis === 'width' && availableWidth > 0) {
+      $config.options.preview_pane_width_ratio = Math.round((previewWidth / availableWidth) * 1000) / 1000
+    }
+    else if (resizeAxis === 'height' && availableHeight > 0) {
+      $config.options.preview_pane_height_ratio = Math.round((previewHeight / availableHeight) * 1000) / 1000
+    }
+  }
+
+  /** 仅包含会影响预览图内容的配置，排除纯布局类字段 */
+  function getPreviewUpdateKey(conf: IConfig, id: string) {
+    const options = { ...conf.options }
+    delete options.preview_pane_width_ratio
+    delete options.preview_pane_height_ratio
+
+    return JSON.stringify({
+      id,
+      show: conf.options.preview_show,
+      options,
+      output: conf.output,
+      fontMap: conf.fontMap,
+      tempFields: conf.tempFields,
+      customTempFields: conf.customTempFields,
+      temps: conf.temps,
+    })
+  }
+
+  function startResize(e: PointerEvent, axis: 'width' | 'height') {
+    if (!imageListWrapEl) {
+      return
+    }
+
+    resizeAxis = axis
+    isDragging = true
+    hoveredSplitter = axis
+    e.preventDefault()
+
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture(e.pointerId)
+    document.body.classList.add('preview-resizing', axis === 'width' ? 'preview-resizing-x' : 'preview-resizing-y')
+
+    const onMove = (ev: PointerEvent) => {
+      const rect = imageListWrapEl.getBoundingClientRect()
+      const { availableWidth, availableHeight } = getLayoutMetrics()
+
+      if (axis === 'width') {
+        previewWidth = clampPreviewWidth(ev.clientX - rect.left, availableWidth)
+      }
+      else {
+        previewHeight = clampPreviewHeight(ev.clientY - rect.top, availableHeight)
+      }
+    }
+
+    const onUp = (ev: PointerEvent) => {
+      isDragging = false
+      hoveredSplitter = null
+      target.releasePointerCapture(ev.pointerId)
+      document.body.classList.remove('preview-resizing', 'preview-resizing-x', 'preview-resizing-y')
+      persistPreviewRatio()
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
+  onMount(() => {
+    resizeObserver = new ResizeObserver(() => {
+      applyPreviewSize()
+    })
+  })
+
+  onDestroy(() => {
+    resizeObserver?.disconnect()
+    document.body.classList.remove('preview-resizing', 'preview-resizing-x', 'preview-resizing-y')
+  })
+
+  $: if (imageListWrapEl && $config.options.preview_show) {
+    resizeObserver?.disconnect()
+    resizeObserver?.observe(imageListWrapEl)
+    applyPreviewSize()
+  }
+
+  $: resizeHint = `${Math.round(previewWidth)} × ${Math.round(previewHeight)}`
 
   $: {
     if (fileInfoList.length) {
@@ -28,9 +182,11 @@
     }
   }
 
+  $: previewUpdateKey = getPreviewUpdateKey($config, selectedId)
+
   $: {
-    // 当配置发生变化时，如果预览开启，则更新预览
-    if ($config && $config.options.preview_show && selectedId) {
+    const { show, id } = JSON.parse(previewUpdateKey) as { show: boolean, id: string }
+    if (show && id) {
       clearTimeout(previewTimer)
       previewTimer = setTimeout(updatePreview, 300)
     }
@@ -408,18 +564,60 @@
   </div>
 
   <div class='app-action-right-wrap'>
-    <div class='image-list-wrap'>
+    <div
+      class='image-list-wrap'
+      class:has-preview={$config.options.preview_show && selectedId}
+      bind:this={imageListWrapEl}
+    >
       {#if $config.options.preview_show && selectedId}
-        <div class='preview-wrap'>
-          {#if previewLoading}
-            <div class='preview-loading'>
-              <i class='db-icon-loading icon-loading'></i>
-              生成预览中...
-            </div>
-          {:else if previewUrl}
-            <img class='preview-img' src={previewUrl} alt='预览图' />
-          {:else}
-            <div class='preview-placeholder'>预览图生成失败</div>
+        <div class='preview-panel' style:width='{previewWidth}px' style:flex='0 0 {previewWidth}px'>
+          <div
+            class='preview-wrap'
+            style:height='{previewHeight}px'
+            style:flex='0 0 {previewHeight}px'
+          >
+            {#if previewLoading}
+              <div class='preview-loading'>
+                <i class='db-icon-loading icon-loading'></i>
+                生成预览中...
+              </div>
+            {:else if previewUrl}
+              <img class='preview-img' src={previewUrl} alt='预览图' />
+            {:else}
+              <div class='preview-placeholder'>预览图生成失败</div>
+            {/if}
+          </div>
+
+          <div
+            class='preview-splitter preview-splitter-horizontal'
+            class:dragging={isDragging && resizeAxis === 'height'}
+            class:hover={hoveredSplitter === 'height'}
+            role='separator'
+            aria-orientation='horizontal'
+            aria-label='调整预览高度'
+            on:pointerdown={e => startResize(e, 'height')}
+            on:pointerenter={() => { if (!isDragging) hoveredSplitter = 'height' }}
+            on:pointerleave={() => { if (!isDragging && hoveredSplitter === 'height') hoveredSplitter = null }}
+          >
+            {#if isDragging && resizeAxis === 'height'}
+              <div class='splitter-tooltip'>{resizeHint}</div>
+            {/if}
+          </div>
+        </div>
+
+        <div
+          class='preview-splitter preview-splitter-vertical'
+          class:dragging={isDragging && resizeAxis === 'width'}
+          class:hover={hoveredSplitter === 'width'}
+          role='separator'
+          aria-orientation='vertical'
+          aria-label='调整预览宽度'
+          on:pointerdown={e => startResize(e, 'width')}
+          on:pointerenter={() => { if (!isDragging) hoveredSplitter = 'width' }}
+          on:pointerleave={() => { if (!isDragging && hoveredSplitter === 'width') hoveredSplitter = null }}
+        >
+          {#if isDragging && resizeAxis === 'width'}
+            <div class='splitter-tooltip'>{resizeHint}</div>
           {/if}
         </div>
       {/if}
