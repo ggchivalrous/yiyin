@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process'
+import { exec, execSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -15,62 +15,119 @@ const octokit = new Octokit({
   },
 })
 
-function getRelease() {
-  return octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
-    owner: 'ggchivalrous',
-    repo: 'yiyin',
-    headers: {
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+// 仓库 owner/repo：优先用 GitHub Actions 注入的 GITHUB_REPOSITORY（fork 兼容），
+// 否则回退到上游硬编码（向后兼容本地手跑）。
+const [REPO_OWNER, REPO_NAME] = (process.env.GITHUB_REPOSITORY || 'ggchivalrous/yiyin').split('/')
+
+// Release tag：CI 可通过 RELEASE_TAG 指定；为空则用 package.json 的版本号
+function getReleaseTag() {
+  if (process.env.RELEASE_TAG)
+    return process.env.RELEASE_TAG
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'))
+  return `v${pkg.version}`
+}
+
+// 查找指定 tag 的 release；不存在则创建（draft）
+async function ensureRelease(tag) {
+  console.log('查找 release:', tag, `(owner=${REPO_OWNER}, repo=${REPO_NAME})`)
+
+  // 先尝试按 tag 获取
+  try {
+    const { data } = await octokit.request('GET /repos/{owner}/{repo}/releases/tags/{tag}', {
+      owner: REPO_OWNER,
+      repo: REPO_NAME,
+      tag,
+      headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+    })
+    console.log('找到已有 release:', data.name, 'id=', data.id)
+    return data
+  }
+  catch (e) {
+    if (e.status !== 404) throw e
+  }
+
+  // 不存在则创建 tag + draft release
+  console.log('release 不存在，创建新 release (draft):', tag)
+  const { data } = await octokit.request('POST /repos/{owner}/{repo}/releases', {
+    owner: REPO_OWNER,
+    repo: REPO_NAME,
+    tag_name: tag,
+    // tag 不存在时按当前 checkout 的 commit 建 tag，避免 GitHub 默认
+    // 从默认分支 HEAD 建 tag，导致 tag 与产物来源不一致
+    target_commitish: execSync('git rev-parse HEAD').toString().trim(),
+    name: `壹印 ${tag}`,
+    body: `自动构建版本 ${tag}`,
+    draft: true,
+    prerelease: false,
+    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
   })
+  console.log('已创建 release:', data.name, 'id=', data.id)
+  return data
 }
 
 function updateReleaseAsset(releaseId, filePath, name) {
   console.log('上传文件:', name)
   const type = mime.getType(filePath)
-  return new Promise((r) => {
+  return new Promise((resolve, reject) => {
     exec(
-      ` curl -L \
+      ` curl -fL \
       -X POST \
       -H "Accept: application/vnd.github+json" \
       -H "Authorization: Bearer ${process.env.GITHUB_TOKEN}" \
       -H "X-GitHub-Api-Version: 2022-11-28" \
       -H "Content-Type: ${type}" \
-      "https://uploads.github.com/repos/ggchivalrous/yiyin/releases/${releaseId}/assets?name=${name}" \
+      "https://uploads.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/${releaseId}/assets?name=${name}" \
       --data-binary "@${filePath}"`,
       (error, stdout, stderr) => {
+        // curl -f 让 HTTP 失败（如 422/5xx）返回非零退出码，这里必须
+        // reject，调用方才能中止流程、保持 draft，避免公开发布空 release
         if (error) {
-          console.error(`执行错误: ${error}`)
-          return r()
+          console.error(`上传失败: ${name}\n${stderr || error.message}`)
+          return reject(error)
         }
         console.log(`stdout: ${stdout}`)
         console.error(`stderr: ${stderr}`)
-        return r()
+        return resolve()
       },
     )
   })
 }
 
 async function start() {
-  const release = await getRelease()
-  const releaseId = release.data.id
+  const tag = getReleaseTag()
+  const release = await ensureRelease(tag)
+  const releaseId = release.id
   const files = fs.readdirSync(path.join(__dirname, 'dist'))
 
-  console.log('Release=%s Tag=%s', release.data.name, release.data.tag_name)
-  console.log('文件列表:', files)
+  console.log('Release=%s Tag=%s id=%s', release.name, tag, releaseId)
+  console.log('待上传文件列表:', files)
 
-  const file = files.find((i) => {
-    switch (os.platform()) {
-      case 'darwin': return i.endsWith('.dmg')
-      case 'win32': return i.endsWith('.exe')
-      default: return false
-    }
-  })
+  // 上传所有平台产物（不再按当前 OS 过滤，CI 里每个 job 上传各自的）
+  const uploadExts = ['.dmg', '.exe', '.msi', '.zip', '.apk', '.deb', '.rpm', '.AppImage']
+  const toUpload = files.filter(i => uploadExts.some(ext => i.endsWith(ext)))
 
-  if (file) {
+  if (!toUpload.length) {
+    console.warn('未找到可上传的产物文件')
+    return
+  }
+
+  for (const file of toUpload) {
     const filePath = path.join(__dirname, 'dist', file)
     await updateReleaseAsset(releaseId, filePath, file)
   }
+
+  console.log('全部上传完成，发布 release (取消 draft)')
+  await octokit.request('PATCH /repos/{owner}/{repo}/releases/{release_id}', {
+    owner: REPO_OWNER,
+    repo: REPO_NAME,
+    release_id: releaseId,
+    draft: false,
+    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
+  })
 }
 
-start().then().catch(console.log)
+// 任一产物上传失败即抛错终止，release 保持 draft，不会公开发布缺资产的版本
+start().then().catch((e) => {
+  console.error('流程失败，release 保持 draft:', e)
+  process.exitCode = 1
+})

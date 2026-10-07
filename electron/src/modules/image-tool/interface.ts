@@ -78,6 +78,13 @@ export interface OutputOption {
   quality: number
 
   /**
+   * 输出格式
+   *
+   * @default 'jpeg'
+   */
+  output_format?: 'jpeg' | 'webp'
+
+  /**
    * 最小上下边距
    */
   mini_top_bottom_margin: number

@@ -42,6 +42,7 @@ export const DefaultConfig: IConfig = {
     main_img_w_rate: 90,
     text_margin: 0.4,
     quality: 100,
+    output_format: 'jpeg',
     mini_top_bottom_margin: 0,
     bg_blur: 100,
     preview_show: false,

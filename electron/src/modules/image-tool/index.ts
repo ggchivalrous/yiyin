@@ -6,7 +6,7 @@ import type { ImageToolOption, Material, OutputFilePaths, SizeInfo } from './int
 import { Buffer } from 'node:buffer'
 import Event from 'node:events'
 import fs from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import ffmpegPath from '@ffmpeg-installer/ffmpeg'
 import { ExifTool } from '@modules/exiftool'
 import { Logger } from '@modules/logger'
@@ -15,13 +15,16 @@ import { mainApp } from '@src/common/app'
 import { genMainImgShadowQueue, genTextImgQueue } from '@src/common/queue'
 import { config } from '@src/config'
 import paths from '@src/path'
-import { getFileName, md5, tryCatch, usePromise } from '@utils'
+import { getFileName, getFormatExt, md5, tryCatch, usePromise } from '@utils'
 import fluentFfmpeg from 'fluent-ffmpeg'
 
 import sharp from 'sharp'
 
 const log = new Logger('ImageTool')
 const NotInit = Symbol('未初始化')
+// libvips 的 WebP 编码器对任一边超过 16383 像素的图会报错（如全景长图），
+// 超限时中间主图回退为 PNG 无损，保证预览与导出可用
+const WEBP_MAX_EDGE = 16383
 
 interface EventMap {
   progress: (id: string, progress: number) => void
@@ -78,9 +81,9 @@ export class ImageTool extends Event {
     this.outputFileNames = {
       base: baseFilePath,
       bg: `${baseFilePath}_bg.jpg`,
-      main: `${baseFilePath}_main.jpg`,
+      main: `${baseFilePath}_main.webp`,
       mask: `${baseFilePath}_mask.png`,
-      composite: join(opt.outputPath, getFileName(opt.outputPath, name)),
+      composite: join(opt.outputPath, getFileName(opt.outputPath, name, getFormatExt(opt.outputOption.output_format))),
     }
   }
 
@@ -211,12 +214,16 @@ export class ImageTool extends Event {
   }
 
   async genMainImg() {
-    const toFilePath: string = this.outputFileNames.main
     if (!this.isInit) throw NotInit
+    if (Math.max(this.sizeInfo.w, this.sizeInfo.h) > WEBP_MAX_EDGE) {
+      this.outputFileNames.main = `${this.outputFileNames.base}_main.png`
+    }
+    const toFilePath: string = this.outputFileNames.main
+    const isPng = toFilePath.endsWith('.png')
     await sharp(this.path)
       .rotate()
       .withMetadata({ density: this.meta.density })
-      .toFormat('jpeg', { quality: 100 })
+      .toFormat(isPng ? 'png' : 'webp', isPng ? {} : { lossless: true })
       .toFile(toFilePath)
 
     this.material.main.push({
@@ -319,6 +326,17 @@ export class ImageTool extends Event {
       composite.push(...textCompositeList)
     }
 
+    // libvips 的 WebP 编码器对任一边超过 16383 像素的图会报错：最终合成
+    // 尺寸可能因主图占比放大而超出上限（即使原图边长都在限内），此时输出
+    // 回退 JPEG，文件扩展名与预览 MIME 一并跟随实际格式
+    let format = this.outputOpt.output_format || 'jpeg'
+    if (format === 'webp' && Math.max(this.material.bg.w, this.material.bg.h) > WEBP_MAX_EDGE) {
+      log.warn('【%s】最终尺寸 %dx%d 超出 WebP 上限，输出回退 JPEG', this.id, this.material.bg.w, this.material.bg.h)
+      format = 'jpeg'
+      const dir = dirname(this.outputFileNames.composite)
+      this.outputFileNames.composite = join(dir, getFileName(dir, this.name, getFormatExt(format)))
+    }
+
     const output = sharp({
       create: {
         channels: 3,
@@ -333,11 +351,11 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat('jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
+      .toFormat(format, { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
 
     if (isPreview) {
       const buf = await output.toBuffer()
-      return `data:image/jpeg;base64,${buf.toString('base64')}`
+      return `data:image/${format};base64,${buf.toString('base64')}`
     }
 
     await output.toFile(this.outputFileNames.composite)

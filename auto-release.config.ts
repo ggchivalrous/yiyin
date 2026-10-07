@@ -1,14 +1,17 @@
 import { defineConfig } from '@ggcv/auto-release'
 
 export default defineConfig({
-  // 也可以直接指定文件，默认是 package.json 等
+  // 需要同步版本号的文件
   files: ['package.json'],
-  // 开启 commit, tag, push 等功能 (push 如果没有 remote 会报错，但在本工具流程中会捕获)
+  // 本地完成：改版本号 + 更新 CHANGELOG + commit + 打 tag + push
+  // CI（build-release.yml）监听 tag push，负责构建 + 创建 GitHub Release
+  // 发版流程：yarn release → 自动 commit/tag/push → CI 自动构建发版
   commit: true,
   tag: true,
   push: true,
-  // 打印 commits
   printCommits: true,
-  // 启用 GitHub Release 自动同步 (需要 GITHUB_TOKEN)
-  github: true,
+  // 跳过交互式确认（脚本/CI 友好）
+  confirm: false,
+  // GitHub Release 由 CI 创建，本地不创建
+  github: false,
 })

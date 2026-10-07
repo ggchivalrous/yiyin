@@ -9,14 +9,29 @@ import { tryAsyncCatch } from '@/common/utils'
 
 export * from '@/common/utils'
 
-export function getFileName(dir: string, fileName: string) {
+const FORMAT_EXT: Record<string, string> = {
+  jpeg: 'jpg',
+  webp: 'webp',
+  png: 'png',
+}
+
+/**
+ * 根据输出格式名获取文件扩展名（不带点）
+ *
+ * @default 'jpg'
+ */
+export function getFormatExt(fmt?: string) {
+  return FORMAT_EXT[fmt || 'jpeg'] || 'jpg'
+}
+
+export function getFileName(dir: string, fileName: string, ext: string = 'jpg') {
   const fileNameList = fs.readdirSync(dir)
   const fileNameParse = path.parse(fileName)
-  fileName = `${fileNameParse.name}.jpg`
+  fileName = `${fileNameParse.name}.${ext}`
   const isExist = fileNameList.find(i => i === fileName)
 
   if (!isExist) {
-    return `${fileNameParse.name}.jpg`
+    return `${fileNameParse.name}.${ext}`
   }
 
   const fileNameSplitArr = fileNameParse.name.split('-')
@@ -44,7 +59,7 @@ export function getFileName(dir: string, fileName: string) {
     })
     .sort((a, b) => b.index - a.index)
 
-  return `${fileNameParse.name}-${parseList[0].index + 1}.jpg`
+  return `${fileNameParse.name}-${parseList[0].index + 1}.${ext}`
 }
 
 export async function hasNewVersion(): Promise<INewVersionRes> {

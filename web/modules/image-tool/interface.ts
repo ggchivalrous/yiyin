@@ -60,6 +60,18 @@ export interface OutputOption {
    * 选中的字体
    */
   font: string
+
+  /**
+   * 输出质量
+   */
+  quality: number
+
+  /**
+   * 输出格式
+   *
+   * @default 'jpeg'
+   */
+  output_format?: 'jpeg' | 'webp'
 }
 
 export interface Material {
