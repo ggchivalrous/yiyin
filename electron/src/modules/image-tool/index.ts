@@ -6,7 +6,7 @@ import type { ImageToolOption, Material, OutputFilePaths, SizeInfo } from './int
 import { Buffer } from 'node:buffer'
 import Event from 'node:events'
 import fs from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import ffmpegPath from '@ffmpeg-installer/ffmpeg'
 import { ExifTool } from '@modules/exiftool'
 import { Logger } from '@modules/logger'
@@ -326,6 +326,17 @@ export class ImageTool extends Event {
       composite.push(...textCompositeList)
     }
 
+    // libvips 的 WebP 编码器对任一边超过 16383 像素的图会报错：最终合成
+    // 尺寸可能因主图占比放大而超出上限（即使原图边长都在限内），此时输出
+    // 回退 JPEG，文件扩展名与预览 MIME 一并跟随实际格式
+    let format = this.outputOpt.output_format || 'jpeg'
+    if (format === 'webp' && Math.max(this.material.bg.w, this.material.bg.h) > WEBP_MAX_EDGE) {
+      log.warn('【%s】最终尺寸 %dx%d 超出 WebP 上限，输出回退 JPEG', this.id, this.material.bg.w, this.material.bg.h)
+      format = 'jpeg'
+      const dir = dirname(this.outputFileNames.composite)
+      this.outputFileNames.composite = join(dir, getFileName(dir, this.name, getFormatExt(format)))
+    }
+
     const output = sharp({
       create: {
         channels: 3,
@@ -340,12 +351,11 @@ export class ImageTool extends Event {
     })
       .withMetadata({ density: this.meta.density })
       .composite(composite)
-      .toFormat(this.outputOpt.output_format || 'jpeg', { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
+      .toFormat(format, { quality: isPreview ? 70 : (this.outputOpt.quality || 100) })
 
     if (isPreview) {
       const buf = await output.toBuffer()
-      const fmt = this.outputOpt.output_format || 'jpeg'
-      return `data:image/${fmt};base64,${buf.toString('base64')}`
+      return `data:image/${format};base64,${buf.toString('base64')}`
     }
 
     await output.toFile(this.outputFileNames.composite)
