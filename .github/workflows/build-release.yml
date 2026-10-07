@@ -68,9 +68,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 读取 tag 名（即版本号）
+      - name: 读取 tag 名（tag 触发用实际 tag；手动 dispatch 时 GITHUB_REF_NAME 是分支名，改用 package.json 版本）
         id: ver
-        run: echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            ver="v$(node -p 'require("./package.json").version')"
+            echo "tag=$ver" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: 下载所有产物
         uses: actions/download-artifact@v4

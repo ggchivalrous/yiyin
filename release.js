@@ -68,9 +68,9 @@ async function ensureRelease(tag) {
 function updateReleaseAsset(releaseId, filePath, name) {
   console.log('上传文件:', name)
   const type = mime.getType(filePath)
-  return new Promise((r) => {
+  return new Promise((resolve, reject) => {
     exec(
-      ` curl -L \
+      ` curl -fL \
       -X POST \
       -H "Accept: application/vnd.github+json" \
       -H "Authorization: Bearer ${process.env.GITHUB_TOKEN}" \
@@ -79,13 +79,15 @@ function updateReleaseAsset(releaseId, filePath, name) {
       "https://uploads.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/${releaseId}/assets?name=${name}" \
       --data-binary "@${filePath}"`,
       (error, stdout, stderr) => {
+        // curl -f 让 HTTP 失败（如 422/5xx）返回非零退出码，这里必须
+        // reject，调用方才能中止流程、保持 draft，避免公开发布空 release
         if (error) {
-          console.error(`执行错误: ${error}`)
-          return r()
+          console.error(`上传失败: ${name}\n${stderr || error.message}`)
+          return reject(error)
         }
         console.log(`stdout: ${stdout}`)
         console.error(`stderr: ${stderr}`)
-        return r()
+        return resolve()
       },
     )
   })
@@ -124,4 +126,8 @@ async function start() {
   })
 }
 
-start().then().catch(console.log)
+// 任一产物上传失败即抛错终止，release 保持 draft，不会公开发布缺资产的版本
+start().then().catch((e) => {
+  console.error('流程失败，release 保持 draft:', e)
+  process.exitCode = 1
+})
