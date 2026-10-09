@@ -2,15 +2,23 @@
 
 .app-action-wrap {
   width: 100%;
-  height: 100%;
+  /* 高度由内容决定（左栏 18 项设置 = 576px），并受可用空间约束：
+     - 空间充足：整行 = 576px，右栏被 stretch 成同高，
+       任务行贴底，与左栏「实时预览」平行
+     - 空间不足：整行按可用高度收敛，左栏滚动，两栏底边仍齐平 */
+  height: auto;
+  max-height: 100%;
+  min-height: 0;
   display: flex;
   flex-wrap: nowrap;
-  margin-bottom: 20px;
   flex-shrink: 0;
+  align-items: stretch;
 
   .app-action-right-wrap,
   .app-action-left-wrap {
-    flex: 2 0 100px;
+    /* 基础值，左右栏各自覆写（左栏固定宽度、右栏收窄自适应） */
+    flex: 0 1 auto;
+    min-height: 0;
 
     .open-file-line {
       cursor: pointer;
@@ -42,13 +50,24 @@
   }
 
   .app-action-left-wrap {
-    width: 320px;
-    flex-basis: 320px;
-    flex-grow: 0;
+    /* 固定 360px：窗口拉伸/缩小时都不压缩左栏（多控件行需要这个宽度） */
+    flex: 0 0 360px;
+    width: 360px;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
 
+    /* 单选项收紧，保证「底部留白」一行放得下标题 + 两个单选 + 输入框 */
+    .config-value {
+      .db-radio {
+        margin-right: 2px;
+
+        .db-radio__label {
+          padding-left: 4px;
+          font-size: 12px;
+        }
+      }
+    }
     .output-setting {
       padding: 0 4px;
       display: inline-block;
@@ -61,33 +80,60 @@
     }
 
     .action-item {
-      height: 36px;
+      /* 行高收紧到 32px（padding 2px + 输入框 28px），
+         屏幕较矮时也能一屏放下全部设置项 */
+      height: 32px;
+      padding: 2px 0;
       box-sizing: border-box;
     }
   }
 
   .app-action-right-wrap {
-    width: 50%;
+    /* 占据剩余宽度：窗口拉宽时右栏随之向右扩展，
+       右边缘始终贴着 #root 的 20px 内边距，与窗口右侧距离保持不变；
+       左栏是 flex:0 0 360px，不会被挤压 */
+    flex: 1 1 auto;
+    min-width: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    flex: 1;
-    min-height: 320px;
+    /* 高度由 .app-action-wrap 拉伸决定（与左栏等高），
+       信息框占满剩余空间并向下延伸，任务行贴底。
+       min-height:0 让右栏可被压缩到与左栏等高；
+       max-height:100% 与父级一致，避免内容溢出。 */
+    min-height: 0;
     max-height: 100%;
     overflow: hidden;
 
     .image-list-wrap {
-      flex: 1;
+      flex: 1 1 auto;
       display: flex;
       gap: 15px;
       align-items: stretch;
+      justify-content: center;
       overflow: hidden;
       min-height: 0;
 
+      /* 预览面板出现时：整体靠左排布，预览与图片列表顶部对齐；
+         居中会让「预览 + 列表」整组在窄窗口下被挤出左侧 */
       &.has-preview {
         align-items: flex-start;
+        justify-content: flex-start;
       }
+
+      /* 右栏随窗口变宽，但信息卡片过宽会显得松散，
+         这里给内容一个宽度上限，超出部分在栏内居中留白 */
+      .img-wrap {
+        max-width: 900px;
+        width: 100%;
+      }
+    }
+
+    /* 任务行贴在信息框下方，与左侧「实时预览」一行平行 */
+    .task-action {
+      margin-top: 0;
+      flex-shrink: 0;
     }
   }
 

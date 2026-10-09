@@ -3,6 +3,7 @@ import type { IConfig } from '@src/interface'
 import type { RGBA } from 'sharp'
 
 import type { ImageToolOption, Material, OutputFilePaths, SizeInfo } from './interface'
+import type { ContentLayout } from './layout'
 import { Buffer } from 'node:buffer'
 import Event from 'node:events'
 import fs from 'node:fs'
@@ -15,10 +16,12 @@ import { mainApp } from '@src/common/app'
 import { genMainImgShadowQueue, genTextImgQueue } from '@src/common/queue'
 import { config } from '@src/config'
 import paths from '@src/path'
-import { getFileName, md5, tryCatch, usePromise } from '@utils'
+import { getFileName, md5, sleep, tryCatch, usePromise } from '@utils'
 import fluentFfmpeg from 'fluent-ffmpeg'
 
 import sharp from 'sharp'
+
+import { calcBottomMarginPx, calcContentLayout, calcTextStartTop, calcTextTops, fitMainSizeToFixedCanvas } from './layout'
 
 const log = new Logger('ImageTool')
 const NotInit = Symbol('未初始化')
@@ -59,6 +62,15 @@ export class ImageTool extends Event {
   }
 
   private contentH: number
+  /**
+   * 固定分辨率输出时的目标尺寸与主图缩放结果
+   */
+  private fixedScale: { mainW: number, mainH: number, availableH: number } | null = null
+
+  /**
+   * 内容布局信息（文本位置、间隔等）
+   */
+  private layout: ContentLayout
 
   // eslint-disable-next-line accessor-pairs
   set progress(n: number) {
@@ -78,6 +90,8 @@ export class ImageTool extends Event {
     this.outputFileNames = {
       base: baseFilePath,
       bg: `${baseFilePath}_bg.jpg`,
+      bgSrc: `${baseFilePath}_bg_src.jpg`,
+      bgBlur: `${baseFilePath}_bg_blur.jpg`,
       main: `${baseFilePath}_main.jpg`,
       mask: `${baseFilePath}_mask.png`,
       composite: join(opt.outputPath, getFileName(opt.outputPath, name)),
@@ -130,6 +144,12 @@ export class ImageTool extends Event {
     this.sizeInfo.resetW = width
     this.sizeInfo.resetH = height
 
+    // 固定分辨率输出：直接采用目标宽高作为画布尺寸
+    if (outputOpt.fixed_size_show && outputOpt.fixed_size?.w > 0 && outputOpt.fixed_size?.h > 0) {
+      this.sizeInfo.resetW = Math.round(+outputOpt.fixed_size.w)
+      this.sizeInfo.resetH = Math.round(+outputOpt.fixed_size.h)
+    }
+
     // 获取相机信息
     const exiftool = new ExifTool(this.path)
     this.exif = exiftool.parse()
@@ -148,6 +168,9 @@ export class ImageTool extends Event {
     log.info('【%s】生成文本图片', this.id)
     await this.genTextImg()
     this.progress = 30
+
+    log.info('【%s】固定分辨率：计算主图可用尺寸', this.id)
+    this.prepareFixedScale()
 
     log.info('【%s】生成主图', this.id)
     await this.genMainImg()
@@ -181,6 +204,8 @@ export class ImageTool extends Event {
     if (this.isCancelled) return null
     await this.genTextImg()
     if (this.isCancelled) return null
+    this.prepareFixedScale()
+    if (this.isCancelled) return null
     await this.genMainImg()
     if (this.isCancelled) return null
     this.calcContentHeight()
@@ -196,7 +221,38 @@ export class ImageTool extends Event {
 
   async genBgImg() {
     const toFilePath: string = this.outputFileNames.bg
+
+    // 固定分辨率输出：画布尺寸固定，内容整体靠上，剩余空间自然形成底部留白
+    if (this.isFixedSize()) {
+      const w = Math.round(+this.outputOpt.fixed_size.w)
+      const h = Math.round(+this.outputOpt.fixed_size.h)
+      this.material.bg = { path: toFilePath, w, h, top: 0, left: 0 }
+      this.material.main[0].left = Math.round((w - this.material.main[0].w) / 2)
+      // 内容靠上（不做垂直居中），底部剩下的就是留给字幕的高度
+      this.material.main[0].top = this.layout.mainTop
+
+      if (this.outputOpt.solid_bg) {
+        await this.genSolidImg(w, h, toFilePath)
+      }
+      else {
+        await this.genBlurImg(w, h, toFilePath)
+      }
+      return
+    }
+
+    // 先用「不含底部留白」的内容高度确定画布尺寸与内容位置
+    // （主图占比、横屏比例等都可能改变画布尺寸，必须在追加留白之前完成计算）
     this.clacBgImgSize(this.contentH)
+
+    this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2)
+    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2)
+
+    // 再向底部追加留白：只增加画布高度，宽度与内容位置都不变
+    const bottomMargin = Math.round(this.layout?.bottomMargin || 0)
+    if (bottomMargin > 0) {
+      this.material.bg.h += bottomMargin
+    }
+
     const { w, h } = this.material.bg
 
     if (this.outputOpt.solid_bg) {
@@ -205,24 +261,26 @@ export class ImageTool extends Event {
     else {
       await this.genBlurImg(w, h, toFilePath)
     }
-
-    this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2)
-    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2)
   }
 
   async genMainImg() {
     const toFilePath: string = this.outputFileNames.main
     if (!this.isInit) throw NotInit
-    await sharp(this.path)
-      .rotate()
-      .withMetadata({ density: this.meta.density })
+
+    const pipe = sharp(this.path).rotate().withMetadata({ density: this.meta.density })
+    // 固定分辨率时主图缩放到算好的可用尺寸（尺寸已按原图宽高比求出，这里直接按目标宽高）
+    if (this.fixedScale) {
+      pipe.resize({ width: this.fixedScale.mainW, height: this.fixedScale.mainH, fit: 'fill' })
+    }
+
+    await pipe
       .toFormat('jpeg', { quality: 100 })
       .toFile(toFilePath)
 
     this.material.main.push({
       path: toFilePath,
-      w: this.sizeInfo.w,
-      h: this.sizeInfo.h,
+      w: this.fixedScale ? this.fixedScale.mainW : this.sizeInfo.w,
+      h: this.fixedScale ? this.fixedScale.mainH : this.sizeInfo.h,
       top: 0,
       left: 0,
     })
@@ -275,7 +333,8 @@ export class ImageTool extends Event {
     mainApp.win.webContents.send(routerConfig.on.genTextImg, {
       id: this.id,
       exif: this.exif || {},
-      bgHeight: this.material.bg.h,
+      // 固定分辨率时按目标画布高度换算字号，保证文字与分辨率匹配
+      bgHeight: this.isFixedSize() ? Math.round(+this.outputOpt.fixed_size.h) : this.material.bg.h,
       options: config.options,
       fields: [...config.tempFields, ...config.customTempFields],
       temps: config.temps,
@@ -290,7 +349,7 @@ export class ImageTool extends Event {
 
     // 主图
     for (const img of this.material.main) {
-      composite.push({ input: img.path, top: img.top, left: img.left })
+      composite.push({ input: img.path, top: Math.round(img.top), left: Math.round(img.left) })
     }
 
     // 背景
@@ -298,23 +357,26 @@ export class ImageTool extends Event {
 
     // 文字
     if (this.material.text?.length) {
-      const textCompositeList: sharp.OverlayOptions[] = []
-      for (let i = this.material.text.length - 1; i >= 0; i--) {
-        const text = this.material.text[i]
-        const _composite: sharp.OverlayOptions = {
-          input: text.buf,
-          left: Math.round((this.material.bg.w - text.w) / 2),
-        }
+      const textHeights = this.material.text.map(i => i.h)
+      // 文本在照片上方时贴着顶部排列，在下方时贴着内容底部排列
+      // - 固定分辨率：内容是靠上排列的，文字按「内容高度」对齐（紧贴照片下方的间隔）
+      // - 普通输出：画布底部就是内容底部 + 留白，文字对齐到留白之上，避免压到字幕区
+      const textAlignHeight = this.isFixedSize()
+        ? this.contentH
+        : this.material.bg.h - Math.round(this.layout?.bottomMargin || 0)
+      const startTop = calcTextStartTop(
+        this.layout.textTop,
+        textAlignHeight,
+        textHeights,
+        this.layout.textEdgeOffset,
+      )
+      const textTops = calcTextTops(textHeights, startTop)
 
-        if (!textCompositeList.length) {
-          _composite.top = Math.round(this.material.bg.h - text.h)
-        }
-        else {
-          _composite.top = Math.round(textCompositeList[textCompositeList.length - 1].top - text.h)
-        }
-
-        textCompositeList.push(_composite)
-      }
+      const textCompositeList: sharp.OverlayOptions[] = this.material.text.map((text, i) => ({
+        input: text.buf,
+        left: Math.round((this.material.bg.w - text.w) / 2),
+        top: Math.round(textTops[i]),
+      }))
 
       composite.push(...textCompositeList)
     }
@@ -352,15 +414,39 @@ export class ImageTool extends Event {
     return fluentFfmpeg()
   }
 
+  /**
+   * 写入文件，失败时重试
+   *
+   * Windows 上文件句柄有时会晚一点释放（例如 ffmpeg 刚写完的文件），
+   * 立刻写入会报 `UNKNOWN: unknown error, open xxx`
+   */
+  private async writeFileRetry(filePath: string, data: Buffer, times = 30) {
+    for (let i = 0; ; i++) {
+      try {
+        fs.writeFileSync(filePath, data)
+        return
+      }
+      catch (e) {
+        if (i >= times) throw e
+        await sleep(200)
+      }
+    }
+  }
+
   private async genBlurImg(width: number, height: number, toFilePath: string) {
     const ffmpeg = this.getFFmpeg()
+
+    // 不能让 ffmpeg 与输入共用同一个文件：Windows 上原地覆盖后句柄可能还没释放，
+    // 紧接着写入会失败（UNKNOWN: unknown error），这里改成中间文件 + 最后统一写入
+    const srcPath = this.outputFileNames.bgSrc
+    const blurPath = this.outputFileNames.bgBlur
 
     // 统一转成固定大小，方便控制模糊数值
     await sharp(this.path)
       .rotate()
       .resize({ width: 3025, height: 3025, fit: 'fill' })
       .toFormat('jpeg', { quality: 50 })
-      .toFile(toFilePath)
+      .toFile(srcPath)
 
     const [promise, r] = usePromise()
 
@@ -371,21 +457,26 @@ export class ImageTool extends Event {
      * chroma_power (cp)：控制在色度通道上应用模糊的程度。较大的值将导致更多的模糊效果。默认值为 1。
      */
     // 模糊
-    ffmpeg.input(toFilePath)
+    ffmpeg.input(srcPath)
       .outputOptions('-vf', `boxblur=${Math.ceil(this.blur * ((this.outputOpt.bg_blur || 100) / 100))}:2`)
-      .saveToFile(toFilePath)
+      .saveToFile(blurPath)
       .on('end', () => r(true))
       .on('error', (e) => {
         log.error('FFmpeg模糊异常', e)
         r(false)
       })
 
-    if (!await promise) return
+    if (!await promise) {
+      // 模糊失败时退化成未模糊的图片，保证后续流程仍然能出图
+      const fallback = tryCatch(() => fs.readFileSync(srcPath), null)
+      if (fallback) await this.writeFileRetry(toFilePath, fallback)
+      return
+    }
 
-    const buf = await sharp(toFilePath)
+    const buf = await sharp(blurPath)
       .resize({ width, height, fit: 'fill' })
       .toBuffer()
-    fs.writeFileSync(toFilePath, buf)
+    await this.writeFileRetry(toFilePath, buf)
   }
 
   private async genSolidImg(width: number, height: number, toFilePath: string, color?: string | RGBA) {
@@ -504,44 +595,77 @@ export class ImageTool extends Event {
     }
   }
 
+  /**
+   * 是否启用固定分辨率输出
+   */
+  private isFixedSize() {
+    const { fixed_size_show, fixed_size } = this.outputOpt
+    return !!fixed_size_show && !!fixed_size && +fixed_size.w > 0 && +fixed_size.h > 0
+  }
+
+  /**
+   * 底部留白的像素高度
+   */
+  private bottomMarginPx(referenceHeight?: number) {
+    const ref = referenceHeight ?? this.material.bg?.h ?? this.sizeInfo.resetH
+    return Math.round(calcBottomMarginPx(this.outputOpt, this.outputOpt.bottom_margin, ref))
+  }
+
+  /**
+   * 固定分辨率：计算主图可用尺寸（在「画布高度 - 底部留白」内等比缩放）
+   */
+  private prepareFixedScale() {
+    if (!this.isFixedSize()) {
+      this.fixedScale = null
+      return
+    }
+
+    const canvasW = Math.round(+this.outputOpt.fixed_size.w)
+    const canvasH = Math.round(+this.outputOpt.fixed_size.h)
+    const bottomMargin = this.bottomMarginPx(canvasH)
+
+    this.fixedScale = fitMainSizeToFixedCanvas(
+      this.outputOpt,
+      canvasH,
+      this.sizeInfo.w,
+      this.sizeInfo.h,
+      {
+        canvasW,
+        canvasH,
+        bottomMargin,
+        textHeights: this.material.text.map(i => i.h),
+        mainImgWRate: this.outputOpt.main_img_w_rate || 90,
+      },
+    )
+
+    log.info(
+      '【%s】固定分辨率 %sx%s，底部留白 %spx，主图 %sx%s',
+      this.id,
+      canvasW,
+      canvasH,
+      bottomMargin,
+      this.fixedScale.mainW,
+      this.fixedScale.mainH,
+    )
+  }
+
   calcContentHeight() {
-    const opt = this.outputOpt
-    const bgHeight = this.material.bg.h
-    const mainImgTopOffset = bgHeight * (opt.mini_top_bottom_margin / 100)
-    const textButtomOffset = bgHeight * 0.027
+    // 固定分辨率时以固定画布为基准换算比例间隔，
+    // 并让内容整体靠上（底部留白由 genBgImg 用固定画布自然形成）
+    const referenceHeight = this.isFixedSize()
+      ? Math.round(+this.outputOpt.fixed_size.h)
+      : this.material.bg.h
 
-    // 主图上下间隔最小间隔
-    let contentTop = Math.ceil(mainImgTopOffset)
-    let mainImgOffset = contentTop * 2
+    const layout = calcContentLayout(
+      this.outputOpt,
+      referenceHeight,
+      this.material.main[0].h,
+      this.material.text.map(i => i.h),
+    )
 
-    // 阴影宽度
-    if (opt.shadow_show) {
-      const shadowHeight = Math.ceil(this.material.main[0].h * ((opt.shadow || 0) / 100))
-      contentTop = Math.max(contentTop, Math.ceil(shadowHeight))
-      mainImgOffset = contentTop * 2
-    }
-
-    // 有文字时文字与主图的间隔要小于主图对顶部的间隔，并且底部间隔使用文字对底部的间隔
-    if (this.material.text.length) {
-      mainImgOffset *= 3 / 4
-      mainImgOffset += textButtomOffset
-    }
-
-    // 文本高度
-    const textH = this.material.text.reduce((n, i) => {
-      n += i.h
-      return n
-    }, 0)
-
-    // 生成背景图片
-    const contentH = Math.ceil(textH + this.material.main[0].h + mainImgOffset)
-
-    this.material.main[0].top = contentTop
-    this.contentH = contentH
-
-    if (this.material.text?.length) {
-      this.material.text[this.material.text.length - 1].h += textButtomOffset
-    }
+    this.layout = layout
+    this.contentH = layout.contentH
+    this.material.main[0].top = layout.mainTop
   }
 
   emit<U extends keyof EventMap>(

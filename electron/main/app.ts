@@ -9,7 +9,7 @@ import { image, open, query } from '@router'
 import { genMainImgShadowQueue, genTextImgQueue, imageToolQueue } from '@src/common/queue'
 import { config, storeConfig } from '@src/config'
 import { hasNewVersion } from '@utils'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 
 const isDev = import.meta.env.DEV
 const log = new Logger('App')
@@ -144,23 +144,36 @@ export default class Application {
   }
 
   private async createDefWin() {
+    // 按屏幕可用区域计算窗口尺寸：不能超过可用高度，否则底部按钮会跑到屏幕外
+    const { workAreaSize } = screen.getPrimaryDisplay()
+    const margin = 40
+    const maxW = Math.max(820, workAreaSize.width - margin)
+    const maxH = Math.max(560, workAreaSize.height - margin)
+
+    // 左侧设置区（18 项 x 32px = 576）+ 按钮栏与留白约 142，720 足够一屏放下
+    const width = Math.min(900 + (isDev ? 500 : 0), maxW)
+    const height = Math.min(760, maxH)
+
     const opts: BrowserWindowConstructorOptions = {
-      width: 900 + (isDev ? 500 : 0),
-      height: 730,
+      width,
+      height,
       title: '壹印',
       frame: false,
+      resizable: true,
       webPreferences: {
         webSecurity: false,
       },
     }
 
     if (import.meta.env.PROD) {
-      opts.minWidth = opts.width
-      opts.minHeight = opts.height
-      opts.maxWidth = opts.width
-      opts.maxHeight = opts.height
+      // 限制可拉伸范围：太宽会把信息区拉得过于松散，太高则下方留出大片空白
+      opts.minWidth = Math.min(820, width)
+      opts.minHeight = Math.min(620, height)
+      opts.maxWidth = Math.min(1400, maxW)
+      opts.maxHeight = Math.min(1000, maxH)
     }
 
     this.win = await createWindow('main', opts)
+    this.win.center()
   }
 }
