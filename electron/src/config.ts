@@ -53,6 +53,8 @@ export const DefaultConfig: IConfig = {
     },
     bg_blur: 100,
     preview_show: false,
+    preview_pane_width_ratio: 0.5,
+    preview_pane_height_ratio: 0.85,
   },
 
   tempFields: [getDefOptionItem('')],
