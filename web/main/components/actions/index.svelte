@@ -2,7 +2,7 @@
   import type { IConfig, IFileInfo, ImgInfo, TInputEvent } from '../../interface'
   import { arrToObj, roundDecimalPlaces } from '@common/utils'
   import { ActionItem } from '@components'
-  import { ColorPicker, Message, Switch } from '@ggchivalrous/db-ui'
+  import { ColorPicker, Message, Radio, Switch } from '@ggchivalrous/db-ui'
   import { config } from '@web/store/config'
 
   import { smoothIncrement } from '@web/util/util'
@@ -163,13 +163,6 @@
     }
   }
 
-  function onTextPositionChange(e: CustomEvent<boolean>) {
-    config.update((d) => {
-      d.options.text_position = e.detail ? 'top' : 'bottom'
-      return d
-    })
-  }
-
   const numReg = /-?\d+\.?\d{0,3}/
   function onNumInputChange(v: TInputEvent, key: keyof IConfig['options'], max: number, min: number, decimal?: number) {
     let _v = v.currentTarget.value
@@ -292,11 +285,10 @@
       <svelte:fragment slot='popup'>
         指定相机参数显示在照片的上方还是下方
         <br>
-        开启：参数显示在照片上方
-        <br>
-        关闭：参数显示在照片下方（默认）
+        默认：下方
       </svelte:fragment>
-      <Switch value={$config.options.text_position === 'top'} on:change={onTextPositionChange} />
+      <Radio bind:value={$config.options.text_position} label='bottom'>下方</Radio>
+      <Radio bind:value={$config.options.text_position} label='top'>上方</Radio>
     </ActionItem>
 
     <ActionItem {labelWidth} title='底部留白'>
@@ -305,7 +297,7 @@
         <br>
         按照背景高度比例换算，值为 0-100（例如 10 表示留出背景高度的 10%）
         <br>
-        参数在照片上方时，增加的是照片与底边之间的距离
+        只增加画布高度，照片与文字的位置不变
         <br>
         默认：0
       </svelte:fragment>

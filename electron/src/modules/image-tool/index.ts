@@ -16,7 +16,7 @@ import { mainApp } from '@src/common/app'
 import { genMainImgShadowQueue, genTextImgQueue } from '@src/common/queue'
 import { config } from '@src/config'
 import paths from '@src/path'
-import { getFileName, md5, tryCatch, usePromise } from '@utils'
+import { getFileName, md5, sleep, tryCatch, usePromise } from '@utils'
 import fluentFfmpeg from 'fluent-ffmpeg'
 
 import sharp from 'sharp'
@@ -206,7 +206,19 @@ export class ImageTool extends Event {
 
   async genBgImg() {
     const toFilePath: string = this.outputFileNames.bg
+    // 先用「不含底部留白」的内容高度确定画布尺寸与内容位置
+    // （主图占比、横屏比例等都可能改变画布尺寸，必须在追加留白之前完成计算）
     this.clacBgImgSize(this.contentH)
+
+    this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2)
+    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2)
+
+    // 再向底部追加留白：只增加画布高度，宽度与内容位置都不变
+    const bottomMargin = Math.round(this.layout?.bottomMargin || 0)
+    if (bottomMargin > 0) {
+      this.material.bg.h += bottomMargin
+    }
+
     const { w, h } = this.material.bg
 
     if (this.outputOpt.solid_bg) {
@@ -215,9 +227,6 @@ export class ImageTool extends Event {
     else {
       await this.genBlurImg(w, h, toFilePath)
     }
-
-    this.material.main[0].left = Math.round((this.material.bg.w - this.material.main[0].w) / 2)
-    this.material.main[0].top += Math.round((this.material.bg.h - this.contentH) / 2)
   }
 
   async genMainImg() {
@@ -310,12 +319,13 @@ export class ImageTool extends Event {
     if (this.material.text?.length) {
       const textHeights = this.material.text.map(i => i.h)
       // 文本在照片上方时贴着顶部排列，在下方时贴着底部排列
+      // 底部留白是给字幕预留的，文字要避开它（用不含留白的高度作为对齐基准）
+      const textAlignHeight = this.material.bg.h - Math.round(this.layout?.bottomMargin || 0)
       const startTop = calcTextStartTop(
         this.layout.textTop,
-        this.material.bg.h,
+        textAlignHeight,
         textHeights,
         this.layout.textEdgeOffset,
-        this.layout.bottomMargin,
       )
       const textTops = calcTextTops(textHeights, startTop)
 

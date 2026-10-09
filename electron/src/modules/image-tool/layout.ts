@@ -94,15 +94,13 @@ export function calcContentLayout(
   // 文本高度
   const textH = textHeights.reduce((n, h) => n + h, 0)
 
-  // 内容整体高度
-  const contentH = Math.ceil(textH + mainHeight + mainImgOffset + bottomMargin)
+  // 内容整体高度（不含底部留白：留白由调用方在画布尺寸确定后再追加到底部）
+  const contentH = Math.ceil(textH + mainHeight + mainImgOffset)
 
   // 文本在下方：主图从最小间隔处开始
-  // 文本在上方：主图取默认布局镜像后的位置，并让出底部留白，
-  //             保证它与文本、与顶部的间隔都不变，多出来的高度全部落在照片下方
-  // （位置必须是整数像素，留白换算出来是小数，这里取整）
+  // 文本在上方：主图取默认布局镜像后的位置，保证它与文本、与底部的间隔都不变
   const mainTop = textTop && hasText
-    ? Math.round(contentH - contentTop - bottomMargin - mainHeight)
+    ? contentH - contentTop - mainHeight
     : contentTop
 
   return {
@@ -122,24 +120,22 @@ export function calcContentLayout(
  * 文本在下方时文本块贴着内容底部，在上方时贴着内容顶部，与边缘的间隔固定为 `textEdgeOffset`
  *
  * @param textTop - 文本是否显示在照片上方
- * @param height - 内容高度
+ * @param height - 内容高度（不含底部留白）
  * @param textHeights - 各文本图片高度（从上到下的顺序）
  * @param textEdgeOffset - 文本与内容边缘之间的间隔
- * @param bottomMargin - 内容最下方额外留出的空白（文本在下方时文本要避开它）
  */
 export function calcTextStartTop(
   textTop: boolean,
   height: number,
   textHeights: number[],
   textEdgeOffset: number,
-  bottomMargin = 0,
 ): number {
   if (textTop) {
     return textEdgeOffset
   }
 
   const textH = textHeights.reduce((n, h) => n + h, 0)
-  return height - bottomMargin - textEdgeOffset - textH
+  return height - textEdgeOffset - textH
 }
 
 /**
