@@ -102,27 +102,35 @@ export function fitMainSizeToFixedCanvas(
   // 求主图尺寸时把留白当 0（留白不参与内容高度）
   const probeOpt = { ...opt, bottom_margin: 0, bottom_margin_unit: 'px' as const }
 
-  // 主图先撑满可用宽度，再按可用高度收敛（两者取小，保证等比且不裁切）
-  let mainW = maxMainW
-  let mainH = mainW / aspect
+  // contentH 随主图高度单调递增（阴影间隔与主图高度同比），
+  // 因此在 [1, 宽度上限对应的高度] 区间内二分，取「内容刚好放得下」的最大主图高度，
+  // 保证照片尽可能大（迭代法会因间隔随高度变化而提前收敛，导致照片偏小）
+  const heightByWidth = maxMainW / aspect
+  let lo = 1
+  let hi = Math.max(1, heightByWidth)
 
-  for (let i = 0; i < 6; i++) {
-    const probe = calcContentLayout(probeOpt, layoutRefHeight, mainH, fit.textHeights)
-    // 除主图以外的占用（上下间隔 + 文字）
-    const chrome = probe.contentH - mainH
-    const maxH = availableH - chrome
-
-    if (mainH <= maxH) break
-
-    mainH = Math.max(1, Math.floor(maxH))
-    mainW = mainH * aspect
+  const fits = (h: number) => {
+    const probe = calcContentLayout(probeOpt, layoutRefHeight, h, fit.textHeights)
+    return probe.contentH <= availableH
   }
 
-  // 极端情况下文字本身就超过可用高度，保证不出现负数/零
-  if (mainH < 1) {
-    mainH = 1
-    mainW = aspect
+  if (fits(hi)) {
+    lo = hi
   }
+  else {
+    for (let i = 0; i < 40 && hi - lo > 0.5; i++) {
+      const mid = (lo + hi) / 2
+      if (fits(mid)) {
+        lo = mid
+      }
+      else {
+        hi = mid
+      }
+    }
+  }
+
+  const mainH = Math.max(1, Math.floor(lo))
+  const mainW = Math.max(1, Math.min(maxMainW, Math.floor(mainH * aspect)))
 
   return {
     mainW: Math.max(1, Math.round(mainW)),
