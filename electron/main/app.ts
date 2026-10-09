@@ -150,10 +150,9 @@ export default class Application {
     const maxW = Math.max(820, workAreaSize.width - margin)
     const maxH = Math.max(560, workAreaSize.height - margin)
 
-    // 左侧设置区（17 项 x 32px ≈ 544）+ 按钮栏与留白，900 足够一屏放下，
-    // 屏幕较小时再按可用高度收敛
+    // 左侧设置区（18 项 x 32px = 576）+ 按钮栏与留白约 142，720 足够一屏放下
     const width = Math.min(900 + (isDev ? 500 : 0), maxW)
-    const height = Math.min(900, maxH)
+    const height = Math.min(760, maxH)
 
     const opts: BrowserWindowConstructorOptions = {
       width,
@@ -167,8 +166,11 @@ export default class Application {
     }
 
     if (import.meta.env.PROD) {
+      // 限制可拉伸范围：太宽会把信息区拉得过于松散，太高则下方留出大片空白
       opts.minWidth = Math.min(820, width)
-      opts.minHeight = Math.min(560, height)
+      opts.minHeight = Math.min(620, height)
+      opts.maxWidth = Math.min(1400, maxW)
+      opts.maxHeight = Math.min(1000, maxH)
     }
 
     this.win = await createWindow('main', opts)

@@ -2,11 +2,17 @@
 
 .app-action-wrap {
   width: 100%;
-  height: 100%;
+  /* 高度由内容决定（左栏 18 项设置 = 576px），并受可用空间约束：
+     - 空间充足：整行 = 576px，右栏被 stretch 成同高，
+       任务行贴底，与左栏「实时预览」平行
+     - 空间不足：整行按可用高度收敛，左栏滚动，两栏底边仍齐平 */
+  height: auto;
+  max-height: 100%;
   min-height: 0;
   display: flex;
   flex-wrap: nowrap;
   flex-shrink: 0;
+  align-items: stretch;
 
   .app-action-right-wrap,
   .app-action-left-wrap {
@@ -92,17 +98,16 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 100%;
-    /* 窗口放大后不要把信息面板拉成一整块空白，保持紧凑（高度上限沿用原设计） */
-    max-height: 470px;
+    /* 高度由 .app-action-wrap 拉伸决定（与左栏等高），
+       信息框占满剩余空间并向下延伸，任务行贴底 */
     min-height: 0;
     overflow: hidden;
 
     .image-list-wrap {
-      flex: 1;
+      flex: 1 1 auto;
       display: flex;
       gap: 15px;
-      align-items: center;
+      align-items: stretch;
       justify-content: center;
       overflow: hidden;
 
@@ -110,7 +115,14 @@
          这里给内容一个宽度上限，超出部分在栏内居中留白 */
       .img-wrap {
         max-width: 900px;
+        width: 100%;
       }
+    }
+
+    /* 任务行贴在信息框下方，与左侧「实时预览」一行平行 */
+    .task-action {
+      margin-top: 0;
+      flex-shrink: 0;
     }
   }
 
