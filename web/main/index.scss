@@ -21,6 +21,9 @@
   .body {
     margin-top: 20px;
     flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .content {
@@ -38,6 +41,7 @@
     margin-top: 20px;
     text-align: center;
     user-select: none;
+    flex-shrink: 0;
   }
 }
 

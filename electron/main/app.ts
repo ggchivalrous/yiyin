@@ -146,19 +146,20 @@ export default class Application {
   private async createDefWin() {
     const opts: BrowserWindowConstructorOptions = {
       width: 900 + (isDev ? 500 : 0),
-      height: 730,
+      // 设置项变多，默认高度提高，避免底部按钮被裁掉
+      height: 900,
       title: '壹印',
       frame: false,
+      resizable: true,
       webPreferences: {
         webSecurity: false,
       },
     }
 
     if (import.meta.env.PROD) {
-      opts.minWidth = opts.width
-      opts.minHeight = opts.height
-      opts.maxWidth = opts.width
-      opts.maxHeight = opts.height
+      // 允许调整窗口大小（设置项可能超出默认高度），但限制最小尺寸避免布局被压坏
+      opts.minWidth = 820
+      opts.minHeight = 560
     }
 
     this.win = await createWindow('main', opts)

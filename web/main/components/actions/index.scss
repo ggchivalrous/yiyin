@@ -3,14 +3,15 @@
 .app-action-wrap {
   width: 100%;
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-wrap: nowrap;
-  margin-bottom: 20px;
   flex-shrink: 0;
 
   .app-action-right-wrap,
   .app-action-left-wrap {
     flex: 2 0 100px;
+    min-height: 0;
 
     .open-file-line {
       cursor: pointer;
@@ -48,7 +49,6 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
-
     .output-setting {
       padding: 0 4px;
       display: inline-block;
@@ -72,7 +72,8 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 470px;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
 
     .image-list-wrap {
