@@ -2,7 +2,7 @@
   import type { IConfig, IFileInfo, ImgInfo, TInputEvent } from '../../interface'
   import { arrToObj, roundDecimalPlaces } from '@common/utils'
   import { ActionItem } from '@components'
-  import { ColorPicker, Message, Switch } from '@ggchivalrous/db-ui'
+  import { ColorPicker, Message, Radio, Switch } from '@ggchivalrous/db-ui'
   import { config } from '@web/store/config'
   import { onDestroy, onMount } from 'svelte'
 
@@ -434,6 +434,35 @@
         value={$config.options.mini_top_bottom_margin}
         style='width: 103px;'
         on:change={v => onNumInputChange(v, 'mini_top_bottom_margin', 100, 0, 2)}
+      />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='参数位置'>
+      <svelte:fragment slot='popup'>
+        指定相机参数显示在照片的上方还是下方
+        <br>
+        默认：下方
+      </svelte:fragment>
+      <Radio bind:value={$config.options.text_position} label='bottom'>下方</Radio>
+      <Radio bind:value={$config.options.text_position} label='top'>上方</Radio>
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='底部留白'>
+      <svelte:fragment slot='popup'>
+        在图片最下方额外留出空白，方便做视频时在下方放字幕
+        <br>
+        按照背景高度比例换算，值为 0-100（例如 10 表示留出背景高度的 10%）
+        <br>
+        只增加画布高度，照片与文字的位置不变
+        <br>
+        默认：0
+      </svelte:fragment>
+      <input
+        class='input'
+        type='text'
+        value={$config.options.bottom_margin}
+        style='width: 103px;'
+        on:change={v => onNumInputChange(v, 'bottom_margin', 100, 0, 2)}
       />
     </ActionItem>
 

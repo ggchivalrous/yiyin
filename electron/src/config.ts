@@ -43,6 +43,8 @@ export const DefaultConfig: IConfig = {
     text_margin: 0.4,
     quality: 100,
     mini_top_bottom_margin: 0,
+    text_position: 'bottom',
+    bottom_margin: 0,
     bg_blur: 100,
     preview_show: false,
     preview_pane_width_ratio: 0.5,
