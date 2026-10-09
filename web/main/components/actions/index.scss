@@ -44,10 +44,9 @@
   }
 
   .app-action-left-wrap {
-    /* 加宽到 360px：「底部留白」「固定分辨率」一行里有多个控件，320px 会放不下 */
+    /* 固定 360px：窗口拉伸/缩小时都不压缩左栏（多控件行需要这个宽度） */
+    flex: 0 0 360px;
     width: 360px;
-    flex-basis: 360px;
-    flex-grow: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
@@ -84,9 +83,11 @@
   }
 
   .app-action-right-wrap {
-    /* 收窄信息区（原为 50%），把余量留给左侧设置项；宽屏下也不超过 430px */
+    /* 占据剩余宽度：窗口拉宽时右栏随之向右扩展，
+       右边缘始终贴着 #root 的 20px 内边距，与窗口右侧距离保持不变；
+       左栏是 flex:0 0 360px，不会被挤压 */
     flex: 1 1 auto;
-    max-width: 430px;
+    min-width: 0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -104,6 +105,12 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+
+      /* 右栏随窗口变宽，但信息卡片过宽会显得松散，
+         这里给内容一个宽度上限，超出部分在栏内居中留白 */
+      .img-wrap {
+        max-width: 900px;
+      }
     }
   }
 
