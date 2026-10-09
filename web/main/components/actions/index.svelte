@@ -309,7 +309,7 @@
         class='input'
         type='text'
         value={$config.options.bottom_margin}
-        style='width: 80px; margin-left: 6px;'
+        style='width: 56px; margin-left: 4px;'
         on:change={v => onNumInputChange(v, 'bottom_margin', $config.options.bottom_margin_unit === 'px' ? 10000 : 100, 0, 0)}
       />
     </ActionItem>

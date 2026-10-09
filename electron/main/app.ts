@@ -150,6 +150,8 @@ export default class Application {
     const maxW = Math.max(820, workAreaSize.width - margin)
     const maxH = Math.max(560, workAreaSize.height - margin)
 
+    // 左侧设置区（17 项 x 32px ≈ 544）+ 按钮栏与留白，900 足够一屏放下，
+    // 屏幕较小时再按可用高度收敛
     const width = Math.min(900 + (isDev ? 500 : 0), maxW)
     const height = Math.min(900, maxH)
 

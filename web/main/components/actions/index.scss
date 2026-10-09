@@ -10,7 +10,8 @@
 
   .app-action-right-wrap,
   .app-action-left-wrap {
-    flex: 2 0 100px;
+    /* 基础值，左右栏各自覆写（左栏固定宽度、右栏收窄自适应） */
+    flex: 0 1 auto;
     min-height: 0;
 
     .open-file-line {
@@ -43,12 +44,25 @@
   }
 
   .app-action-left-wrap {
-    width: 320px;
-    flex-basis: 320px;
+    /* 加宽到 360px：「底部留白」「固定分辨率」一行里有多个控件，320px 会放不下 */
+    width: 360px;
+    flex-basis: 360px;
     flex-grow: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
+
+    /* 单选项收紧，保证「底部留白」一行放得下标题 + 两个单选 + 输入框 */
+    .config-value {
+      .db-radio {
+        margin-right: 2px;
+
+        .db-radio__label {
+          padding-left: 4px;
+          font-size: 12px;
+        }
+      }
+    }
     .output-setting {
       padding: 0 4px;
       display: inline-block;
@@ -70,7 +84,9 @@
   }
 
   .app-action-right-wrap {
-    width: 50%;
+    /* 收窄信息区（原为 50%），把余量留给左侧设置项；宽屏下也不超过 430px */
+    flex: 1 1 auto;
+    max-width: 430px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
