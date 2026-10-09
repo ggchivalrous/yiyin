@@ -61,7 +61,10 @@
     }
 
     .action-item {
-      height: 36px;
+      /* 行高收紧到 32px（padding 2px + 输入框 28px），
+         屏幕较矮时也能一屏放下全部设置项 */
+      height: 32px;
+      padding: 2px 0;
       box-sizing: border-box;
     }
   }
@@ -73,6 +76,8 @@
     flex-direction: column;
     gap: 15px;
     height: 100%;
+    /* 窗口放大后不要把信息面板拉成一整块空白，保持紧凑（高度上限沿用原设计） */
+    max-height: 470px;
     min-height: 0;
     overflow: hidden;
 

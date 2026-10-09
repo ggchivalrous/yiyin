@@ -9,7 +9,7 @@ import { image, open, query } from '@router'
 import { genMainImgShadowQueue, genTextImgQueue, imageToolQueue } from '@src/common/queue'
 import { config, storeConfig } from '@src/config'
 import { hasNewVersion } from '@utils'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 
 const isDev = import.meta.env.DEV
 const log = new Logger('App')
@@ -144,10 +144,18 @@ export default class Application {
   }
 
   private async createDefWin() {
+    // 按屏幕可用区域计算窗口尺寸：不能超过可用高度，否则底部按钮会跑到屏幕外
+    const { workAreaSize } = screen.getPrimaryDisplay()
+    const margin = 40
+    const maxW = Math.max(820, workAreaSize.width - margin)
+    const maxH = Math.max(560, workAreaSize.height - margin)
+
+    const width = Math.min(900 + (isDev ? 500 : 0), maxW)
+    const height = Math.min(900, maxH)
+
     const opts: BrowserWindowConstructorOptions = {
-      width: 900 + (isDev ? 500 : 0),
-      // 设置项变多，默认高度提高，避免底部按钮被裁掉
-      height: 900,
+      width,
+      height,
       title: '壹印',
       frame: false,
       resizable: true,
@@ -157,11 +165,11 @@ export default class Application {
     }
 
     if (import.meta.env.PROD) {
-      // 允许调整窗口大小（设置项可能超出默认高度），但限制最小尺寸避免布局被压坏
-      opts.minWidth = 820
-      opts.minHeight = 560
+      opts.minWidth = Math.min(820, width)
+      opts.minHeight = Math.min(560, height)
     }
 
     this.win = await createWindow('main', opts)
+    this.win.center()
   }
 }
