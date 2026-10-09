@@ -295,19 +295,43 @@
       <svelte:fragment slot='popup'>
         在图片最下方额外留出空白，方便做视频时在下方放字幕
         <br>
-        按照背景高度比例换算，值为 0-100（例如 10 表示留出背景高度的 10%）
+        单位可选「百分比」或「像素」：
         <br>
-        只增加画布高度，照片与文字的位置不变
+        百分比：按背景高度换算，取值 0-100（10 表示留出背景高度的 10%）
         <br>
-        默认：0
+        像素：直接留出指定像素高度（配合「固定分辨率输出」可精确控制字幕区）
+        <br>
+        默认：0（百分比）
       </svelte:fragment>
+      <Radio bind:value={$config.options.bottom_margin_unit} label='percent'>百分比</Radio>
+      <Radio bind:value={$config.options.bottom_margin_unit} label='px'>像素</Radio>
       <input
         class='input'
         type='text'
         value={$config.options.bottom_margin}
-        style='width: 103px;'
-        on:change={v => onNumInputChange(v, 'bottom_margin', 100, 0, 2)}
+        style='width: 80px; margin-left: 6px;'
+        on:change={v => onNumInputChange(v, 'bottom_margin', $config.options.bottom_margin_unit === 'px' ? 10000 : 100, 0, 0)}
       />
+    </ActionItem>
+
+    <ActionItem {labelWidth} title='固定分辨率'>
+      <svelte:fragment slot='popup'>
+        开启后按指定分辨率输出画布（用于视频/平台发布）
+        <br>
+        内容整体靠上排列，画布底部剩下的高度就是留给字幕的空白
+        <br>
+        「底部留白」用像素单位时可精确指定字幕区高度
+        <br>
+        主图会等比缩放到可用空间内（不裁切）
+        <br>
+        默认：关闭
+      </svelte:fragment>
+      <Switch bind:value={$config.options.fixed_size_show} />
+      {#if $config.options.fixed_size_show}
+        <input class='input' style='width: 60px; margin-left: 6px;' type='text' bind:value={$config.options.fixed_size.w} />
+        <span style='margin: 0 4px;'>×</span>
+        <input class='input' style='width: 60px;' type='text' bind:value={$config.options.fixed_size.h} />
+      {/if}
     </ActionItem>
 
     <ActionItem {labelWidth} title='圆角大小'>

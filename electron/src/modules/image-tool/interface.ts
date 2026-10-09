@@ -9,6 +9,14 @@ import type { Buffer } from 'node:buffer'
  */
 export type TextPosition = 'top' | 'bottom'
 
+/**
+ * 底部留白的单位
+ *
+ * - `percent`: 按背景高度百分比
+ * - `px`: 固定像素
+ */
+export type BottomMarginUnit = 'percent' | 'px'
+
 export interface ImageToolOption {
   outputOption: OutputOption
   cachePath: string
@@ -100,12 +108,41 @@ export interface OutputOption {
   /**
    * 底部留白
    *
-   * 在内容最下方额外留出的空白，按背景高度比例换算，值为 0-100。
-   * 适合导出后做视频时在下方放字幕，避免字幕挡住照片。
+   * 在内容最下方额外留出的空白，适合导出后做视频时在下方放字幕，避免字幕挡住照片。
+   * 单位由 `bottom_margin_unit` 决定：百分比时按背景高度换算（0-100），
+   * 像素时直接作为像素高度（配合「固定分辨率输出」可精确留出字幕区）。
    *
    * @default 0
    */
   bottom_margin: number
+
+  /**
+   * 底部留白的单位
+   *
+   * - `percent`: 按背景高度百分比（默认，0-100）
+   * - `px`: 固定像素
+   *
+   * @default 'percent'
+   */
+  bottom_margin_unit: BottomMarginUnit
+
+  /**
+   * 固定分辨率输出
+   *
+   * 开启后按照 `fixed_size` 指定的宽高输出画布，
+   * 内容整体靠上排列，底部留出 `bottom_margin` 指定的空白。
+   *
+   * @default false
+   */
+  fixed_size_show: boolean
+
+  /**
+   * 固定输出的分辨率
+   */
+  fixed_size: {
+    w: number
+    h: number
+  }
 
   /**
    * 背景模糊

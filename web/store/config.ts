@@ -15,6 +15,12 @@ export const config = writable<IConfig>({
     mini_top_bottom_margin: 0,
     text_position: 'bottom',
     bottom_margin: 0,
+    bottom_margin_unit: 'percent',
+    fixed_size_show: false,
+    fixed_size: {
+      w: 1920,
+      h: 1080,
+    },
     iot: false,
     landscape: false,
     solid_bg: false,

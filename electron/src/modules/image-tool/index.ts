@@ -21,7 +21,7 @@ import fluentFfmpeg from 'fluent-ffmpeg'
 
 import sharp from 'sharp'
 
-import { calcContentLayout, calcTextStartTop, calcTextTops } from './layout'
+import { calcBottomMarginPx, calcContentLayout, calcTextStartTop, calcTextTops, fitMainSizeToFixedCanvas } from './layout'
 
 const log = new Logger('ImageTool')
 const NotInit = Symbol('未初始化')
@@ -62,6 +62,10 @@ export class ImageTool extends Event {
   }
 
   private contentH: number
+  /**
+   * 固定分辨率输出时的目标尺寸与主图缩放结果
+   */
+  private fixedScale: { mainW: number, mainH: number, availableH: number } | null = null
 
   /**
    * 内容布局信息（文本位置、间隔等）
@@ -140,6 +144,12 @@ export class ImageTool extends Event {
     this.sizeInfo.resetW = width
     this.sizeInfo.resetH = height
 
+    // 固定分辨率输出：直接采用目标宽高作为画布尺寸
+    if (outputOpt.fixed_size_show && outputOpt.fixed_size?.w > 0 && outputOpt.fixed_size?.h > 0) {
+      this.sizeInfo.resetW = Math.round(+outputOpt.fixed_size.w)
+      this.sizeInfo.resetH = Math.round(+outputOpt.fixed_size.h)
+    }
+
     // 获取相机信息
     const exiftool = new ExifTool(this.path)
     this.exif = exiftool.parse()
@@ -158,6 +168,9 @@ export class ImageTool extends Event {
     log.info('【%s】生成文本图片', this.id)
     await this.genTextImg()
     this.progress = 30
+
+    log.info('【%s】固定分辨率：计算主图可用尺寸', this.id)
+    this.prepareFixedScale()
 
     log.info('【%s】生成主图', this.id)
     await this.genMainImg()
@@ -191,6 +204,8 @@ export class ImageTool extends Event {
     if (this.isCancelled) return null
     await this.genTextImg()
     if (this.isCancelled) return null
+    this.prepareFixedScale()
+    if (this.isCancelled) return null
     await this.genMainImg()
     if (this.isCancelled) return null
     this.calcContentHeight()
@@ -206,6 +221,25 @@ export class ImageTool extends Event {
 
   async genBgImg() {
     const toFilePath: string = this.outputFileNames.bg
+
+    // 固定分辨率输出：画布尺寸固定，内容整体靠上，剩余空间自然形成底部留白
+    if (this.isFixedSize()) {
+      const w = Math.round(+this.outputOpt.fixed_size.w)
+      const h = Math.round(+this.outputOpt.fixed_size.h)
+      this.material.bg = { path: toFilePath, w, h, top: 0, left: 0 }
+      this.material.main[0].left = Math.round((w - this.material.main[0].w) / 2)
+      // 内容靠上（不做垂直居中），底部剩下的就是留给字幕的高度
+      this.material.main[0].top = this.layout.mainTop
+
+      if (this.outputOpt.solid_bg) {
+        await this.genSolidImg(w, h, toFilePath)
+      }
+      else {
+        await this.genBlurImg(w, h, toFilePath)
+      }
+      return
+    }
+
     // 先用「不含底部留白」的内容高度确定画布尺寸与内容位置
     // （主图占比、横屏比例等都可能改变画布尺寸，必须在追加留白之前完成计算）
     this.clacBgImgSize(this.contentH)
@@ -232,16 +266,21 @@ export class ImageTool extends Event {
   async genMainImg() {
     const toFilePath: string = this.outputFileNames.main
     if (!this.isInit) throw NotInit
-    await sharp(this.path)
-      .rotate()
-      .withMetadata({ density: this.meta.density })
+
+    const pipe = sharp(this.path).rotate().withMetadata({ density: this.meta.density })
+    // 固定分辨率时主图缩放到算好的可用尺寸（尺寸已按原图宽高比求出，这里直接按目标宽高）
+    if (this.fixedScale) {
+      pipe.resize({ width: this.fixedScale.mainW, height: this.fixedScale.mainH, fit: 'fill' })
+    }
+
+    await pipe
       .toFormat('jpeg', { quality: 100 })
       .toFile(toFilePath)
 
     this.material.main.push({
       path: toFilePath,
-      w: this.sizeInfo.w,
-      h: this.sizeInfo.h,
+      w: this.fixedScale ? this.fixedScale.mainW : this.sizeInfo.w,
+      h: this.fixedScale ? this.fixedScale.mainH : this.sizeInfo.h,
       top: 0,
       left: 0,
     })
@@ -294,7 +333,8 @@ export class ImageTool extends Event {
     mainApp.win.webContents.send(routerConfig.on.genTextImg, {
       id: this.id,
       exif: this.exif || {},
-      bgHeight: this.material.bg.h,
+      // 固定分辨率时按目标画布高度换算字号，保证文字与分辨率匹配
+      bgHeight: this.isFixedSize() ? Math.round(+this.outputOpt.fixed_size.h) : this.material.bg.h,
       options: config.options,
       fields: [...config.tempFields, ...config.customTempFields],
       temps: config.temps,
@@ -318,9 +358,12 @@ export class ImageTool extends Event {
     // 文字
     if (this.material.text?.length) {
       const textHeights = this.material.text.map(i => i.h)
-      // 文本在照片上方时贴着顶部排列，在下方时贴着底部排列
-      // 底部留白是给字幕预留的，文字要避开它（用不含留白的高度作为对齐基准）
-      const textAlignHeight = this.material.bg.h - Math.round(this.layout?.bottomMargin || 0)
+      // 文本在照片上方时贴着顶部排列，在下方时贴着内容底部排列
+      // - 固定分辨率：内容是靠上排列的，文字按「内容高度」对齐（紧贴照片下方的间隔）
+      // - 普通输出：画布底部就是内容底部 + 留白，文字对齐到留白之上，避免压到字幕区
+      const textAlignHeight = this.isFixedSize()
+        ? this.contentH
+        : this.material.bg.h - Math.round(this.layout?.bottomMargin || 0)
       const startTop = calcTextStartTop(
         this.layout.textTop,
         textAlignHeight,
@@ -552,10 +595,70 @@ export class ImageTool extends Event {
     }
   }
 
+  /**
+   * 是否启用固定分辨率输出
+   */
+  private isFixedSize() {
+    const { fixed_size_show, fixed_size } = this.outputOpt
+    return !!fixed_size_show && !!fixed_size && +fixed_size.w > 0 && +fixed_size.h > 0
+  }
+
+  /**
+   * 底部留白的像素高度
+   */
+  private bottomMarginPx(referenceHeight?: number) {
+    const ref = referenceHeight ?? this.material.bg?.h ?? this.sizeInfo.resetH
+    return Math.round(calcBottomMarginPx(this.outputOpt, this.outputOpt.bottom_margin, ref))
+  }
+
+  /**
+   * 固定分辨率：计算主图可用尺寸（在「画布高度 - 底部留白」内等比缩放）
+   */
+  private prepareFixedScale() {
+    if (!this.isFixedSize()) {
+      this.fixedScale = null
+      return
+    }
+
+    const canvasW = Math.round(+this.outputOpt.fixed_size.w)
+    const canvasH = Math.round(+this.outputOpt.fixed_size.h)
+    const bottomMargin = this.bottomMarginPx(canvasH)
+
+    this.fixedScale = fitMainSizeToFixedCanvas(
+      this.outputOpt,
+      canvasH,
+      this.sizeInfo.w,
+      this.sizeInfo.h,
+      {
+        canvasW,
+        canvasH,
+        bottomMargin,
+        textHeights: this.material.text.map(i => i.h),
+        mainImgWRate: this.outputOpt.main_img_w_rate || 90,
+      },
+    )
+
+    log.info(
+      '【%s】固定分辨率 %sx%s，底部留白 %spx，主图 %sx%s',
+      this.id,
+      canvasW,
+      canvasH,
+      bottomMargin,
+      this.fixedScale.mainW,
+      this.fixedScale.mainH,
+    )
+  }
+
   calcContentHeight() {
+    // 固定分辨率时以固定画布为基准换算比例间隔，
+    // 并让内容整体靠上（底部留白由 genBgImg 用固定画布自然形成）
+    const referenceHeight = this.isFixedSize()
+      ? Math.round(+this.outputOpt.fixed_size.h)
+      : this.material.bg.h
+
     const layout = calcContentLayout(
       this.outputOpt,
-      this.material.bg.h,
+      referenceHeight,
       this.material.main[0].h,
       this.material.text.map(i => i.h),
     )

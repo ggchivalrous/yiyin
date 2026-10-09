@@ -2,7 +2,7 @@ import type { OutputOption, TextPosition } from './interface'
 
 export interface ContentLayoutOption extends Pick<
   OutputOption,
-  'mini_top_bottom_margin' | 'shadow' | 'shadow_show' | 'text_position' | 'bottom_margin'
+  'mini_top_bottom_margin' | 'shadow' | 'shadow_show' | 'text_position' | 'bottom_margin' | 'bottom_margin_unit'
 > {}
 
 export interface ContentLayout {
@@ -50,6 +50,88 @@ export function getTextPosition(opt?: Pick<OutputOption, 'text_position'>): Text
 }
 
 /**
+ * 计算底部留白的像素高度
+ *
+ * @param opt - 输出参数
+ * @param value - 留白数值
+ * @param referenceHeight - 百分比换算基准高度（一般用可用内容高度）
+ */
+export function calcBottomMarginPx(
+  opt: Pick<OutputOption, 'bottom_margin_unit'>,
+  value: number,
+  referenceHeight: number,
+): number {
+  const v = value || 0
+  return opt.bottom_margin_unit === 'px' ? Math.round(v) : referenceHeight * (v / 100)
+}
+
+/**
+ * 固定分辨率输出：在「画布高度 - 底部留白」内求主图尺寸
+ *
+ * 内容整体靠上排列，底部留出 `bottomMargin` 的空白；
+ * 主图按可用空间等比缩放（不裁切、可能放大或缩小），
+ * 宽度不超过画布宽度的 `mainImgWRate`，高度不超过可用高度减去间隔与文字。
+ *
+ * @param opt - 输出参数
+ * @param layoutRefHeight - 排版间隔的换算基准高度（固定分辨率时即画布高度）
+ * @param photoW - 主图原始宽度
+ * @param photoH - 主图原始高度
+ * @param fit - 画布与文本信息
+ * @param fit.canvasW - 画布宽度
+ * @param fit.canvasH - 画布高度
+ * @param fit.bottomMargin - 底部留白（像素）
+ * @param fit.textHeights - 各文本图片高度
+ * @param fit.mainImgWRate - 主图占画布宽度比例（0-100）
+ */
+export function fitMainSizeToFixedCanvas(
+  opt: ContentLayoutOption,
+  layoutRefHeight: number,
+  photoW: number,
+  photoH: number,
+  fit: {
+    canvasW: number
+    canvasH: number
+    bottomMargin: number
+    textHeights: number[]
+    mainImgWRate: number
+  },
+): { mainW: number, mainH: number, availableH: number } {
+  const availableH = Math.max(1, fit.canvasH - fit.bottomMargin)
+  const maxMainW = Math.max(1, fit.canvasW * ((fit.mainImgWRate || 90) / 100))
+  const aspect = photoW / photoH
+  // 求主图尺寸时把留白当 0（留白不参与内容高度）
+  const probeOpt = { ...opt, bottom_margin: 0, bottom_margin_unit: 'px' as const }
+
+  // 主图先撑满可用宽度，再按可用高度收敛（两者取小，保证等比且不裁切）
+  let mainW = maxMainW
+  let mainH = mainW / aspect
+
+  for (let i = 0; i < 6; i++) {
+    const probe = calcContentLayout(probeOpt, layoutRefHeight, mainH, fit.textHeights)
+    // 除主图以外的占用（上下间隔 + 文字）
+    const chrome = probe.contentH - mainH
+    const maxH = availableH - chrome
+
+    if (mainH <= maxH) break
+
+    mainH = Math.max(1, Math.floor(maxH))
+    mainW = mainH * aspect
+  }
+
+  // 极端情况下文字本身就超过可用高度，保证不出现负数/零
+  if (mainH < 1) {
+    mainH = 1
+    mainW = aspect
+  }
+
+  return {
+    mainW: Math.max(1, Math.round(mainW)),
+    mainH: Math.max(1, Math.round(mainH)),
+    availableH,
+  }
+}
+
+/**
  * 计算水印整体布局
  *
  * 文本在照片下方时为默认布局；文本在照片上方时，布局取默认布局的垂直镜像，
@@ -69,8 +151,8 @@ export function calcContentLayout(
   const textTop = getTextPosition(opt) === 'top'
   const mainImgTopOffset = bgHeight * (opt.mini_top_bottom_margin / 100)
   const textEdgeOffset = bgHeight * 0.027
-  // 底部额外留白（视频字幕区）
-  const bottomMargin = bgHeight * ((opt.bottom_margin || 0) / 100)
+  // 底部额外留白（视频字幕区）：百分比按背景高度换算，像素单位直接使用
+  const bottomMargin = calcBottomMarginPx(opt, opt.bottom_margin, bgHeight)
 
   // 主图上下间隔最小间隔
   let contentTop = Math.ceil(mainImgTopOffset)
